@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Antwerp Inn, 1845</title>
-    <link rel="stylesheet" href="style.css?v=dev2">
+    <link rel="stylesheet" href="style.css?v=dev3">
     <link rel="icon" href="favicon.png" type="image/png">
 </head>
 <body>
     <h1>The Antwerp Inn, 1845</h1>
     <div class="slideshow-wrapper">
-        <img id="slideshow" src="cropped_house_day.jpg" alt="Slideshow Image">
+        <img id="img1" class="slideshow-image visible" src="cropped_house_day.jpg" alt="Slide 1">
+        <img id="img2" class="slideshow-image" src="cropped_door_view.jpg" alt="Slide 2">
     </div>
 
     <script>
@@ -24,21 +25,32 @@
             "cropped_house_night.jpg"
         ];
 
-        let current = 0;
-        const fadeTime = 3000;
-        const displayTime = 10000;
-        const img = document.getElementById("slideshow");
+        let current = 1;
+        let showingFirst = true;
+        const fadeDuration = 3000;
+        const displayDuration = 10000;
 
-        function fadeToNextImage() {
-            img.style.opacity = 0;
-            setTimeout(() => {
-                current = (current + 1) % images.length;
-                img.src = images[current];
-                img.style.opacity = 1;
-            }, fadeTime);
+        const img1 = document.getElementById("img1");
+        const img2 = document.getElementById("img2");
+
+        function crossfadeImages() {
+            const nextImage = images[current];
+            current = (current + 1) % images.length;
+
+            if (showingFirst) {
+                img2.src = nextImage;
+                img2.classList.add("visible");
+                img1.classList.remove("visible");
+            } else {
+                img1.src = nextImage;
+                img1.classList.add("visible");
+                img2.classList.remove("visible");
+            }
+
+            showingFirst = !showingFirst;
         }
 
-        setInterval(fadeToNextImage, displayTime);
+        setInterval(crossfadeImages, displayDuration);
     </script>
 </body>
 </html>
