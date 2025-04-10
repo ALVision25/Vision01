@@ -5,9 +5,9 @@
 }
 
 body {
-    background-color: #000;
+    background-color: #000000;
     font-family: 'Georgia', serif;
-    color: #fff;
+    color: #ffffff;
     text-align: center;
     width: 100%;
 }
@@ -19,25 +19,17 @@ h1 {
 }
 
 .slideshow-wrapper {
-    position: relative;
     width: 600px;
     height: 400px;
     margin: 0 auto 40px auto;
+    position: relative;
     overflow: hidden;
 }
 
-.slideshow-image {
-    position: absolute;
-    top: 0;
-    left: 0;
+#slideshow {
     width: 600px;
     height: 400px;
     object-fit: cover;
-    opacity: 0;
-    transition: opacity 2s ease-in-out;
-}
-
-.slideshow-image.visible {
+    transition: opacity 3s ease-in-out;
     opacity: 1;
-    z-index: 2;
 }
