@@ -1,42 +1,43 @@
 * {
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    background-color: #000000 !important;
-    font-family: 'Georgia', serif !important;
-    color: #ffffff !important;
-    text-align: center !important;
-    width: 100% !important;
+    background-color: #000;
+    font-family: 'Georgia', serif;
+    color: #fff;
+    text-align: center;
+    width: 100%;
 }
 
 h1 {
-    font-size: 2em !important;
-    margin: 30px 0 20px 0 !important;
-    color: #ffffff !important;
+    font-size: 2em;
+    margin: 30px 0 20px 0;
+    color: #ffffff;
 }
 
 .slideshow-wrapper {
-    position: relative !important;
-    width: 600px !important;
-    height: 400px !important;
-    margin: 0 auto 40px auto !important;
-    overflow: hidden !important;
+    position: relative;
+    width: 600px;
+    height: 400px;
+    margin: 0 auto 40px auto;
+    overflow: hidden;
 }
 
 .slideshow-image {
-    position: absolute !important;
+    position: absolute;
     top: 0;
     left: 0;
-    width: 600px !important;
-    height: 400px !important;
-    object-fit: cover !important;
-    transition: opacity 1.5s ease-in-out !important;
-    opacity: 0 !important;
+    width: 600px;
+    height: 400px;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
 }
 
-#img1 {
-    opacity: 1 !important;
+.slideshow-image.visible {
+    opacity: 1;
+    z-index: 2;
 }

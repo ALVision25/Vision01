@@ -10,8 +10,8 @@
 <body>
     <h1>The Antwerp Inn, 1845</h1>
     <div class="slideshow-wrapper">
-        <img id="img1" class="slideshow-image" src="cropped_house_day.jpg" alt="Image 1">
-        <img id="img2" class="slideshow-image" src="cropped_door_view.jpg" alt="Image 2">
+        <img id="img1" class="slideshow-image visible" src="cropped_house_day.jpg" alt="Slide 1">
+        <img id="img2" class="slideshow-image" src="cropped_door_view.jpg" alt="Slide 2">
     </div>
 
     <script>
@@ -37,16 +37,16 @@
 
             if (showingFirst) {
                 img2.src = nextImage;
-                img2.style.opacity = 1;
-                img1.style.opacity = 0;
+                img2.classList.add("visible");
+                img1.classList.remove("visible");
             } else {
                 img1.src = nextImage;
-                img1.style.opacity = 1;
-                img2.style.opacity = 0;
+                img1.classList.add("visible");
+                img2.classList.remove("visible");
             }
 
             showingFirst = !showingFirst;
-            setTimeout(rotateImages, 10000);
+            setTimeout(rotateImages, 10000); // 10 seconds
         }
 
         window.onload = () => {
