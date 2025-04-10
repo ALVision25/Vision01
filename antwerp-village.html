@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antwerp Village</title>
+    <link rel="stylesheet" href="style.css?v=dev13">
+</head>
+<body>
+    <header>
+        <h1>Antwerp Village</h1>
+        <div class="menu-toggle" id="menu-toggle">
+            <span></span><span></span><span></span>
+        </div>
+        <nav class="nav-menu" id="nav-menu">
+            <ul>
+                <li><a href="fort-drum.html">Fort Drum</a></li>
+                <li><a href="antwerp-village.html">Antwerp Village</a></li>
+                <li><a href="mcallister-house.html">McAllister House</a></li>
+                <li><a href="index.html">Back to Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="subpage-content">
+        <img src="slide5.jpg" class="subpage-image" alt="Antwerp Village">
+        <div class="subpage-text">Quisque commodo risus non orci sollicitudin, at lobortis sapien feugiat. Aliquam erat volutpat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.
+
+Proin vitae diam in tortor porttitor dictum. Morbi non lorem tincidunt, convallis magna ut, interdum sapien.</div>
+    </div>
+    <script>
+        document.getElementById("menu-toggle").addEventListener("click", () => {
+            document.getElementById("nav-menu").classList.toggle("active");
+        });
+    </script>
+</body>
+</html>

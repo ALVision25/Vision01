@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>McAllister House</title>
+    <link rel="stylesheet" href="style.css?v=dev13">
+</head>
+<body>
+    <header>
+        <h1>McAllister House</h1>
+        <div class="menu-toggle" id="menu-toggle">
+            <span></span><span></span><span></span>
+        </div>
+        <nav class="nav-menu" id="nav-menu">
+            <ul>
+                <li><a href="fort-drum.html">Fort Drum</a></li>
+                <li><a href="antwerp-village.html">Antwerp Village</a></li>
+                <li><a href="mcallister-house.html">McAllister House</a></li>
+                <li><a href="index.html">Back to Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="subpage-content">
+        <img src="slide7.jpg" class="subpage-image" alt="McAllister House">
+        <div class="subpage-text">Nam hendrerit, arcu id tincidunt viverra, magna sapien volutpat est, id faucibus orci lorem a libero. Donec at sapien a nunc feugiat tincidunt.
+
+Cras dignissim suscipit massa, sed sodales lacus efficitur eget. Integer tincidunt turpis sed ipsum dignissim, at elementum magna sodales.</div>
+    </div>
+    <script>
+        document.getElementById("menu-toggle").addEventListener("click", () => {
+            document.getElementById("nav-menu").classList.toggle("active");
+        });
+    </script>
+</body>
+</html>

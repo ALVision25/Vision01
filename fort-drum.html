@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fort Drum</title>
+    <link rel="stylesheet" href="style.css?v=dev13">
+</head>
+<body>
+    <header>
+        <h1>Fort Drum</h1>
+        <div class="menu-toggle" id="menu-toggle">
+            <span></span><span></span><span></span>
+        </div>
+        <nav class="nav-menu" id="nav-menu">
+            <ul>
+                <li><a href="fort-drum.html">Fort Drum</a></li>
+                <li><a href="antwerp-village.html">Antwerp Village</a></li>
+                <li><a href="mcallister-house.html">McAllister House</a></li>
+                <li><a href="index.html">Back to Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="subpage-content">
+        <img src="slide3.jpg" class="subpage-image" alt="Fort Drum">
+        <div class="subpage-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus finibus justo in leo sodales, nec consectetur lorem placerat. Curabitur porttitor nunc id nulla dictum, nec ullamcorper nisl vulputate.
+
+Suspendisse interdum velit eget augue consequat, a iaculis nisl facilisis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
+    </div>
+    <script>
+        document.getElementById("menu-toggle").addEventListener("click", () => {
+            document.getElementById("nav-menu").classList.toggle("active");
+        });
+    </script>
+</body>
+</html>

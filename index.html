@@ -4,11 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=dev11">
+    <link rel="stylesheet" href="style.css?v=dev13">
     <link rel="icon" href="favicon.png" type="image/png">
 </head>
 <body>
-    <h1>The Antwerp Inn 1845</h1>
+    <header>
+        <h1>The Antwerp Inn 1845</h1>
+        <div class="menu-toggle" id="menu-toggle">
+            <span></span><span></span><span></span>
+        </div>
+        <nav class="nav-menu" id="nav-menu">
+            <ul>
+                <li><a href="fort-drum.html">Fort Drum</a></li>
+                <li><a href="antwerp-village.html">Antwerp Village</a></li>
+                <li><a href="mcallister-house.html">McAllister House</a></li>
+                <li><a href="index.html">Back to Home</a></li>
+            </ul>
+        </nav>
+    </header>
+
     <div class="slideshow-wrapper">
         <img id="img1" class="slideshow-image visible" src="cropped_house_day.jpg" alt="Slide 1">
         <img id="img2" class="slideshow-image" src="cropped_door_view.jpg" alt="Slide 2">
@@ -16,30 +30,21 @@
 
     <script>
         const images = [
-    "cropped_house_day.jpg",
-    "cropped_door_view.jpg",
-    "cropped_dining_room_day.jpg",
-    "cropped_hallway.jpg",
-    "cropped_sunset_window.jpg",
-    "cropped_house_side.jpg",
-    "cropped_house_night.jpg",
-    "slide1.jpg",
-    "slide2.jpg",
-    "slide3.jpg",
-    "slide4.jpg",
-    "slide5.jpg",
-    "slide6.jpg",
-    "slide7.jpg",
-    "slide8.jpg",
-    "slide9.jpg",
-    "slide10.jpg",
-    "slide11.jpg",
-    "slide12.jpg"
-];
+            "cropped_house_day.jpg",
+            "cropped_door_view.jpg",
+            "cropped_dining_room_day.jpg",
+            "cropped_hallway.jpg",
+            "cropped_sunset_window.jpg",
+            "cropped_house_side.jpg",
+            "cropped_house_night.jpg",
+            "slide1.jpg", "slide2.jpg", "slide3.jpg", "slide4.jpg",
+            "slide5.jpg", "slide6.jpg", "slide7.jpg",
+            "slide8.jpg", "slide9.jpg", "slide10.jpg", "slide11.jpg", "slide12.jpg"
+        ];
 
         let current = 2;
         let showingFirst = true;
-        const displayDuration = 10000;
+        const displayDuration = 14000;
 
         const img1 = document.getElementById("img1");
         const img2 = document.getElementById("img2");
@@ -62,6 +67,10 @@
         }
 
         setInterval(crossfadeImages, displayDuration);
+
+        document.getElementById("menu-toggle").addEventListener("click", () => {
+            document.getElementById("nav-menu").classList.toggle("active");
+        });
     </script>
 </body>
 </html>
