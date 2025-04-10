@@ -1,3 +1,11 @@
+@font-face {
+    font-family: 'OldeEnglish';
+    src: url('OldeEnglish.woff2') format('woff2'),
+         url('OldeEnglish.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -13,7 +21,8 @@ body {
 }
 
 h1 {
-    font-size: 2em;
+    font-family: 'OldeEnglish', serif;
+    font-size: 2.5em;
     margin: 30px 0 20px 0;
     color: #ffffff;
 }
