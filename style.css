@@ -1,23 +1,29 @@
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f7f7f7;
+    font-family: 'Old English Text MT', 'Georgia', serif;
+    background-color: #111;
+    color: #fff;
     text-align: center;
 }
 
-.container {
-    padding: 40px;
+.slideshow-container {
+    position: relative;
+    max-width: 90%;
+    margin: 0 auto;
+    padding-top: 40px;
 }
 
-.container img {
-    max-width: 100%;
+#slideshow-image {
+    width: 100%;
+    max-width: 900px;
     height: auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    transition: opacity 1s ease-in-out;
 }
 
 h1 {
-    margin-top: 24px;
-    font-size: 2em;
-    color: #333;
+    font-size: 2.5em;
+    margin-top: 20px;
 }

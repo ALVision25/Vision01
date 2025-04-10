@@ -3,13 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Let's Get to Work</title>
+    <title>The Antwerp Inn, 1845</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <img src="dining_room.jpg" alt="Historic Dining Room">
-        <h1>Let's get to work!</h1>
+    <div class="slideshow-container">
+        <img id="slideshow-image" src="door_view.jpg" alt="Slideshow Image" onclick="nextImage()">
+        <h1>The Antwerp Inn, 1845</h1>
     </div>
+
+    <script>
+        const images = [
+            "door_view.jpg",
+            "iced_window.jpg",
+            "sunset_window.jpg",
+            "dining_room_day.jpg",
+            "hallway.jpg",
+            "house_day.jpg",
+            "house_night.jpg",
+            "house_side.jpg"
+        ];
+        let current = 0;
+
+        function nextImage() {
+            current = (current + 1) % images.length;
+            document.getElementById('slideshow-image').src = images[current];
+        }
+
+        function rotateImages() {
+            nextImage();
+            setTimeout(rotateImages, 2000 + Math.random() * 2000); // random interval between 2–4 seconds
+        }
+
+        window.onload = () => {
+            setTimeout(rotateImages, 2000);
+        };
+    </script>
 </body>
 </html>
