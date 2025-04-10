@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Antwerp Inn, 1845</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.png" type="image/png">
 </head>
 <body>
     <div class="container">
@@ -38,12 +39,12 @@
             setTimeout(() => {
                 imageElement.src = src;
                 imageElement.classList.remove('fade-out');
-            }, 500); // matches CSS transition duration
+            }, 500);
         }
 
         function rotateImages() {
             nextImage();
-            setTimeout(rotateImages, 4000 + Math.random() * 2000); // 4–6 sec
+            setTimeout(rotateImages, 4000 + Math.random() * 2000);
         }
 
         window.onload = () => {
