@@ -9,19 +9,10 @@
 </head>
 <body>
     <h1>The Antwerp Inn, 1845</h1>
-    <img id="slideshow-image" src="door_view.jpg" alt="Slideshow Image" onclick="nextImage()">
-    
+    <img id="slideshow-image" src="cropped_house_day.jpg" alt="Slideshow Image" onclick="nextImage()">
+
     <script>
-        const images = [
-            "door_view.jpg",
-            "iced_window.jpg",
-            "sunset_window.jpg",
-            "dining_room_day.jpg",
-            "hallway.jpg",
-            "house_day.jpg",
-            "house_night.jpg",
-            "house_side.jpg"
-        ];
+        const images = ['cropped_house_day.jpg', 'cropped_door_view.jpg', 'cropped_dining_room_day.jpg', 'cropped_hallway.jpg', 'cropped_sunset_window.jpg', 'cropped_house_side.jpg', 'cropped_house_night.jpg'];
         let current = 0;
         let imageElement;
 
@@ -40,12 +31,12 @@
 
         function rotateImages() {
             nextImage();
-            setTimeout(rotateImages, 4000 + Math.random() * 2000);
+            setTimeout(rotateImages, 10000); // 10 seconds
         }
 
         window.onload = () => {
             imageElement = document.getElementById('slideshow-image');
-            setTimeout(rotateImages, 4000);
+            setTimeout(rotateImages, 10000);
         };
     </script>
 </body>
