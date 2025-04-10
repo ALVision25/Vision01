@@ -27,7 +27,7 @@ h1 {
     box-shadow: none !important;
     background: none !important;
     cursor: pointer !important;
-    transition: opacity 0.5s ease-in-out !important;
+    transition: opacity 1.5s ease-in-out !important;
     display: block !important;
     margin: 0 auto 40px auto !important;
 }
