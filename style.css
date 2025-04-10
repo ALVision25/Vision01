@@ -35,7 +35,7 @@ h1 {
     object-fit: cover;
     opacity: 0;
     z-index: 1;
-    transition: opacity 3s ease-in-out;
+    transition: opacity 6s ease-in-out;
 }
 
 .slideshow-image.visible {
