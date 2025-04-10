@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="slideshow-container">
-        <img id="slideshow-image" src="door_view.jpg" alt="Slideshow Image" onclick="nextImage()">
+    <div class="container">
         <h1>The Antwerp Inn, 1845</h1>
+        <div class="slideshow-wrapper">
+            <img id="slideshow-image" src="door_view.jpg" alt="Slideshow Image" onclick="nextImage()">
+        </div>
     </div>
 
     <script>
@@ -24,19 +26,29 @@
             "house_side.jpg"
         ];
         let current = 0;
+        let imageElement;
 
         function nextImage() {
             current = (current + 1) % images.length;
-            document.getElementById('slideshow-image').src = images[current];
+            fadeImage(images[current]);
+        }
+
+        function fadeImage(src) {
+            imageElement.classList.add('fade-out');
+            setTimeout(() => {
+                imageElement.src = src;
+                imageElement.classList.remove('fade-out');
+            }, 500); // matches CSS transition duration
         }
 
         function rotateImages() {
             nextImage();
-            setTimeout(rotateImages, 2000 + Math.random() * 2000); // random interval between 2–4 seconds
+            setTimeout(rotateImages, 4000 + Math.random() * 2000); // 4–6 sec
         }
 
         window.onload = () => {
-            setTimeout(rotateImages, 2000);
+            imageElement = document.getElementById('slideshow-image');
+            setTimeout(rotateImages, 4000);
         };
     </script>
 </body>

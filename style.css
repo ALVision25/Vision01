@@ -1,29 +1,40 @@
 body {
     margin: 0;
-    font-family: 'Old English Text MT', 'Georgia', serif;
-    background-color: #111;
-    color: #fff;
+    font-family: 'Georgia', serif;
+    background-color: #1a1a1a;
+    color: #ffffff;
     text-align: center;
 }
 
-.slideshow-container {
-    position: relative;
-    max-width: 90%;
+.container {
+    max-width: 900px;
     margin: 0 auto;
     padding-top: 40px;
 }
 
-#slideshow-image {
-    width: 100%;
-    max-width: 900px;
-    height: auto;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-    transition: opacity 1s ease-in-out;
-}
-
 h1 {
     font-size: 2.5em;
-    margin-top: 20px;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.slideshow-wrapper {
+    background-color: #000;
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+}
+
+#slideshow-image {
+    max-width: 800px;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.fade-out {
+    opacity: 0;
 }
