@@ -9,33 +9,47 @@
 </head>
 <body>
     <h1>The Antwerp Inn, 1845</h1>
-    <img id="slideshow-image" src="cropped_house_day.jpg" alt="Slideshow Image" onclick="nextImage()">
+    <div class="slideshow-wrapper">
+        <img id="img1" class="slideshow-image" src="cropped_house_day.jpg" alt="Image 1">
+        <img id="img2" class="slideshow-image" src="cropped_door_view.jpg" alt="Image 2">
+    </div>
 
     <script>
-        const images = ['cropped_house_day.jpg', 'cropped_door_view.jpg', 'cropped_dining_room_day.jpg', 'cropped_hallway.jpg', 'cropped_sunset_window.jpg', 'cropped_house_side.jpg', 'cropped_house_night.jpg'];
+        const images = [
+            "cropped_house_day.jpg",
+            "cropped_door_view.jpg",
+            "cropped_dining_room_day.jpg",
+            "cropped_hallway.jpg",
+            "cropped_sunset_window.jpg",
+            "cropped_house_side.jpg",
+            "cropped_house_night.jpg"
+        ];
+
         let current = 0;
-        let imageElement;
-
-        function nextImage() {
-            current = (current + 1) % images.length;
-            fadeImage(images[current]);
-        }
-
-        function fadeImage(src) {
-            imageElement.classList.add('fade-out');
-            setTimeout(() => {
-                imageElement.src = src;
-                imageElement.classList.remove('fade-out');
-            }, 500);
-        }
+        let showingFirst = true;
 
         function rotateImages() {
-            nextImage();
-            setTimeout(rotateImages, 10000); // 10 seconds
+            const img1 = document.getElementById("img1");
+            const img2 = document.getElementById("img2");
+
+            current = (current + 1) % images.length;
+            const nextImage = images[current];
+
+            if (showingFirst) {
+                img2.src = nextImage;
+                img2.style.opacity = 1;
+                img1.style.opacity = 0;
+            } else {
+                img1.src = nextImage;
+                img1.style.opacity = 1;
+                img2.style.opacity = 0;
+            }
+
+            showingFirst = !showingFirst;
+            setTimeout(rotateImages, 10000);
         }
 
         window.onload = () => {
-            imageElement = document.getElementById('slideshow-image');
             setTimeout(rotateImages, 10000);
         };
     </script>

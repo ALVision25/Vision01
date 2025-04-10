@@ -18,20 +18,25 @@ h1 {
     color: #ffffff !important;
 }
 
-#slideshow-image {
-    max-width: 600px !important;
-    width: 100% !important;
-    height: auto !important;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background: none !important;
-    cursor: pointer !important;
-    transition: opacity 1.5s ease-in-out !important;
-    display: block !important;
+.slideshow-wrapper {
+    position: relative !important;
+    width: 600px !important;
+    height: 400px !important;
     margin: 0 auto 40px auto !important;
+    overflow: hidden !important;
 }
 
-.fade-out {
+.slideshow-image {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 600px !important;
+    height: 400px !important;
+    object-fit: cover !important;
+    transition: opacity 1.5s ease-in-out !important;
     opacity: 0 !important;
+}
+
+#img1 {
+    opacity: 1 !important;
 }
