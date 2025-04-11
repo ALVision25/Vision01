@@ -1,110 +1,63 @@
-@font-face {
-    font-family: 'OldEnglishFive';
-    src: url('OldEnglishFive.woff2') format('woff2'),
-         url('OldEnglishFive.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
 body {
-    background-color: #000000;
-    font-family: 'Georgia', serif;
-    color: #ffffff;
-    text-align: center;
-    width: 100%;
-}
-
-h1 {
+    margin: 0;
     font-family: 'OldEnglishFive', serif;
-    font-weight: normal;
-    font-size: 2.3em;
-    margin: 15px 0 20px 0;
-    color: #f3e9d2;
+    background-color: #111;
+    color: #f5f1e8;
 }
 
-.slideshow-wrapper {
-    position: relative;
-    width: 600px;
-    height: 400px;
-    margin: 0 auto 40px auto;
-    overflow: hidden;
-}
-
-.slideshow-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 600px;
-    height: 400px;
-    object-fit: cover;
-    opacity: 0;
-    z-index: 1;
-    transition: opacity 12s ease-in-out;
-}
-
-.slideshow-image.visible {
-    opacity: 1;
-    z-index: 2;
-}
-
-/* Hamburger Menu Styles */
-.menu-toggle {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 30px;
-    height: 22px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    z-index: 9999;
-}
-
-.menu-toggle span {
-    display: block;
-    height: 4px;
-    background-color: #fff;
-    border-radius: 2px;
-}
-
-/* Nav Menu Panel */
-.nav-menu {
+.menu {
     position: fixed;
     top: 0;
-    right: -200px;
-    width: 200px;
-    height: 100%;
-    background-color: #111;
+    right: 0;
+    padding: 10px;
+    z-index: 1000;
+}
+
+.hamburger {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.nav-links {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background-color: #222;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.nav-links a {
+    color: #f5f1e8;
+    text-decoration: none;
+    margin: 5px 0;
+}
+
+.menu:hover .nav-links {
+    display: flex;
+}
+
+.story-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    transition: right 0.3s ease-in-out;
-    z-index: 9998;
+    padding: 40px;
+    max-width: 900px;
+    margin: 80px auto;
+    line-height: 1.6;
 }
 
-.nav-menu.active {
-    right: 0;
+.story-image {
+    float: left;
+    max-width: 25%;
+    height: auto;
+    margin: 0 20px 20px 0;
+    shape-outside: margin-box;
 }
 
-.nav-menu ul {
-    list-style: none;
-    padding: 0;
-}
-
-.nav-menu ul li {
-    margin: 20px 0;
-}
-
-.nav-menu ul li a {
-    color: #f3e9d2;
-    text-decoration: none;
-    font-family: 'OldEnglishFive', serif;
-    font-size: 1.2em;
+article h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
 }
