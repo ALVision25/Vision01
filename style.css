@@ -1,71 +1,101 @@
 
+@font-face {
+  font-family: 'OldEnglishFive';
+  src: url('OldEnglishFive.woff2') format('woff2'),
+       url('OldEnglishFive.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
-    margin: 0;
-    font-family: Georgia, serif;
-    background-color: #111;
-    color: #f5f1e8;
+  margin: 0;
+  background-color: #000;
+  color: #f3e9d2;
+  font-family: Georgia, serif;
+  text-align: center;
+}
+
+h1.site-title {
+  font-family: 'OldEnglishFive', serif;
+  font-size: 2.5em;
+  margin-top: 20px;
+}
+
+.slideshow-wrapper {
+  position: relative;
+  width: 600px;
+  height: 400px;
+  margin: 40px auto;
+  overflow: hidden;
+}
+
+.slideshow-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 600px;
+  height: 400px;
+  object-fit: cover;
+  opacity: 0;
+  z-index: 1;
+  transition: opacity 12s ease-in-out;
+}
+
+.slideshow-image.visible {
+  opacity: 1;
+  z-index: 2;
+}
+
+/* Hamburger menu styling */
+.menu-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 30px;
+  height: 22px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 999;
+}
+
+.menu-toggle .bar {
+  height: 4px;
+  background-color: #f3e9d2;
+  border-radius: 2px;
 }
 
 .menu {
-    position: fixed;
-    top: 0;
-    right: 0;
-    padding: 10px;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  right: -200px;
+  width: 200px;
+  height: 100%;
+  background-color: #111;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: right 0.3s ease-in-out;
+  z-index: 998;
 }
 
-.hamburger {
-    font-size: 24px;
-    cursor: pointer;
+.menu.active {
+  right: 0;
 }
 
-.nav-links {
-    display: none;
-    flex-direction: column;
-    position: absolute;
-    top: 30px;
-    right: 0;
-    background-color: #222;
-    padding: 10px;
-    border-radius: 4px;
+.menu ul {
+  list-style: none;
+  padding: 0;
 }
 
-.nav-links a {
-    color: #f5f1e8;
-    text-decoration: none;
-    margin: 5px 0;
-    font-family: 'OldEnglishFive', serif;
+.menu ul li {
+  margin: 20px 0;
 }
 
-.menu:hover .nav-links {
-    display: flex;
-}
-
-.story-container {
-    display: flex;
-    flex-direction: column;
-    padding: 40px;
-    max-width: 900px;
-    margin: 80px auto;
-    line-height: 1.6;
-}
-
-.story-image {
-    float: left;
-    max-width: 25%;
-    height: auto;
-    margin: 0 20px 20px 0;
-    shape-outside: margin-box;
-}
-
-.break-image {
-    display: block;
-    width: 100%;
-    margin: 30px 0;
-}
-
-article h1 {
-    font-family: 'OldEnglishFive', serif;
-    font-size: 28px;
-    margin-bottom: 10px;
+.menu ul li a {
+  color: #f3e9d2;
+  text-decoration: none;
+  font-family: 'OldEnglishFive', serif;
+  font-size: 1.2em;
 }
