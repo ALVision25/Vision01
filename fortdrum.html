@@ -2,29 +2,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Fort Drum</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fort Drum</title>
+  <link rel="stylesheet" href="style.css?v=dev16" />
 </head>
 <body>
-    <div class="menu">
-        <div class="hamburger">&#9776;</div>
-        <nav class="nav-links">
-            <a href="fortdrum.html">Fort Drum</a>
-            <a href="antwerpvillage.html">Antwerp Village</a>
-            <a href="mcallister.html">McAllister House</a>
-            <a href="index.html">Antwerp Inn</a>
-        </nav>
+  <header>
+    <h1 class="site-title">Fort Drum</h1>
+    <div class="menu-toggle" id="menu-toggle">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
     </div>
-    <main class="story-container">
-        <img src="FortDrum.jpg" class="story-image" alt="Fort Drum Landscape">
-        <article>
-            <h1>Fort Drum</h1>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
-            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
-            <img src="FortDrum.jpg" class="break-image" alt="Fort Drum Landscape">
-            <p>Nam hendrerit, arcu id tincidunt viverra, magna sapien volutpat est, id faucibus orci lorem a libero. Donec at sapien a nunc feugiat tincidunt.</p>
-        </article>
-    </main>
+    <nav class="menu" id="menu">
+      <ul>
+        <li><a href="fortdrum.html">Fort Drum</a></li>
+        <li><a href="antwerpvillage.html">Antwerp Village</a></li>
+        <li><a href="mcallister.html">McAllister House</a></li>
+        <li><a href="index.html">The Antwerp Inn</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="Story">
+    <img src="FortDrum.jpg" alt="Fort Drum Image" class="story-image" />
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec mauris et urna blandit sodales. Aliquam erat volutpat. Donec tempor mi a velit fermentum, nec tincidunt ligula placerat.</p>
+    <p>Suspendisse potenti. Quisque sollicitudin libero eget mi facilisis, ac blandit nisi efficitur. Duis sed eros sem. Integer condimentum, lorem in feugiat varius, erat purus tincidunt nisi, sed sodales risus nulla a nibh.</p>
+    <img src="FortDrum.jpg" alt="Fort Drum Scene" class="break-image" />
+  </main>
+
+  <script>
+    document.getElementById("menu-toggle").addEventListener("click", () => {
+      document.getElementById("menu").classList.toggle("active");
+    });
+  </script>
 </body>
 </html>
