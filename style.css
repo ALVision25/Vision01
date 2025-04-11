@@ -110,7 +110,7 @@ body {
   line-height: 1.6;
 }
 
-.Story h1 {
+.Story h1.site-title {
   font-family: 'OldEnglishFive', serif;
   font-size: 28px;
   margin-bottom: 10px;
