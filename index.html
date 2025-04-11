@@ -1,57 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Antwerp Inn</title>
-  <link rel="stylesheet" href="style.css?v=dev24" />
-  <link rel="preload" href="OldEnglishFive.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-  <style>
-    body {
-      margin: 0;
-      background-color: black;
-    }
-
-    /* Top-right fixed hamburger menu */
-    .menu-toggle {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-    }
-
-    .menu-toggle span {
-      display: block;
-      width: 25px;
-      height: 3px;
-      background-color: white;
-      margin: 5px 0;
-    }
-
-    /* Unwrapped site title */
-    .site-title {
-      font-family: 'OldEnglishFive', serif;
-      font-size: 2.5em;
-      color: #f5f1e7; /* Matched from index_comp rendering */
-      text-align: center;
-      margin-top: 2em;
-      margin-bottom: 0.5em;
-      line-height: 1.1;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Antwerp Inn</title>
+    <link rel="stylesheet" href="style.css?v=devtest123" />
 </head>
-<body>
+<body class="home">
 
-  <!-- ROW 1: Hamburger Menu -->
-  <div class="menu-toggle" id="menu-toggle">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
+    <header class="site-header-unwrapped">
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+        <button class="menu-toggle" aria-label="Menu">&#9776;</button>
+    </header>
 
-  <!-- ROW 2: Title -->
-  <h1 class="site-title">The Antwerp Inn 1845</h1>
+    <main>
+        <div class="slideshow">
+            <img src="slide01.jpg" alt="Slideshow Image" id="slideshow-image" />
+        </div>
+    </main>
 
 </body>
 </html>
