@@ -1,25 +1,42 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=dev15">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Antwerp Inn</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="style.css?v=dev12" />
+  <link rel="preload" href="OldEnglishFive.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body>
-    <div class="menu">
-        <div class="hamburger">&#9776;</div>
-        <nav class="nav-links">
-            <a href="fortdrum.html">Fort Drum</a>
-            <a href="antwerpvillage.html">Antwerp Village</a>
-            <a href="mcallister.html">McAllister House</a>
-            <a href="index.html">Antwerp Inn</a>
-        </nav>
+  <header>
+    <h1 class="site-title">The Antwerp Inn 1845</h1>
+    <div class="menu-toggle" id="menu-toggle">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
     </div>
-    <main class="slideshow-wrapper">
-        <h1>The Antwerp Inn 1845</h1>
-        <div class="slideshow-placeholder">
-            <p>[Slideshow content remains unchanged — placeholder here]</p>
-        </div>
-    </main>
+    <nav class="menu" id="menu">
+      <ul>
+        <li><a href="fortdrum.html">Fort Drum</a></li>
+        <li><a href="antwerpvillage.html">Antwerp Village</a></li>
+        <li><a href="macalester.html">Macalester House</a></li>
+        <li><a href="index.html">The Antwerp Inn</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="slideshow-container">
+      <div class="fade-slideshow">
+        <img src="images/image1.jpg" class="slide" />
+        <img src="images/image2.jpg" class="slide" />
+        <img src="images/image3.jpg" class="slide" />
+        <!-- Continue for all 19 images -->
+      </div>
+    </div>
+  </main>
+
 </body>
 </html>
