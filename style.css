@@ -1,7 +1,7 @@
 
 body {
     margin: 0;
-    font-family: 'OldEnglishFive', serif;
+    font-family: Georgia, serif;
     background-color: #111;
     color: #f5f1e8;
 }
@@ -34,6 +34,7 @@ body {
     color: #f5f1e8;
     text-decoration: none;
     margin: 5px 0;
+    font-family: 'OldEnglishFive', serif;
 }
 
 .menu:hover .nav-links {
@@ -57,7 +58,14 @@ body {
     shape-outside: margin-box;
 }
 
+.break-image {
+    display: block;
+    width: 100%;
+    margin: 30px 0;
+}
+
 article h1 {
+    font-family: 'OldEnglishFive', serif;
     font-size: 28px;
     margin-bottom: 10px;
 }
