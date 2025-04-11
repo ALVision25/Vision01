@@ -20,6 +20,10 @@ body {
   font-family: 'OldEnglishFive', serif;
   font-size: 2em;
   margin-top: 20px;
+
+  display: block;
+  position: relative;
+  z-index: 10;
 }
 
 .HomePage .slideshow-wrapper {
@@ -158,4 +162,8 @@ h1.site-title {
 
 .slideshow-nav.right {
   right: 0;
+}
+
+header {
+  padding-top: 40px;
 }
