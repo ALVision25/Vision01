@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Antwerp Inn</title>
-  <link rel="stylesheet" href="style.css?v=dev19" />
+  <link rel="stylesheet" href="style.css?v=dev20?v=dev16" />
   <link rel="icon" type="image/png" href="favicon.png" />
 </head>
 <body>
@@ -27,9 +27,11 @@
   </header>
 
   <main class="HomePage">
-    <div class="slideshow-wrapper">
-      <div class="slideshow-nav left">&#10094;</div>
-      <div class="slideshow-nav right">&#10095;</div>
+    
+        <div class="slideshow-wrapper">
+          <div class="slideshow-nav left">&#10094;</div>
+          <div class="slideshow-nav right">&#10095;</div>
+        
       <img src="slide1.jpg" class="slideshow-image visible" alt="Slide 1">
       <img src="slide2.jpg" class="slideshow-image" alt="Slide 2">
     </div>
@@ -42,19 +44,16 @@
       "slide1.jpg", "slide2.jpg", "slide3.jpg", "slide4.jpg", "slide5.jpg", "slide6.jpg",
       "slide7.jpg", "slide8.jpg", "slide9.jpg", "slide10.jpg", "slide11.jpg", "slide12.jpg"
     ];
-
-    let current = parseInt(localStorage.getItem("slideshowIndex")) || 2;
+    let current = 2;
     let showingFirst = true;
     const displayDuration = 14000;
 
     const img1 = document.querySelectorAll(".slideshow-image")[0];
     const img2 = document.querySelectorAll(".slideshow-image")[1];
 
-    img1.src = images[(current - 2 + images.length) % images.length];
-    img2.src = images[(current - 1 + images.length) % images.length];
-
     function crossfadeImages() {
       const nextImage = images[current];
+      current = (current + 1) % images.length;
 
       if (showingFirst) {
         img2.src = nextImage;
@@ -67,22 +66,21 @@
       }
 
       showingFirst = !showingFirst;
-
-      localStorage.setItem("slideshowIndex", current === 0 ? images.length - 1 : current - 1);
-      current = (current + 1) % images.length;
     }
 
-    const manualAdvance = (direction) => {
-      current = (direction === 1)
-        ? (current + 1) % images.length
-        : (current - 1 + images.length) % images.length;
-      crossfadeImages();
-    };
+    
+        const manualAdvance = (direction) => {
+          current = (direction === 1)
+            ? (current + 1) % images.length
+            : (current - 1 + images.length) % images.length;
+          crossfadeImages();
+        };
 
-    document.querySelector(".slideshow-nav.left").addEventListener("click", () => manualAdvance(-1));
-    document.querySelector(".slideshow-nav.right").addEventListener("click", () => manualAdvance(1));
+        document.querySelector(".slideshow-nav.left").addEventListener("click", () => manualAdvance(-1));
+        document.querySelector(".slideshow-nav.right").addEventListener("click", () => manualAdvance(1));
 
-    setInterval(crossfadeImages, displayDuration);
+        setInterval(crossfadeImages, displayDuration);
+        
 
     document.getElementById("menu-toggle").addEventListener("click", () => {
       document.getElementById("menu").classList.toggle("active");
