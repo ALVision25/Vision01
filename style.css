@@ -9,147 +9,112 @@
 
 body {
   margin: 0;
-  background-color: #000;
-  color: #f3e9d2;
-  font-family: Georgia, serif;
-  text-align: center;
+  font-family: serif;
+  background-color: black;
+  overflow-x: hidden;
 }
 
-/* Homepage-specific styling */
-.HomePage h1.site-title {
+h1.site-title {
   font-family: 'OldEnglishFive', serif;
-  font-size: 2em;
+  font-size: 2.5em;
+  color: #f5f1e7;
+  text-align: center;
   margin-top: 20px;
 }
 
-.HomePage .slideshow-wrapper {
+.slideshow-wrapper {
   position: relative;
-  width: 600px;
-  height: 400px;
-  margin: 40px auto;
-  overflow: hidden;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.HomePage .slideshow-image {
+.slideshow-image {
   position: absolute;
   top: 0;
   left: 0;
-  width: 600px;
-  height: 400px;
-  object-fit: cover;
+  width: 100%;
   opacity: 0;
-  z-index: 1;
-  transition: opacity 12s ease-in-out;
+  transition: opacity 2s ease-in-out;
 }
 
-.HomePage .slideshow-image.visible {
+.slideshow-image.visible {
   opacity: 1;
-  z-index: 2;
 }
 
-/* Hamburger menu (shared) */
+.slideshow-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2.5em;
+  color: rgba(255, 255, 255, 0);
+  z-index: 5;
+  cursor: pointer;
+  transition: color 0.4s ease;
+  user-select: none;
+  padding: 10px;
+}
+
+.slideshow-wrapper:hover .slideshow-nav {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.slideshow-nav.left {
+  left: 0;
+}
+
+.slideshow-nav.right {
+  right: 0;
+}
+
 .menu-toggle {
   position: absolute;
   top: 20px;
   right: 20px;
-  width: 30px;
-  height: 22px;
+  z-index: 10;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  z-index: 999;
 }
 
 .menu-toggle .bar {
-  height: 4px;
-  background-color: #f3e9d2;
-  border-radius: 2px;
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  margin: 4px 0;
 }
 
 .menu {
-  position: fixed;
-  top: 0;
-  right: -200px;
-  width: 200px;
-  height: 100%;
+  display: none;
+  position: absolute;
+  top: 60px;
+  right: 20px;
   background-color: #111;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  transition: right 0.3s ease-in-out;
-  z-index: 998;
+  padding: 10px;
+  z-index: 10;
 }
 
 .menu.active {
-  right: 0;
+  display: block;
 }
 
 .menu ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .menu ul li {
-  margin: 20px 0;
+  margin: 10px 0;
 }
 
 .menu ul li a {
-  color: #f3e9d2;
+  color: white;
   text-decoration: none;
-  font-family: 'OldEnglishFive', serif;
-  font-size: 1.2em;
 }
 
-/* Story page-specific styling */
-.Story {
-  max-width: 900px;
-  margin: 80px auto;
-  text-align: left;
-  padding: 0 20px;
-  line-height: 1.6;
-}
-
-.Story h1 {
-  font-family: 'OldEnglishFive', serif;
-  font-size: 28px;
-  margin-bottom: 10px;
-}
-
-.Story .story-image {
-  float: left;
-  max-width: 25%;
-  margin: 0 20px 20px 0;
-  height: auto;
-}
-
-.Story .break-image {
-  display: block;
-  width: 100%;
-  margin: 30px 0;
-}
-
-
-h1.site-title {
-  font-family: 'OldEnglishFive', serif;
-}
-
-
-/* Responsive design for mobile */
 @media (max-width: 768px) {
-  body {
-    overflow-x: hidden;
-  }
-
-  .slideshow-wrapper {
-    width: 100%;
-    height: auto;
-  }
-
-  .slideshow-image {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
+  h1.site-title {
+    font-size: 1.6em;
+    margin-top: 10px;
   }
 
   .menu-toggle {
@@ -158,24 +123,7 @@ h1.site-title {
     transform: scale(0.9);
   }
 
-  .menu {
-    width: 100%;
-  }
-
-  h1.site-title {
-    font-size: 1.6em;
-    margin-top: 10px;
-    text-align: center;
-  }
-
-  .Story .story-image {
-    float: none;
-    display: block;
-    max-width: 100%;
-    margin: 20px auto;
-  }
-
-  .Story {
-    padding: 10px;
+  .slideshow-image {
+    object-fit: cover;
   }
 }
