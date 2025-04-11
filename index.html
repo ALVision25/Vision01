@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Antwerp Inn</title>
-  <link rel="stylesheet" href="style.css?v=dev16" />
+  <link rel="stylesheet" href="style.css?v=dev17" />
   <link rel="icon" type="image/png" href="favicon.png" />
 </head>
 <body>
@@ -40,15 +40,20 @@
       "slide1.jpg", "slide2.jpg", "slide3.jpg", "slide4.jpg", "slide5.jpg", "slide6.jpg",
       "slide7.jpg", "slide8.jpg", "slide9.jpg", "slide10.jpg", "slide11.jpg", "slide12.jpg"
     ];
-    let current = 2;
+
+    let current = parseInt(localStorage.getItem("slideshowIndex")) || 2;
     let showingFirst = true;
     const displayDuration = 14000;
 
     const img1 = document.querySelectorAll(".slideshow-image")[0];
     const img2 = document.querySelectorAll(".slideshow-image")[1];
 
+    img1.src = images[(current - 2 + images.length) % images.length];
+    img2.src = images[(current - 1 + images.length) % images.length];
+
     function crossfadeImages() {
       const nextImage = images[current];
+      localStorage.setItem("slideshowIndex", current);
       current = (current + 1) % images.length;
 
       if (showingFirst) {
