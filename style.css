@@ -18,7 +18,7 @@ body {
 /* Homepage-specific styling */
 .HomePage h1.site-title {
   font-family: 'OldEnglishFive', serif;
-  font-size: 3em;
+  font-size: 2em;
   margin-top: 20px;
 }
 
@@ -132,4 +132,50 @@ body {
 
 h1.site-title {
   font-family: 'OldEnglishFive', serif;
+}
+
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .slideshow-wrapper {
+    width: 100%;
+    height: auto;
+  }
+
+  .slideshow-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+
+  .menu-toggle {
+    top: 10px;
+    right: 10px;
+    transform: scale(0.9);
+  }
+
+  .menu {
+    width: 100%;
+  }
+
+  h1.site-title {
+    font-size: 1.6em;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  .Story .story-image {
+    float: none;
+    display: block;
+    max-width: 100%;
+    margin: 20px auto;
+  }
+
+  .Story {
+    padding: 10px;
+  }
 }
