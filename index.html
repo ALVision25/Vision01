@@ -5,86 +5,53 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Antwerp Inn</title>
-  <link rel="stylesheet" href="style.css?v=dev20?v=dev16" />
-  <link rel="icon" type="image/png" href="favicon.png" />
-</head>
-<body>
-  <header>
-    <h1 class="site-title" style="color: #e2b768; margin-top: 1em;">The Antwerp Inn 1845</h1>
-    <div class="menu-toggle" id="menu-toggle">
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-    </div>
-    <nav class="menu" id="menu">
-      <ul>
-        <li><a href="fortdrum.html">Fort Drum</a></li>
-        <li><a href="antwerpvillage.html">Antwerp Village</a></li>
-        <li><a href="mcallister.html">McAllister House</a></li>
-        <li><a href="index.html">The Antwerp Inn</a></li>
-      </ul>
-    </nav>
-  </header>
-
-  <main class="HomePage">
-    
-        <div class="slideshow-wrapper">
-          <div class="slideshow-nav left">&#10094;</div>
-          <div class="slideshow-nav right">&#10095;</div>
-        
-      <img src="slide1.jpg" class="slideshow-image visible" alt="Slide 1">
-      <img src="slide2.jpg" class="slideshow-image" alt="Slide 2">
-    </div>
-  </main>
-
-  <script>
-    const images = [
-      "cropped_house_day.jpg", "cropped_door_view.jpg", "cropped_dining_room_day.jpg",
-      "cropped_hallway.jpg", "cropped_sunset_window.jpg", "cropped_house_side.jpg", "cropped_house_night.jpg",
-      "slide1.jpg", "slide2.jpg", "slide3.jpg", "slide4.jpg", "slide5.jpg", "slide6.jpg",
-      "slide7.jpg", "slide8.jpg", "slide9.jpg", "slide10.jpg", "slide11.jpg", "slide12.jpg"
-    ];
-    let current = 2;
-    let showingFirst = true;
-    const displayDuration = 14000;
-
-    const img1 = document.querySelectorAll(".slideshow-image")[0];
-    const img2 = document.querySelectorAll(".slideshow-image")[1];
-
-    function crossfadeImages() {
-      const nextImage = images[current];
-      current = (current + 1) % images.length;
-
-      if (showingFirst) {
-        img2.src = nextImage;
-        img2.classList.add("visible");
-        img1.classList.remove("visible");
-      } else {
-        img1.src = nextImage;
-        img1.classList.add("visible");
-        img2.classList.remove("visible");
-      }
-
-      showingFirst = !showingFirst;
+  <link rel="stylesheet" href="style.css?v=dev24" />
+  <link rel="preload" href="OldEnglishFive.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
     }
 
-    
-        const manualAdvance = (direction) => {
-          current = (direction === 1)
-            ? (current + 1) % images.length
-            : (current - 1 + images.length) % images.length;
-          crossfadeImages();
-        };
+    /* Top-right fixed hamburger menu */
+    .menu-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
 
-        document.querySelector(".slideshow-nav.left").addEventListener("click", () => manualAdvance(-1));
-        document.querySelector(".slideshow-nav.right").addEventListener("click", () => manualAdvance(1));
+    .menu-toggle span {
+      display: block;
+      width: 25px;
+      height: 3px;
+      background-color: white;
+      margin: 5px 0;
+    }
 
-        setInterval(crossfadeImages, displayDuration);
-        
+    /* Unwrapped site title */
+    .site-title {
+      font-family: 'OldEnglishFive', serif;
+      font-size: 2.5em;
+      color: #f5f1e7; /* Matched from index_comp rendering */
+      text-align: center;
+      margin-top: 2em;
+      margin-bottom: 0.5em;
+      line-height: 1.1;
+    }
+  </style>
+</head>
+<body>
 
-    document.getElementById("menu-toggle").addEventListener("click", () => {
-      document.getElementById("menu").classList.toggle("active");
-    });
-  </script>
+  <!-- ROW 1: Hamburger Menu -->
+  <div class="menu-toggle" id="menu-toggle">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- ROW 2: Title -->
+  <h1 class="site-title">The Antwerp Inn 1845</h1>
+
 </body>
 </html>
