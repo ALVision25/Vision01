@@ -24,7 +24,7 @@
             width: 100%;
             height: auto;
             display: block;
-            transition: opacity 1.5s ease-in-out;
+            transition: opacity 2.25s ease-in-out;
         }
         #slide-back {
             position: absolute;
@@ -64,7 +64,7 @@
         const front = document.getElementById('slide-front');
         const back  = document.getElementById('slide-back');
 
-        // Preload all images
+        // Preload all images up front so crossfade never waits on network
         slides.forEach(s => { const i = new Image(); i.src = s; });
 
         function nextSlide() {
@@ -72,15 +72,15 @@
             animating = true;
             const next = (current + 1) % slides.length;
 
+            // Load next image into back layer, then crossfade on next paint
             back.src = slides[next];
-
-            function doFade() {
-                // True crossfade: front fades out, back fades in simultaneously
+            requestAnimationFrame(() => {
+                // True crossfade: both layers transition simultaneously
                 front.style.opacity = '0';
                 back.style.opacity  = '1';
 
                 setTimeout(() => {
-                    // Quietly reset: front takes the new image, back hides instantly
+                    // Snap front to the new image invisibly, then restore
                     front.style.transition = 'none';
                     front.src = slides[next];
                     front.style.opacity = '1';
@@ -88,16 +88,14 @@
                     back.style.opacity = '0';
 
                     requestAnimationFrame(() => requestAnimationFrame(() => {
-                        front.style.transition = 'opacity 1.5s ease-in-out';
-                        back.style.transition  = 'opacity 1.5s ease-in-out';
+                        front.style.transition = 'opacity 2.25s ease-in-out';
+                        back.style.transition  = 'opacity 2.25s ease-in-out';
                     }));
 
                     current = next;
                     animating = false;
-                }, 1600);
-            }
-
-            back.complete ? doFade() : (back.onload = doFade);
+                }, 2350);
+            });
         }
 
         setInterval(nextSlide, 5000);
