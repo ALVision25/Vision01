@@ -72,10 +72,14 @@
             'slide5.jpg','slide6.jpg','slide7.jpg','slide8.jpg',
             'slide9.jpg','slide10.jpg','slide11.jpg','slide12.jpg'
         ];
-        const _stored = localStorage.getItem('slideshowConfig');
-        const slides = (_stored && JSON.parse(_stored).active.length)
-            ? JSON.parse(_stored).active
-            : _defaults;
+        let slides;
+        try {
+            const _stored = localStorage.getItem('slideshowConfig');
+            const _cfg = _stored ? JSON.parse(_stored) : null;
+            slides = (_cfg && _cfg.active && _cfg.active.length) ? _cfg.active : _defaults;
+        } catch(e) {
+            slides = _defaults;
+        }
         let current = 0;
         let animating = false;
         const front = document.getElementById('slide-front');

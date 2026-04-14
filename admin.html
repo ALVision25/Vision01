@@ -306,7 +306,12 @@
         }
 
         function saveConfig() {
-            localStorage.setItem('slideshowConfig', JSON.stringify(cfg));
+            try {
+                localStorage.setItem('slideshowConfig', JSON.stringify(cfg));
+                return true;
+            } catch(e) {
+                return false;
+            }
         }
 
         let cfg = loadConfig();
@@ -464,10 +469,17 @@
 
         // ── Commit to site ─────────────────────────────────────
         document.getElementById('btn-commit').addEventListener('click', () => {
-            saveConfig();
+            const ok = saveConfig();
             const msg = document.getElementById('save-msg');
+            if (ok) {
+                msg.textContent = '✓ Saved — slideshow is now live on the homepage.';
+                msg.style.color = '#7ab87a';
+            } else {
+                msg.textContent = '✗ Save failed — uploaded images may be too large for browser storage. Try using fewer or smaller images.';
+                msg.style.color = '#d07050';
+            }
             msg.style.display = 'inline';
-            setTimeout(() => msg.style.display = 'none', 5000);
+            setTimeout(() => msg.style.display = 'none', 7000);
         });
 
         // ── Init ───────────────────────────────────────────────
