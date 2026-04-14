@@ -21,9 +21,10 @@ body {
 
 .site-title-unwrapped {
     font-family: 'OldEnglishFive', serif;
-    font-size: 2.5em;
-    color: #e7d8b1; /* Soft off-white from index_comp */
+    font-size: clamp(1rem, 4.5vw, 2.5rem);
+    color: #e7d8b1;
     margin: 0;
+    white-space: nowrap;
 }
 
 .menu-toggle {
