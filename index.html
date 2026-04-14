@@ -95,13 +95,25 @@
         front.style.transition = 'opacity ' + fadeSec + 's ease-in-out';
         back.style.transition  = 'opacity ' + fadeSec + 's ease-in-out';
 
+        // Seed front from the saved config so the first image matches the list
+        if (slides.length > 0) front.src = slides[0];
+
         // Preload all images up front so crossfade never waits on network
         slides.forEach(s => { const i = new Image(); i.src = s; });
 
         function nextSlide() {
+            if (slides.length < 2) return;   // nothing to cycle
             if (animating) return;
             animating = true;
             const next = (current + 1) % slides.length;
+
+            back.onerror = () => {
+                // Image failed to load — skip it silently
+                back.onerror = null;
+                current = next;
+                animating = false;
+            };
+            back.onload = null;
 
             back.src = slides[next];
             requestAnimationFrame(() => {
@@ -109,6 +121,7 @@
                 back.style.opacity  = '1';
 
                 setTimeout(() => {
+                    back.onerror = null;
                     front.style.transition = 'none';
                     front.src = slides[next];
                     front.style.opacity = '1';
@@ -126,7 +139,7 @@
             });
         }
 
-        setInterval(nextSlide, displayTime);
+        if (slides.length > 1) setInterval(nextSlide, displayTime);
 
         // Hamburger menu
         const toggle  = document.getElementById('menu-toggle');
