@@ -21,8 +21,8 @@ body {
     position: relative;
 }
 
-/* Invisible left ghost keeps the title truly centered */
-.site-header-unwrapped::before {
+/* Invisible right ghost keeps the title truly centered */
+.site-header-unwrapped::after {
     content: '';
     display: block;
     width: 2em;
@@ -48,7 +48,7 @@ body {
     border: none;
     color: #e7d8b1;
     cursor: pointer;
-    text-align: right;
+    text-align: left;
 }
 
 .slideshow {
@@ -60,18 +60,18 @@ body {
 .side-menu {
     position: fixed;
     top: 0;
-    right: -320px;
+    left: -320px;
     width: 300px;
     height: 100%;
     background-color: #1a120c;
     padding: 3em 2em;
     box-sizing: border-box;
-    transition: right 0.35s ease;
+    transition: left 0.35s ease;
     z-index: 1000;
-    box-shadow: -4px 0 20px rgba(0,0,0,0.6);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.6);
 }
 .side-menu.open {
-    right: 0;
+    left: 0;
 }
 .side-menu ul {
     list-style: none;
@@ -101,6 +101,7 @@ body {
     font-size: 1.4em;
     cursor: pointer;
 }
+
 .menu-overlay {
     display: none;
     position: fixed;
