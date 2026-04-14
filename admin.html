@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin — The Antwerp Inn 1845</title>
+    <link rel="stylesheet" href="style.css?v=devtest124" />
+    <style>
+        .admin-panel {
+            max-width: 960px;
+            margin: 2em auto;
+            padding: 0 1.5em 4em;
+        }
+        .admin-section {
+            margin-bottom: 2.5em;
+        }
+        .admin-section h3 {
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-size: 1.2rem;
+            font-weight: normal;
+            margin: 0 0 0.4em;
+            padding-bottom: 0.5em;
+            border-bottom: 1px solid #2a1e14;
+        }
+        .section-note {
+            color: #666;
+            font-size: 0.85rem;
+            margin: 0 0 1em;
+        }
+
+        /* Active slide list */
+        .slide-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .slide-item {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+            padding: 0.6em 1em;
+            margin-bottom: 0.5em;
+            cursor: grab;
+            transition: border-color 0.15s, opacity 0.15s;
+            user-select: none;
+        }
+        .slide-item:active { cursor: grabbing; }
+        .slide-item.dragging { opacity: 0.35; }
+        .slide-item.drag-over { border-color: #e7d8b1; background: #221810; }
+        .drag-handle {
+            color: #444;
+            font-size: 1.1em;
+            flex-shrink: 0;
+        }
+        .slide-thumb {
+            width: 90px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 5px;
+            flex-shrink: 0;
+        }
+        .slide-name {
+            flex: 1;
+            color: #bbb;
+            font-size: 0.9rem;
+        }
+        .btn-remove {
+            background: none;
+            border: 1px solid #3a2010;
+            color: #a05030;
+            border-radius: 4px;
+            padding: 0.3em 0.8em;
+            cursor: pointer;
+            font-size: 0.82rem;
+            flex-shrink: 0;
+        }
+        .btn-remove:hover { background: #2a1008; color: #d07050; }
+        .empty-note {
+            color: #555;
+            font-style: italic;
+            font-size: 0.9rem;
+            padding: 1em 0;
+        }
+
+        /* Available grid */
+        .available-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.8em;
+        }
+        .avail-item {
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .avail-item img {
+            width: 100%;
+            height: 85px;
+            object-fit: cover;
+            display: block;
+        }
+        .avail-item .avail-label {
+            color: #888;
+            font-size: 0.75rem;
+            padding: 0.3em 0.5em;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .btn-add {
+            display: block;
+            width: 100%;
+            background: #221810;
+            border: none;
+            border-top: 1px solid #2a1e14;
+            color: #e7d8b1;
+            padding: 0.45em;
+            cursor: pointer;
+            font-size: 0.82rem;
+        }
+        .btn-add:hover { background: #2e2010; }
+
+        /* Upload */
+        .upload-area {
+            border: 2px dashed #2a1e14;
+            border-radius: 8px;
+            padding: 1.8em;
+            text-align: center;
+            color: #555;
+            transition: border-color 0.2s;
+        }
+        .upload-area:hover { border-color: #554433; }
+        .upload-area input[type=file] { display: none; }
+        .upload-label {
+            color: #e7d8b1;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.95rem;
+        }
+        .upload-note {
+            color: #555;
+            font-size: 0.82rem;
+            margin-top: 0.5em;
+        }
+
+        /* Preview */
+        .preview-wrap {
+            position: relative;
+            max-width: 640px;
+            margin: 0 auto;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+            background: #000;
+        }
+        .preview-wrap.active { display: block; }
+        .preview-wrap img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: opacity 0.4s;
+        }
+        .preview-counter {
+            position: absolute;
+            bottom: 0.6em;
+            right: 0.8em;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.8rem;
+        }
+        #preview-placeholder { color: #555; font-size: 0.9rem; }
+
+        /* Actions */
+        .admin-actions {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            padding-top: 1.5em;
+            border-top: 1px solid #2a1e14;
+            flex-wrap: wrap;
+        }
+        .btn-action {
+            padding: 0.75em 2em;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-preview-action {
+            background: #221810;
+            color: #e7d8b1;
+            border: 1px solid #3a2a1a;
+        }
+        .btn-preview-action:hover { background: #2e2010; }
+        .btn-commit {
+            background: #e7d8b1;
+            color: #0a0705;
+            font-weight: bold;
+        }
+        .btn-commit:hover { background: #fff; }
+        .save-msg {
+            color: #7ab87a;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+<body class="subpage">
+
+    <header class="site-header-unwrapped">
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+    </header>
+
+    <div class="subpage-subtitle-wrap">
+        <h2 class="subpage-subtitle">Admin</h2>
+    </div>
+
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="index.html">The Antwerp Inn</a></li>
+            <li><a href="fort-drum.html">Fort Drum</a></li>
+            <li><a href="antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="mcallister-house.html">McAllister House</a></li>
+            <li><a href="north-country.html">North Country</a></li>
+            <li><a href="members.html">Members</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="admin-panel">
+
+        <!-- Active Slideshow -->
+        <div class="admin-section">
+            <h3>Slideshow — Active Images</h3>
+            <p class="section-note">Drag rows to reorder. Click Remove to pull an image from the slideshow.</p>
+            <ul class="slide-list" id="slide-list"></ul>
+        </div>
+
+        <!-- Available Pool -->
+        <div class="admin-section" id="available-section">
+            <h3>Available Images</h3>
+            <p class="section-note">Click Add to include an image in the slideshow.</p>
+            <div class="available-grid" id="available-grid"></div>
+        </div>
+
+        <!-- Upload -->
+        <div class="admin-section">
+            <h3>Add New Image</h3>
+            <div class="upload-area">
+                <input type="file" id="file-upload" accept="image/*" multiple />
+                <label for="file-upload" class="upload-label">Choose images from your computer</label>
+                <p class="upload-note">Selected images are added to the slideshow immediately.</p>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="admin-section">
+            <h3>Preview</h3>
+            <p id="preview-placeholder">Click Preview Slideshow below to see your current order.</p>
+            <div class="preview-wrap" id="preview-wrap">
+                <img id="preview-img" src="" alt="Preview" />
+                <span class="preview-counter" id="preview-counter"></span>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="admin-actions">
+            <button class="btn-action btn-preview-action" id="btn-preview">Preview Slideshow</button>
+            <button class="btn-action btn-commit" id="btn-commit">Commit to Site</button>
+            <span class="save-msg" id="save-msg">&#10003; Saved — slideshow is now live on the homepage.</span>
+        </div>
+
+    </main>
+
+    <script>
+        // ── Nav ────────────────────────────────────────────────
+        const toggle  = document.getElementById('menu-toggle');
+        const sideMenu = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const closeBtn = document.getElementById('menu-close');
+        toggle.addEventListener('click', () => { sideMenu.classList.add('open'); overlay.classList.add('open'); });
+        closeBtn.addEventListener('click', () => { sideMenu.classList.remove('open'); overlay.classList.remove('open'); });
+        overlay.addEventListener('click', () => { sideMenu.classList.remove('open'); overlay.classList.remove('open'); });
+
+        // ── Data ───────────────────────────────────────────────
+        const DEFAULTS = [
+            'slide1.jpg','slide2.jpg','slide3.jpg','slide4.jpg',
+            'slide5.jpg','slide6.jpg','slide7.jpg','slide8.jpg',
+            'slide9.jpg','slide10.jpg','slide11.jpg','slide12.jpg'
+        ];
+
+        function loadConfig() {
+            try {
+                const s = localStorage.getItem('slideshowConfig');
+                return s ? JSON.parse(s) : { active: [...DEFAULTS], custom: [] };
+            } catch(e) {
+                return { active: [...DEFAULTS], custom: [] };
+            }
+        }
+
+        function saveConfig() {
+            localStorage.setItem('slideshowConfig', JSON.stringify(cfg));
+        }
+
+        let cfg = loadConfig();
+
+        // ── Helpers ────────────────────────────────────────────
+        function shortName(src) {
+            if (src.startsWith('data:')) return 'uploaded image';
+            return src;
+        }
+
+        // ── Render active list ─────────────────────────────────
+        function renderActive() {
+            const list = document.getElementById('slide-list');
+            list.innerHTML = '';
+
+            if (cfg.active.length === 0) {
+                list.innerHTML = '<li class="empty-note">No images in slideshow. Add some below.</li>';
+            } else {
+                cfg.active.forEach((src, i) => {
+                    const li = document.createElement('li');
+                    li.className = 'slide-item';
+                    li.draggable = true;
+                    li.dataset.idx = i;
+                    li.innerHTML = `
+                        <span class="drag-handle">&#9776;</span>
+                        <img class="slide-thumb" src="${src}" alt="" />
+                        <span class="slide-name">${shortName(src)}</span>
+                        <button class="btn-remove" data-src="${src}">Remove</button>
+                    `;
+                    list.appendChild(li);
+                });
+                setupDrag();
+            }
+
+            renderAvailable();
+        }
+
+        // ── Drag & drop ────────────────────────────────────────
+        let dragSrc = null;
+
+        function setupDrag() {
+            document.querySelectorAll('.slide-item').forEach(item => {
+                item.addEventListener('dragstart', e => {
+                    dragSrc = item;
+                    item.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                item.addEventListener('dragend', () => {
+                    item.classList.remove('dragging');
+                    document.querySelectorAll('.slide-item').forEach(i => i.classList.remove('drag-over'));
+                });
+                item.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    item.classList.add('drag-over');
+                });
+                item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+                item.addEventListener('drop', e => {
+                    e.preventDefault();
+                    if (dragSrc && dragSrc !== item) {
+                        const from = parseInt(dragSrc.dataset.idx);
+                        const to   = parseInt(item.dataset.idx);
+                        const moved = cfg.active.splice(from, 1)[0];
+                        cfg.active.splice(to, 0, moved);
+                        renderActive();
+                    }
+                });
+            });
+
+            // Remove buttons
+            document.querySelectorAll('.btn-remove').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    cfg.active = cfg.active.filter(s => s !== btn.dataset.src);
+                    renderActive();
+                });
+            });
+        }
+
+        // ── Available pool ─────────────────────────────────────
+        function renderAvailable() {
+            const section = document.getElementById('available-section');
+            const grid    = document.getElementById('available-grid');
+            const all     = [...DEFAULTS, ...cfg.custom];
+            const pool    = all.filter(s => !cfg.active.includes(s));
+
+            if (pool.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = 'block';
+            grid.innerHTML = '';
+            pool.forEach(src => {
+                const div = document.createElement('div');
+                div.className = 'avail-item';
+                div.innerHTML = `
+                    <img src="${src}" alt="" />
+                    <div class="avail-label">${shortName(src)}</div>
+                    <button class="btn-add" data-src="${src}">+ Add to Slideshow</button>
+                `;
+                grid.appendChild(div);
+            });
+            grid.querySelectorAll('.btn-add').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    cfg.active.push(btn.dataset.src);
+                    renderActive();
+                });
+            });
+        }
+
+        // ── File upload ────────────────────────────────────────
+        document.getElementById('file-upload').addEventListener('change', function() {
+            Array.from(this.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const url = e.target.result;
+                    cfg.custom.push(url);
+                    cfg.active.push(url);
+                    renderActive();
+                };
+                reader.readAsDataURL(file);
+            });
+            this.value = '';
+        });
+
+        // ── Preview slideshow ──────────────────────────────────
+        let previewTimer = null, previewIdx = 0;
+
+        document.getElementById('btn-preview').addEventListener('click', () => {
+            if (cfg.active.length === 0) return;
+            clearInterval(previewTimer);
+            previewIdx = 0;
+
+            const wrap   = document.getElementById('preview-wrap');
+            const img    = document.getElementById('preview-img');
+            const ctr    = document.getElementById('preview-counter');
+            const ph     = document.getElementById('preview-placeholder');
+
+            wrap.classList.add('active');
+            ph.style.display = 'none';
+
+            function showSlide(i) {
+                img.style.opacity = 0;
+                setTimeout(() => {
+                    img.src = cfg.active[i];
+                    img.style.opacity = 1;
+                    ctr.textContent = (i + 1) + ' / ' + cfg.active.length;
+                }, 200);
+            }
+
+            showSlide(0);
+            previewTimer = setInterval(() => {
+                previewIdx = (previewIdx + 1) % cfg.active.length;
+                showSlide(previewIdx);
+            }, 2500);
+        });
+
+        // ── Commit to site ─────────────────────────────────────
+        document.getElementById('btn-commit').addEventListener('click', () => {
+            saveConfig();
+            const msg = document.getElementById('save-msg');
+            msg.style.display = 'inline';
+            setTimeout(() => msg.style.display = 'none', 5000);
+        });
+
+        // ── Init ───────────────────────────────────────────────
+        renderActive();
+    </script>
+
+</body>
+</html>

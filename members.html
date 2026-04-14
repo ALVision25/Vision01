@@ -3,8 +3,39 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Antwerp Village — The Antwerp Inn 1845</title>
+    <title>Members — The Antwerp Inn 1845</title>
     <link rel="stylesheet" href="style.css?v=devtest124" />
+    <style>
+        .members-card {
+            max-width: 500px;
+            margin: 3em auto;
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 12px;
+            padding: 2.5em 2em;
+            text-align: center;
+        }
+        .members-card p {
+            color: #aaa;
+            line-height: 1.7;
+            margin-bottom: 2em;
+        }
+        .login-btn {
+            display: inline-block;
+            background: #e7d8b1;
+            color: #0a0705;
+            font-family: 'OldEnglishFive', serif;
+            font-size: 1.1rem;
+            padding: 0.7em 2.2em;
+            border-radius: 6px;
+            text-decoration: none;
+            letter-spacing: 0.03em;
+            transition: background 0.2s;
+        }
+        .login-btn:hover {
+            background: #fff;
+        }
+    </style>
 </head>
 <body class="subpage">
 
@@ -14,7 +45,7 @@
     </header>
 
     <div class="subpage-subtitle-wrap">
-        <h2 class="subpage-subtitle">Antwerp Village</h2>
+        <h2 class="subpage-subtitle">Members</h2>
     </div>
 
     <nav class="side-menu" id="side-menu" aria-hidden="true">
@@ -31,12 +62,9 @@
     <div class="menu-overlay" id="menu-overlay"></div>
 
     <main class="subpage-main">
-        <div class="subpage-article">
-            <img src="AntwerpVillage.jpg" alt="Antwerp Village" class="article-photo-left" />
-            <h3 class="article-title">Antwerp Village</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus finibus justo in leo sodales, nec consectetur lorem placerat. Curabitur porttitor nunc id nulla dictum, nec ullamcorper nisl vulputate. Suspendisse interdum velit eget augue consequat, a iaculis nisl facilisis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
-            <p>Quisque commodo risus non orci sollicitudin, at lobortis sapien feugiat. Aliquam erat volutpat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Proin vitae diam in tortor porttitor dictum. Morbi non lorem tincidunt, convallis magna ut, interdum sapien. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, nec aliquam nisl nisl sit amet nisl.</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus finibus justo in leo sodales, nec consectetur lorem placerat. Curabitur porttitor nunc id nulla dictum, nec ullamcorper nisl vulputate. Suspendisse interdum velit eget augue consequat, a iaculis nisl facilisis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Quisque commodo risus non orci sollicitudin, at lobortis sapien feugiat. Aliquam erat volutpat.</p>
+        <div class="members-card">
+            <p>This area is for site administrators and members. More features coming soon.</p>
+            <a href="admin.html" class="login-btn">Admin Login</a>
         </div>
     </main>
 
@@ -45,10 +73,8 @@
         const menu    = document.getElementById('side-menu');
         const overlay = document.getElementById('menu-overlay');
         const close   = document.getElementById('menu-close');
-
         function openMenu()  { menu.classList.add('open'); overlay.classList.add('open'); }
         function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('open'); }
-
         toggle.addEventListener('click', openMenu);
         close.addEventListener('click', closeMenu);
         overlay.addEventListener('click', closeMenu);

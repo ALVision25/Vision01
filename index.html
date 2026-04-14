@@ -52,6 +52,7 @@
             <li><a href="antwerp-village.html">Antwerp Village</a></li>
             <li><a href="mcallister-house.html">McAllister House</a></li>
             <li><a href="north-country.html">North Country</a></li>
+            <li><a href="members.html">Members</a></li>
         </ul>
     </nav>
     <div class="menu-overlay" id="menu-overlay"></div>
@@ -66,11 +67,15 @@
     </main>
 
     <script>
-        const slides = [
+        const _defaults = [
             'slide1.jpg','slide2.jpg','slide3.jpg','slide4.jpg',
             'slide5.jpg','slide6.jpg','slide7.jpg','slide8.jpg',
             'slide9.jpg','slide10.jpg','slide11.jpg','slide12.jpg'
         ];
+        const _stored = localStorage.getItem('slideshowConfig');
+        const slides = (_stored && JSON.parse(_stored).active.length)
+            ? JSON.parse(_stored).active
+            : _defaults;
         let current = 0;
         let animating = false;
         const front = document.getElementById('slide-front');
