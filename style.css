@@ -33,7 +33,7 @@ body {
     flex: 1;
     text-align: center;
     font-family: 'OldEnglishFive', serif;
-    font-size: clamp(1.1rem, 5vw, 3rem);
+    font-size: clamp(1.1rem, 5.8vw, 3.5rem);
     color: #e7d8b1;
     margin: 0;
     white-space: nowrap;
