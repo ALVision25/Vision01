@@ -111,3 +111,59 @@ body {
 .menu-overlay.open {
     display: block;
 }
+
+/* Subpage header — tighter bottom padding so subtitle sits close to title */
+body.subpage .site-header-unwrapped {
+    padding-bottom: 0.2em;
+}
+
+/* Subpage subtitle */
+.subpage-subtitle-wrap {
+    text-align: center;
+    margin: 0;
+    padding: 0 1em 0.8em;
+}
+
+.subpage-subtitle {
+    font-family: 'OldEnglishFive', serif;
+    font-size: clamp(0.9rem, 4vw, 2.4rem);
+    color: #f0ece0;
+    font-weight: normal;
+    margin: 0;
+    letter-spacing: 0.04em;
+}
+
+/* Subpage main content */
+.subpage-main {
+    max-width: 860px;
+    margin: 2em auto;
+    padding: 0 1.5em;
+    color: #ccc;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+/* ── Article Style A ───────────────────────────────────
+   Small photo floated left, title + text wraps around it.
+   Use class="subpage-article" on the container.
+   ───────────────────────────────────────────────────── */
+.subpage-article {
+    overflow: hidden;
+}
+
+.article-photo-left {
+    float: left;
+    width: 46%;
+    margin: 0.2em 1.4em 1em 0;
+    border-radius: 6px;
+    display: block;
+}
+
+.article-title {
+    font-family: 'OldEnglishFive', serif;
+    font-size: clamp(0.9rem, 2.5vw, 1.5rem);
+    color: #e7d8b1;
+    font-weight: normal;
+    margin: 0 0 0.5em 0;
+    letter-spacing: 0.03em;
+}

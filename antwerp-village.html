@@ -1,36 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antwerp Village</title>
-    <link rel="stylesheet" href="style.css?v=dev13">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Antwerp Village — The Antwerp Inn 1845</title>
+    <link rel="stylesheet" href="style.css?v=devtest124" />
 </head>
-<body>
-    <header>
-        <h1>Antwerp Village</h1>
-        <div class="menu-toggle" id="menu-toggle">
-            <span></span><span></span><span></span>
-        </div>
-        <nav class="nav-menu" id="nav-menu">
-            <ul>
-                <li><a href="fort-drum.html">Fort Drum</a></li>
-                <li><a href="antwerp-village.html">Antwerp Village</a></li>
-                <li><a href="mcallister-house.html">McAllister House</a></li>
-                <li><a href="index.html">Back to Home</a></li>
-            </ul>
-        </nav>
-    </header>
-    <div class="subpage-content">
-        <img src="slide5.jpg" class="subpage-image" alt="Antwerp Village">
-        <div class="subpage-text">Quisque commodo risus non orci sollicitudin, at lobortis sapien feugiat. Aliquam erat volutpat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.
+<body class="subpage">
 
-Proin vitae diam in tortor porttitor dictum. Morbi non lorem tincidunt, convallis magna ut, interdum sapien.</div>
+    <header class="site-header-unwrapped">
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+    </header>
+
+    <div class="subpage-subtitle-wrap">
+        <h2 class="subpage-subtitle">Antwerp Village</h2>
     </div>
+
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="index.html">The Antwerp Inn</a></li>
+            <li><a href="fort-drum.html">Fort Drum</a></li>
+            <li><a href="antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="mcallister-house.html">McAllister House</a></li>
+            <li><a href="north-country.html">North Country</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="subpage-main">
+        <div class="subpage-article">
+            <img src="AntwerpVillage.jpg" alt="Antwerp Village" class="article-photo-left" />
+            <h3 class="article-title">Antwerp Village</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus finibus justo in leo sodales, nec consectetur lorem placerat. Curabitur porttitor nunc id nulla dictum, nec ullamcorper nisl vulputate. Suspendisse interdum velit eget augue consequat, a iaculis nisl facilisis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
+            <p>Quisque commodo risus non orci sollicitudin, at lobortis sapien feugiat. Aliquam erat volutpat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae. Proin vitae diam in tortor porttitor dictum. Morbi non lorem tincidunt, convallis magna ut, interdum sapien. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, nec aliquam nisl nisl sit amet nisl.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus finibus justo in leo sodales, nec consectetur lorem placerat. Curabitur porttitor nunc id nulla dictum, nec ullamcorper nisl vulputate. Suspendisse interdum velit eget augue consequat, a iaculis nisl facilisis. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Quisque commodo risus non orci sollicitudin, at lobortis sapien feugiat. Aliquam erat volutpat.</p>
+        </div>
+    </main>
+
     <script>
-        document.getElementById("menu-toggle").addEventListener("click", () => {
-            document.getElementById("nav-menu").classList.toggle("active");
-        });
+        const toggle  = document.getElementById('menu-toggle');
+        const menu    = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const close   = document.getElementById('menu-close');
+
+        function openMenu()  { menu.classList.add('open'); overlay.classList.add('open'); }
+        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('open'); }
+
+        toggle.addEventListener('click', openMenu);
+        close.addEventListener('click', closeMenu);
+        overlay.addEventListener('click', closeMenu);
     </script>
+
 </body>
 </html>
