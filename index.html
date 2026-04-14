@@ -72,18 +72,28 @@
             'slide5.jpg','slide6.jpg','slide7.jpg','slide8.jpg',
             'slide9.jpg','slide10.jpg','slide11.jpg','slide12.jpg'
         ];
-        let slides;
+        let slides, displayTime, fadeTime;
         try {
             const _stored = localStorage.getItem('slideshowConfig');
             const _cfg = _stored ? JSON.parse(_stored) : null;
-            slides = (_cfg && _cfg.active && _cfg.active.length) ? _cfg.active : _defaults;
+            slides      = (_cfg && _cfg.active && _cfg.active.length) ? _cfg.active : _defaults;
+            displayTime = (_cfg && _cfg.displayTime) ? _cfg.displayTime : 5000;
+            fadeTime    = (_cfg && _cfg.fadeTime)    ? _cfg.fadeTime    : 2250;
         } catch(e) {
-            slides = _defaults;
+            slides      = _defaults;
+            displayTime = 5000;
+            fadeTime    = 2250;
         }
+
         let current = 0;
         let animating = false;
         const front = document.getElementById('slide-front');
         const back  = document.getElementById('slide-back');
+
+        // Apply configured fade duration
+        const fadeSec = (fadeTime / 1000).toFixed(3);
+        front.style.transition = 'opacity ' + fadeSec + 's ease-in-out';
+        back.style.transition  = 'opacity ' + fadeSec + 's ease-in-out';
 
         // Preload all images up front so crossfade never waits on network
         slides.forEach(s => { const i = new Image(); i.src = s; });
@@ -93,15 +103,12 @@
             animating = true;
             const next = (current + 1) % slides.length;
 
-            // Load next image into back layer, then crossfade on next paint
             back.src = slides[next];
             requestAnimationFrame(() => {
-                // True crossfade: both layers transition simultaneously
                 front.style.opacity = '0';
                 back.style.opacity  = '1';
 
                 setTimeout(() => {
-                    // Snap front to the new image invisibly, then restore
                     front.style.transition = 'none';
                     front.src = slides[next];
                     front.style.opacity = '1';
@@ -109,17 +116,17 @@
                     back.style.opacity = '0';
 
                     requestAnimationFrame(() => requestAnimationFrame(() => {
-                        front.style.transition = 'opacity 2.25s ease-in-out';
-                        back.style.transition  = 'opacity 2.25s ease-in-out';
+                        front.style.transition = 'opacity ' + fadeSec + 's ease-in-out';
+                        back.style.transition  = 'opacity ' + fadeSec + 's ease-in-out';
                     }));
 
                     current = next;
                     animating = false;
-                }, 2350);
+                }, fadeTime + 100);
             });
         }
 
-        setInterval(nextSlide, 5000);
+        setInterval(nextSlide, displayTime);
 
         // Hamburger menu
         const toggle  = document.getElementById('menu-toggle');

@@ -175,6 +175,65 @@
         }
         #preview-placeholder { color: #555; font-size: 0.9rem; }
 
+        /* Folder status */
+        .folder-status {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            padding: 0.8em 1em;
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+        }
+        .folder-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .folder-dot.connected    { background: #7ab87a; }
+        .folder-dot.disconnected { background: #666; }
+        .folder-path {
+            flex: 1;
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .btn-folder {
+            background: #221810;
+            border: 1px solid #3a2a1a;
+            color: #e7d8b1;
+            border-radius: 4px;
+            padding: 0.4em 1em;
+            cursor: pointer;
+            font-size: 0.82rem;
+            flex-shrink: 0;
+        }
+        .btn-folder:hover { background: #2e2010; }
+
+        /* Speed controls */
+        .speed-row {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            margin-bottom: 0.9em;
+        }
+        .speed-label {
+            color: #bbb;
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+        .speed-val {
+            color: #e7d8b1;
+            font-size: 0.9rem;
+            min-width: 38px;
+            text-align: right;
+        }
+        input[type=range] {
+            flex: 1;
+            accent-color: #e7d8b1;
+            cursor: pointer;
+        }
+
         /* Actions */
         .admin-actions {
             display: flex;
@@ -236,6 +295,17 @@
 
     <main class="admin-panel">
 
+        <!-- Project Folder -->
+        <div class="admin-section">
+            <h3>Project Folder</h3>
+            <p class="section-note">Connect the folder where this site lives so uploaded images are saved as real files (Chrome / Edge only). The browser will remember your choice.</p>
+            <div class="folder-status">
+                <span class="folder-dot disconnected" id="folder-dot"></span>
+                <span class="folder-path" id="folder-path">Not connected — uploads stored in browser memory only.</span>
+                <button class="btn-folder" id="btn-connect-folder">Connect Project Folder</button>
+            </div>
+        </div>
+
         <!-- Active Slideshow -->
         <div class="admin-section">
             <h3>Slideshow — Active Images</h3>
@@ -257,6 +327,21 @@
                 <input type="file" id="file-upload" accept="image/*" multiple />
                 <label for="file-upload" class="upload-label">Choose images from your computer</label>
                 <p class="upload-note">Selected images are added to the slideshow immediately.</p>
+            </div>
+        </div>
+
+        <!-- Speed Controls -->
+        <div class="admin-section">
+            <h3>Slideshow Speed</h3>
+            <div class="speed-row">
+                <span class="speed-label">Display time per image</span>
+                <input type="range" id="display-time" min="3" max="20" step="1" value="5" />
+                <span class="speed-val" id="display-val">5s</span>
+            </div>
+            <div class="speed-row">
+                <span class="speed-label">Crossfade duration</span>
+                <input type="range" id="fade-time" min="0.5" max="4" step="0.1" value="2.3" />
+                <span class="speed-val" id="fade-val">2.3s</span>
             </div>
         </div>
 
@@ -289,6 +374,99 @@
         closeBtn.addEventListener('click', () => { sideMenu.classList.remove('open'); overlay.classList.remove('open'); });
         overlay.addEventListener('click', () => { sideMenu.classList.remove('open'); overlay.classList.remove('open'); });
 
+        // ── IndexedDB — persist directory handle ───────────────
+        function openHandleDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('slideshowAdmin', 1);
+                req.onupgradeneeded = () => req.result.createObjectStore('handles');
+                req.onsuccess = () => resolve(req.result);
+                req.onerror  = () => reject(req.error);
+            });
+        }
+        async function storeHandle(h) {
+            const db = await openHandleDB();
+            return new Promise((resolve, reject) => {
+                const req = db.transaction('handles','readwrite').objectStore('handles').put(h, 'projectDir');
+                req.onsuccess = () => resolve();
+                req.onerror  = () => reject(req.error);
+            });
+        }
+        async function retrieveHandle() {
+            const db = await openHandleDB();
+            return new Promise((resolve, reject) => {
+                const req = db.transaction('handles','readonly').objectStore('handles').get('projectDir');
+                req.onsuccess = () => resolve(req.result || null);
+                req.onerror  = () => reject(req.error);
+            });
+        }
+
+        // ── Folder connection ──────────────────────────────────
+        let folderHandle = null;
+
+        function updateFolderUI(name, connected) {
+            document.getElementById('folder-dot').className  = 'folder-dot ' + (connected ? 'connected' : 'disconnected');
+            document.getElementById('folder-path').textContent = connected
+                ? 'Connected: ' + name
+                : 'Not connected — uploads stored in browser memory only.';
+            document.getElementById('btn-connect-folder').textContent = connected ? 'Change Folder' : 'Connect Project Folder';
+        }
+
+        async function initFolder() {
+            try {
+                const h = await retrieveHandle();
+                if (h && (await h.queryPermission({ mode: 'readwrite' })) === 'granted') {
+                    folderHandle = h;
+                    updateFolderUI(h.name, true);
+                    return;
+                }
+            } catch(e) {}
+            updateFolderUI(null, false);
+        }
+
+        document.getElementById('btn-connect-folder').addEventListener('click', async () => {
+            if (!window.showDirectoryPicker) {
+                alert('Your browser does not support folder access. Use Chrome or Edge to enable physical file saving.');
+                return;
+            }
+            try {
+                const h = await window.showDirectoryPicker({ mode: 'readwrite' });
+                folderHandle = h;
+                await storeHandle(h);
+                updateFolderUI(h.name, true);
+            } catch(e) { /* user cancelled */ }
+        });
+
+        // ── Physical file save ─────────────────────────────────
+        async function getNextSlideNum() {
+            const nums = [];
+            try {
+                for await (const name of folderHandle.keys()) {
+                    const m = name.match(/^slide(\d+)\.(jpe?g|png|webp|gif)$/i);
+                    if (m) nums.push(parseInt(m[1]));
+                }
+            } catch(e) {}
+            return nums.length ? Math.max(...nums) + 1 : 13;
+        }
+
+        async function saveFileToFolder(file) {
+            if (!folderHandle) return null;
+            try {
+                const perm = await folderHandle.requestPermission({ mode: 'readwrite' });
+                if (perm !== 'granted') return null;
+                const nextNum = await getNextSlideNum();
+                const ext     = (file.name.split('.').pop() || 'jpg').toLowerCase();
+                const newName = 'slide' + nextNum + '.' + ext;
+                const fh      = await folderHandle.getFileHandle(newName, { create: true });
+                const writable = await fh.createWritable();
+                await writable.write(file);
+                await writable.close();
+                return newName;
+            } catch(e) {
+                console.error('File save failed:', e);
+                return null;
+            }
+        }
+
         // ── Data ───────────────────────────────────────────────
         const DEFAULTS = [
             'slide1.jpg','slide2.jpg','slide3.jpg','slide4.jpg',
@@ -299,9 +477,18 @@
         function loadConfig() {
             try {
                 const s = localStorage.getItem('slideshowConfig');
-                return s ? JSON.parse(s) : { active: [...DEFAULTS], custom: [] };
+                const d = { active: [...DEFAULTS], uploaded: [], custom: [], displayTime: 5000, fadeTime: 2250 };
+                if (!s) return d;
+                const c = JSON.parse(s);
+                return {
+                    active:      Array.isArray(c.active)   ? c.active   : d.active,
+                    uploaded:    Array.isArray(c.uploaded) ? c.uploaded : [],
+                    custom:      Array.isArray(c.custom)   ? c.custom   : [],
+                    displayTime: c.displayTime || 5000,
+                    fadeTime:    c.fadeTime    || 2250
+                };
             } catch(e) {
-                return { active: [...DEFAULTS], custom: [] };
+                return { active: [...DEFAULTS], uploaded: [], custom: [], displayTime: 5000, fadeTime: 2250 };
             }
         }
 
@@ -315,6 +502,28 @@
         }
 
         let cfg = loadConfig();
+
+        // ── Speed controls ─────────────────────────────────────
+        function initSpeedControls() {
+            const dispSlider = document.getElementById('display-time');
+            const fadeSlider = document.getElementById('fade-time');
+            const dispVal    = document.getElementById('display-val');
+            const fadeVal    = document.getElementById('fade-val');
+
+            dispSlider.value = cfg.displayTime / 1000;
+            fadeSlider.value = (cfg.fadeTime   / 1000).toFixed(1);
+            dispVal.textContent = (cfg.displayTime / 1000) + 's';
+            fadeVal.textContent = (cfg.fadeTime    / 1000).toFixed(1) + 's';
+
+            dispSlider.addEventListener('input', () => {
+                cfg.displayTime = parseInt(dispSlider.value) * 1000;
+                dispVal.textContent = dispSlider.value + 's';
+            });
+            fadeSlider.addEventListener('input', () => {
+                cfg.fadeTime = Math.round(parseFloat(fadeSlider.value) * 1000);
+                fadeVal.textContent = parseFloat(fadeSlider.value).toFixed(1) + 's';
+            });
+        }
 
         // ── Helpers ────────────────────────────────────────────
         function shortName(src) {
@@ -345,7 +554,6 @@
                 });
                 setupDrag();
             }
-
             renderAvailable();
         }
 
@@ -379,8 +587,6 @@
                     }
                 });
             });
-
-            // Remove buttons
             document.querySelectorAll('.btn-remove').forEach(btn => {
                 btn.addEventListener('click', () => {
                     cfg.active = cfg.active.filter(s => s !== btn.dataset.src);
@@ -393,13 +599,10 @@
         function renderAvailable() {
             const section = document.getElementById('available-section');
             const grid    = document.getElementById('available-grid');
-            const all     = [...DEFAULTS, ...cfg.custom];
+            const all     = [...DEFAULTS, ...cfg.uploaded, ...cfg.custom];
             const pool    = all.filter(s => !cfg.active.includes(s));
 
-            if (pool.length === 0) {
-                section.style.display = 'none';
-                return;
-            }
+            if (pool.length === 0) { section.style.display = 'none'; return; }
             section.style.display = 'block';
             grid.innerHTML = '';
             pool.forEach(src => {
@@ -421,17 +624,24 @@
         }
 
         // ── File upload ────────────────────────────────────────
-        document.getElementById('file-upload').addEventListener('change', function() {
-            Array.from(this.files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const url = e.target.result;
-                    cfg.custom.push(url);
-                    cfg.active.push(url);
+        document.getElementById('file-upload').addEventListener('change', async function() {
+            for (const file of Array.from(this.files)) {
+                const savedName = await saveFileToFolder(file);
+                if (savedName) {
+                    if (!cfg.uploaded.includes(savedName)) cfg.uploaded.push(savedName);
+                    cfg.active.push(savedName);
                     renderActive();
-                };
-                reader.readAsDataURL(file);
-            });
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const url = e.target.result;
+                        cfg.custom.push(url);
+                        cfg.active.push(url);
+                        renderActive();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
             this.value = '';
         });
 
@@ -443,10 +653,10 @@
             clearInterval(previewTimer);
             previewIdx = 0;
 
-            const wrap   = document.getElementById('preview-wrap');
-            const img    = document.getElementById('preview-img');
-            const ctr    = document.getElementById('preview-counter');
-            const ph     = document.getElementById('preview-placeholder');
+            const wrap = document.getElementById('preview-wrap');
+            const img  = document.getElementById('preview-img');
+            const ctr  = document.getElementById('preview-counter');
+            const ph   = document.getElementById('preview-placeholder');
 
             wrap.classList.add('active');
             ph.style.display = 'none';
@@ -464,18 +674,18 @@
             previewTimer = setInterval(() => {
                 previewIdx = (previewIdx + 1) % cfg.active.length;
                 showSlide(previewIdx);
-            }, 2500);
+            }, cfg.displayTime);
         });
 
         // ── Commit to site ─────────────────────────────────────
         document.getElementById('btn-commit').addEventListener('click', () => {
-            const ok = saveConfig();
+            const ok  = saveConfig();
             const msg = document.getElementById('save-msg');
             if (ok) {
                 msg.textContent = '✓ Saved — slideshow is now live on the homepage.';
                 msg.style.color = '#7ab87a';
             } else {
-                msg.textContent = '✗ Save failed — uploaded images may be too large for browser storage. Try using fewer or smaller images.';
+                msg.textContent = '✗ Save failed — uploaded images may be too large for browser storage.';
                 msg.style.color = '#d07050';
             }
             msg.style.display = 'inline';
@@ -483,6 +693,8 @@
         });
 
         // ── Init ───────────────────────────────────────────────
+        initFolder();
+        initSpeedControls();
         renderActive();
     </script>
 
