@@ -15,27 +15,40 @@ body {
 }
 
 .site-header-unwrapped {
-    text-align: center;
-    padding-top: 2em;
+    display: flex;
+    align-items: center;
+    padding: 0.75em 1em;
+    position: relative;
+}
+
+/* Invisible left ghost keeps the title truly centered */
+.site-header-unwrapped::before {
+    content: '';
+    display: block;
+    width: 2em;
+    flex-shrink: 0;
 }
 
 .site-title-unwrapped {
+    flex: 1;
+    text-align: center;
     font-family: 'OldEnglishFive', serif;
-    font-size: clamp(1rem, 4.5vw, 2.5rem);
+    font-size: clamp(1.1rem, 5vw, 3rem);
     color: #e7d8b1;
     margin: 0;
     white-space: nowrap;
+    overflow: hidden;
 }
 
 .menu-toggle {
-    position: absolute;
-    top: 1em;
-    right: 1em;
+    flex-shrink: 0;
+    width: 2em;
     font-size: 1.5em;
     background: none;
     border: none;
     color: #e7d8b1;
     cursor: pointer;
+    text-align: right;
 }
 
 .slideshow {
