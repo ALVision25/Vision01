@@ -11,16 +11,28 @@
             margin: 2em auto;
             padding: 0 1em;
         }
-        #slideshow-image {
+        .slide-container {
+            position: relative;
             width: 65%;
-            height: auto;
             display: inline-block;
             border-radius: 14px;
+            overflow: hidden;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(231, 216, 177, 0.15);
-            opacity: 1;
-            transition: opacity 1.2s ease-in-out;
+            line-height: 0;
         }
-        #slideshow-image.fade {
+        .slide-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: opacity 1.5s ease-in-out;
+        }
+        #slide-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             opacity: 0;
         }
     </style>
@@ -34,7 +46,10 @@
 
     <main>
         <div class="slideshow">
-            <img src="slide1.jpg" alt="Slideshow Image" id="slideshow-image" />
+            <div class="slide-container">
+                <img class="slide-img" id="slide-front" src="slide1.jpg" alt="Slideshow" />
+                <img class="slide-img" id="slide-back" src="slide2.jpg" alt="Slideshow" />
+            </div>
         </div>
     </main>
 
@@ -45,19 +60,45 @@
             'slide9.jpg','slide10.jpg','slide11.jpg','slide12.jpg'
         ];
         let current = 0;
-        const img = document.getElementById('slideshow-image');
+        let animating = false;
+        const front = document.getElementById('slide-front');
+        const back  = document.getElementById('slide-back');
+
+        // Preload all images
+        slides.forEach(s => { const i = new Image(); i.src = s; });
 
         function nextSlide() {
-            img.classList.add('fade');
-            setTimeout(() => {
-                current = (current + 1) % slides.length;
-                img.src = slides[current];
-                img.classList.remove('fade');
-            }, 1200);
-        }
+            if (animating) return;
+            animating = true;
+            const next = (current + 1) % slides.length;
 
-        // Pre-load all images for smooth transitions
-        slides.forEach(s => { const i = new Image(); i.src = s; });
+            back.src = slides[next];
+
+            function doFade() {
+                // True crossfade: front fades out, back fades in simultaneously
+                front.style.opacity = '0';
+                back.style.opacity  = '1';
+
+                setTimeout(() => {
+                    // Quietly reset: front takes the new image, back hides instantly
+                    front.style.transition = 'none';
+                    front.src = slides[next];
+                    front.style.opacity = '1';
+                    back.style.transition = 'none';
+                    back.style.opacity = '0';
+
+                    requestAnimationFrame(() => requestAnimationFrame(() => {
+                        front.style.transition = 'opacity 1.5s ease-in-out';
+                        back.style.transition  = 'opacity 1.5s ease-in-out';
+                    }));
+
+                    current = next;
+                    animating = false;
+                }, 1600);
+            }
+
+            back.complete ? doFade() : (back.onload = doFade);
+        }
 
         setInterval(nextSlide, 5000);
     </script>
