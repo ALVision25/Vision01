@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(pandoc --track-changes=all \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCode-Log.docx\" -o /tmp/log_output.md)",
+      "Read(//tmp/**)",
+      "Read(//c/Users/Cowork26/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/06da3b7b-b049-4ca5-81a4-2acf4449193a/222068b8-0942-4922-966e-b5bcf8a8a331/skills/docx/**)",
+      "Bash(python scripts/office/unpack.py \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCode-Log.docx\" /tmp/log_unpacked/)",
+      "Bash(py --version)",
+      "Bash(where python:*)",
+      "Bash(unzip -o \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCode-Log.docx\" \"word/document.xml\" -d log_unpacked)",
+      "Bash(git -C \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCODE\\\\Vision01\" log --oneline -10)",
+      "Bash(ls \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCODE\\\\Vision01\"/*.jpg \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCODE\\\\Vision01\"/*.png)",
+      "Bash(python3 scripts/office/unpack.py \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCode-Log.docx\" /tmp/log_edit/)",
+      "Bash(unzip -o \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCode-Log.docx\" -d log_edit/)",
+      "Bash(grep -o '.\\\\{0,50\\\\}April 13.\\\\{0,50\\\\}' /tmp/log_edit/word/document.xml)",
+      "Bash(grep -o '.\\\\{0,200\\\\}─────────────────────────────────────────.\\\\{0,300\\\\}April 13.\\\\{0,20\\\\}' /tmp/log_edit/word/document.xml)",
+      "Bash(grep -o '.\\\\{0,100\\\\}Updated automatically.\\\\{0,300\\\\}' /tmp/log_edit/word/document.xml)",
+      "Bash(grep -o '.\\\\{0,500\\\\}Entry.\\\\{0,10\\\\}April 13' /tmp/log_edit/word/document.xml)",
+      "Bash(grep -o '.\\\\{0,800\\\\}April 13, 2026' /tmp/log_edit/word/document.xml)",
+      "Bash(grep -o 'no need to ask.\\\\\\(.\\\\{1,800\\\\}\\\\\\)April 13' /tmp/log_edit/word/document.xml)",
+      "Bash(node -e ':*)",
+      "Bash(wslpath -w /tmp/log_edit/word/document.xml)"
+    ]
+  }
+}
