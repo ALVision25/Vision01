@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest128" />
+    <link rel="stylesheet" href="style.css?v=devtest131" />
     <style>
         .admin-panel {
             max-width: 960px;
@@ -258,6 +258,103 @@
             margin: 0;
             color: #666;
         }
+
+        /* Tab navigation */
+        .admin-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 2em;
+            border-bottom: 2px solid #2a1e14;
+        }
+        .admin-tab {
+            padding: 0.7em 2em;
+            cursor: pointer;
+            color: #888;
+            font-family: 'OldEnglishFive', serif;
+            font-size: 1rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.2s;
+        }
+        .admin-tab.active {
+            color: #e7d8b1;
+            border-bottom-color: #e7d8b1;
+        }
+        .admin-tab:hover { color: #e7d8b1; }
+        .admin-panel-tab { display: none; }
+        .admin-panel-tab.active { display: block; }
+
+        /* Users panel */
+        .user-card {
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+            padding: 1em 1.2em;
+            margin-bottom: 0.8em;
+        }
+        .user-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            cursor: pointer;
+        }
+        .user-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #2a1e14;
+        }
+        .user-name { color: #e7d8b1; font-weight: bold; flex: 1; }
+        .user-email { color: #888; font-size: 0.85em; }
+        .status-badge {
+            padding: 0.2em 0.7em;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-pending  { background: #3a2e00; color: #e7c96a; }
+        .status-active   { background: #003a1a; color: #4ecc91; }
+        .status-inactive { background: #3a0000; color: #e74c3c; }
+        .user-detail {
+            display: none;
+            margin-top: 1em;
+            padding-top: 1em;
+            border-top: 1px solid #2a1e14;
+        }
+        .user-detail.open { display: block; }
+        .user-field {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 0.4em;
+            align-items: center;
+            margin-bottom: 0.5em;
+        }
+        .user-field label { color: #888; font-size: 0.85em; }
+        .user-field input, .user-field textarea, .user-field select {
+            background: #0a0705;
+            border: 1px solid #3a2e1e;
+            color: #e7d8b1;
+            border-radius: 4px;
+            padding: 0.4em 0.6em;
+            font-size: 0.9em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .user-field textarea { resize: vertical; min-height: 60px; }
+        .user-actions {
+            display: flex;
+            gap: 0.5em;
+            flex-wrap: wrap;
+            margin-top: 1em;
+        }
+        .btn-approve    { background: #1a4a2e; color: #4ecc91; border: 1px solid #2a6a3e; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
+        .btn-deactivate { background: #4a1a1a; color: #e74c3c; border: 1px solid #6a2a2a; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
+        .btn-save-user  { background: #e7d8b1; color: #0a0705; border: none; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; font-family: 'OldEnglishFive', serif; }
+        .btn-make-admin { background: #1a2a4a; color: #6ab0e7; border: 1px solid #2a4a6a; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
+        .users-empty { color: #555; text-align: center; padding: 3em; font-style: italic; }
     </style>
 </head>
 <body class="subpage">
@@ -302,61 +399,77 @@
             <button class="btn-signout" id="btn-signout">Sign Out</button>
         </div>
 
-        <!-- Active Slideshow -->
-        <div class="admin-section">
-            <h3>Slideshow — Active Images</h3>
-            <p class="section-note">Drag rows to reorder. Click Remove to pull an image from the slideshow.</p>
-            <ul class="slide-list" id="slide-list"></ul>
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-panel="slideshow">Slideshow</button>
+            <button class="admin-tab" data-panel="users">Users</button>
         </div>
 
-        <!-- Available Pool -->
-        <div class="admin-section" id="available-section">
-            <h3>Available Images</h3>
-            <p class="section-note">Click Add to include an image in the slideshow.</p>
-            <div class="available-grid" id="available-grid"></div>
-        </div>
+        <div id="panel-slideshow" class="admin-panel-tab active">
 
-        <!-- Upload -->
-        <div class="admin-section">
-            <h3>Add New Image</h3>
-            <div class="upload-area">
-                <input type="file" id="file-upload" accept="image/*" multiple />
-                <label for="file-upload" class="upload-label">Choose images from your computer</label>
-                <p class="upload-note">Selected images are uploaded to Firebase Storage and added to the slideshow immediately.</p>
+            <!-- Active Slideshow -->
+            <div class="admin-section">
+                <h3>Slideshow — Active Images</h3>
+                <p class="section-note">Drag rows to reorder. Click Remove to pull an image from the slideshow.</p>
+                <ul class="slide-list" id="slide-list"></ul>
             </div>
-        </div>
 
-        <!-- Speed Controls -->
-        <div class="admin-section">
-            <h3>Slideshow Speed</h3>
-            <div class="speed-row">
-                <span class="speed-label">Display time per image</span>
-                <input type="range" id="display-time" min="3" max="20" step="1" value="5" />
-                <span class="speed-val" id="display-val">5s</span>
+            <!-- Available Pool -->
+            <div class="admin-section" id="available-section">
+                <h3>Available Images</h3>
+                <p class="section-note">Click Add to include an image in the slideshow.</p>
+                <div class="available-grid" id="available-grid"></div>
             </div>
-            <div class="speed-row">
-                <span class="speed-label">Crossfade duration</span>
-                <input type="range" id="fade-time" min="0.5" max="4" step="0.1" value="2.3" />
-                <span class="speed-val" id="fade-val">2.3s</span>
-            </div>
-        </div>
 
-        <!-- Preview -->
-        <div class="admin-section">
-            <h3>Preview</h3>
-            <p id="preview-placeholder">Click Preview Slideshow below to see your current order.</p>
-            <div class="preview-wrap" id="preview-wrap">
-                <img id="preview-img" src="" alt="Preview" />
-                <span class="preview-counter" id="preview-counter"></span>
+            <!-- Upload -->
+            <div class="admin-section">
+                <h3>Add New Image</h3>
+                <div class="upload-area">
+                    <input type="file" id="file-upload" accept="image/*" multiple />
+                    <label for="file-upload" class="upload-label">Choose images from your computer</label>
+                    <p class="upload-note">Selected images are uploaded to Firebase Storage and added to the slideshow immediately.</p>
+                </div>
             </div>
-        </div>
 
-        <!-- Actions -->
-        <div class="admin-actions">
-            <button class="btn-action btn-preview-action" id="btn-preview">Preview Slideshow</button>
-            <button class="btn-action btn-commit" id="btn-commit">Commit to Site</button>
-            <span class="save-msg" id="save-msg">&#10003; Saved — slideshow is now live on the homepage.</span>
-        </div>
+            <!-- Speed Controls -->
+            <div class="admin-section">
+                <h3>Slideshow Speed</h3>
+                <div class="speed-row">
+                    <span class="speed-label">Display time per image</span>
+                    <input type="range" id="display-time" min="3" max="20" step="1" value="5" />
+                    <span class="speed-val" id="display-val">5s</span>
+                </div>
+                <div class="speed-row">
+                    <span class="speed-label">Crossfade duration</span>
+                    <input type="range" id="fade-time" min="0.5" max="4" step="0.1" value="2.3" />
+                    <span class="speed-val" id="fade-val">2.3s</span>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="admin-section">
+                <h3>Preview</h3>
+                <p id="preview-placeholder">Click Preview Slideshow below to see your current order.</p>
+                <div class="preview-wrap" id="preview-wrap">
+                    <img id="preview-img" src="" alt="Preview" />
+                    <span class="preview-counter" id="preview-counter"></span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="admin-actions">
+                <button class="btn-action btn-preview-action" id="btn-preview">Preview Slideshow</button>
+                <button class="btn-action btn-commit" id="btn-commit">Commit to Site</button>
+                <span class="save-msg" id="save-msg">&#10003; Saved — slideshow is now live on the homepage.</span>
+            </div>
+
+        </div><!-- /panel-slideshow -->
+
+        <div id="panel-users" class="admin-panel-tab">
+            <h3 style="font-family:'OldEnglishFive',serif;color:#e7d8b1;font-weight:normal;margin:0 0 1.2em;">Registered Users</h3>
+            <div id="users-list">
+                <p class="users-empty">Loading users...</p>
+            </div>
+        </div><!-- /panel-users -->
 
     </main>
 
@@ -376,7 +489,7 @@
         import { initializeApp }          from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc }
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, updateDoc }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
         import { getStorage, ref, uploadBytes, getDownloadURL, listAll }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
@@ -408,16 +521,6 @@
             if (user) {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-user-label').textContent = user.email;
-                // Bootstrap: if not yet an admin but bootstrap doc exists, register as admin
-                try {
-                    const myAdminSnap = await getDoc(doc(db, 'admins', user.uid));
-                    if (!myAdminSnap.exists()) {
-                        const bootstrapSnap = await getDoc(doc(db, 'admins', 'bootstrap'));
-                        if (bootstrapSnap.exists()) {
-                            await setDoc(doc(db, 'admins', user.uid), { registeredAt: new Date().toISOString() });
-                        }
-                    }
-                } catch(e) { /* non-critical */ }
                 initAdmin();
             } else {
                 document.getElementById('login-overlay').style.display = 'flex';
@@ -523,6 +626,103 @@
             initSpeedControls();
             renderActive();
         }
+
+        // ── Tab switching ──────────────────────────────────────
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.admin-panel-tab').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+                if (tab.dataset.panel === 'users') loadUsers();
+            });
+        });
+
+        // ── Users panel ────────────────────────────────────────
+        async function loadUsers() {
+            const listEl = document.getElementById('users-list');
+            listEl.innerHTML = '<p class="users-empty">Loading...</p>';
+            try {
+                const snap = await getDocs(collection(db, 'users'));
+                if (snap.empty) {
+                    listEl.innerHTML = '<p class="users-empty">No registered users yet.</p>';
+                    return;
+                }
+                listEl.innerHTML = '';
+                snap.forEach(docSnap => {
+                    const u = docSnap.data();
+                    const uid = docSnap.id;
+                    const card = document.createElement('div');
+                    card.className = 'user-card';
+                    card.innerHTML = `
+                        <div class="user-card-header" onclick="this.nextElementSibling.classList.toggle('open')">
+                            <img class="user-avatar" src="${u.photoURL || ''}" onerror="this.style.display='none'" />
+                            <div style="flex:1">
+                                <div class="user-name">${u.displayName || '(no name)'}</div>
+                                <div class="user-email">${u.email || ''}</div>
+                            </div>
+                            <span class="status-badge status-${u.status || 'pending'}">${u.status || 'pending'}</span>
+                            <span style="color:#555;margin-left:0.5em;font-size:0.8em;">${u.role || 'member'}</span>
+                        </div>
+                        <div class="user-detail">
+                            <div class="user-field"><label>Display Name</label><input data-field="displayName" value="${u.displayName || ''}" /></div>
+                            <div class="user-field"><label>Email</label><input data-field="email" value="${u.email || ''}" disabled /></div>
+                            <div class="user-field"><label>Phone</label><input data-field="phone" value="${u.phone || ''}" /></div>
+                            <div class="user-field"><label>Address</label><input data-field="address" value="${u.address || ''}" /></div>
+                            <div class="user-field"><label>Status</label>
+                                <select data-field="status">
+                                    <option value="pending" ${u.status==='pending'?'selected':''}>Pending</option>
+                                    <option value="active" ${u.status==='active'?'selected':''}>Active</option>
+                                    <option value="inactive" ${u.status==='inactive'?'selected':''}>Inactive</option>
+                                </select>
+                            </div>
+                            <div class="user-field"><label>Role</label>
+                                <select data-field="role">
+                                    <option value="member" ${u.role==='member'?'selected':''}>Member</option>
+                                    <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+                                </select>
+                            </div>
+                            <div class="user-field"><label>Joined</label><input value="${(u.joinedAt||'').slice(0,10)}" disabled /></div>
+                            <div class="user-field" style="align-items:start"><label>Notes</label><textarea data-field="notes">${u.notes || ''}</textarea></div>
+                            <div class="user-actions">
+                                <button class="btn-approve" onclick="updateUserStatus('${uid}', 'active', this)">&#10003; Approve</button>
+                                <button class="btn-deactivate" onclick="updateUserStatus('${uid}', 'inactive', this)">&#10007; Deactivate</button>
+                                <button class="btn-save-user" onclick="saveUser('${uid}', this)">Save</button>
+                            </div>
+                        </div>`;
+                    listEl.appendChild(card);
+                });
+            } catch(e) {
+                listEl.innerHTML = '<p class="users-empty">Error loading users: ' + e.message + '</p>';
+            }
+        }
+
+        async function updateUserStatus(uid, status, btn) {
+            try {
+                await updateDoc(doc(db, 'users', uid), { status });
+                btn.closest('.user-card').querySelector('.status-badge').className = 'status-badge status-' + status;
+                btn.closest('.user-card').querySelector('.status-badge').textContent = status;
+                btn.closest('.user-detail').querySelector('[data-field="status"]').value = status;
+                btn.textContent = '&#10003; Done';
+                setTimeout(() => loadUsers(), 1000);
+            } catch(e) { alert('Error: ' + e.message); }
+        }
+
+        async function saveUser(uid, btn) {
+            const card = btn.closest('.user-card');
+            const fields = {};
+            card.querySelectorAll('[data-field]:not([disabled])').forEach(el => {
+                fields[el.dataset.field] = el.value;
+            });
+            try {
+                await updateDoc(doc(db, 'users', uid), fields);
+                btn.textContent = '&#10003; Saved';
+                setTimeout(() => { btn.textContent = 'Save'; loadUsers(); }, 1500);
+            } catch(e) { alert('Error: ' + e.message); }
+        }
+
+        window.updateUserStatus = updateUserStatus;
+        window.saveUser = saveUser;
 
         // ── Speed controls ─────────────────────────────────────
         function initSpeedControls() {
