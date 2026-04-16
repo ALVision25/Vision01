@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Members — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest128" />
+    <link rel="stylesheet" href="style.css?v=devtest129" />
     <style>
         .members-card {
             max-width: 500px;
@@ -160,7 +160,7 @@
                 <div id="admin-panel-link" style="display:none; margin-bottom:1.5em;">
                     <a href="admin.html" class="btn-admin">&#9881; Admin Panel</a>
                 </div>
-                <p class="member-placeholder">Member content coming soon.</p>
+                <p class="member-placeholder">Membership Section Live &mdash; Summer 2026</p>
                 <button id="btn-signout" class="btn-signout">Sign Out</button>
             </div>
 
@@ -184,7 +184,7 @@
         import { initializeApp }     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut }
                                      from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
         const app  = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -196,9 +196,16 @@
                 document.getElementById('login-view').style.display  = 'none';
                 document.getElementById('member-view').style.display = 'block';
                 document.getElementById('member-email-display').textContent = user.email || user.displayName || '';
-                // Check admin role from Firestore
+                // Bootstrap: register as admin if bootstrap doc exists and no admin doc yet
                 try {
-                    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+                    let adminSnap = await getDoc(doc(db, 'admins', user.uid));
+                    if (!adminSnap.exists()) {
+                        const bootstrapSnap = await getDoc(doc(db, 'admins', 'bootstrap'));
+                        if (bootstrapSnap.exists()) {
+                            await setDoc(doc(db, 'admins', user.uid), { registeredAt: new Date().toISOString() });
+                            adminSnap = await getDoc(doc(db, 'admins', user.uid));
+                        }
+                    }
                     document.getElementById('admin-panel-link').style.display = adminSnap.exists() ? 'block' : 'none';
                 } catch(e) {
                     document.getElementById('admin-panel-link').style.display = 'none';
