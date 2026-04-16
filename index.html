@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest126" />
+    <link rel="stylesheet" href="style.css?v=devtest127" />
     <style>
         body.home {
             height: 100vh;
@@ -78,26 +78,44 @@
     </nav>
     <div class="menu-overlay" id="menu-overlay"></div>
 
-    <script>
-        const _defaults = [
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+        const app = initializeApp(firebaseConfig);
+        const db  = getFirestore(app);
+
+        const DEFAULTS = [
             'slide1.jpg','slide2.jpg','slide3.jpg','slide4.jpg',
             'slide5.jpg','slide6.jpg','slide7.jpg','slide8.jpg',
             'slide9.jpg','slide10.jpg','slide11.jpg','slide12.jpg'
         ];
-        let slides, displayTime, fadeTime;
-        try {
-            const _stored = localStorage.getItem('slideshowConfig');
-            const _cfg = _stored ? JSON.parse(_stored) : null;
-            slides      = (_cfg && _cfg.active && _cfg.active.length) ? _cfg.active : _defaults;
-            displayTime = (_cfg && _cfg.displayTime) ? _cfg.displayTime : 5000;
-            fadeTime    = (_cfg && _cfg.fadeTime)    ? _cfg.fadeTime    : 2250;
-        } catch(e) {
-            slides      = _defaults;
-            displayTime = 5000;
-            fadeTime    = 2250;
+
+        async function loadConfig() {
+            const defaults = { active: [...DEFAULTS], uploaded: [], custom: [], displayTime: 5000, fadeTime: 2250 };
+            try {
+                const snap = await getDoc(doc(db, 'slideshow', 'config'));
+                if (snap.exists()) {
+                    const cfg = { ...defaults, ...snap.data() };
+                    localStorage.setItem('slideshowConfig', JSON.stringify(cfg));
+                    return cfg;
+                }
+            } catch(e) {}
+            try {
+                const cached = JSON.parse(localStorage.getItem('slideshowConfig'));
+                if (cached) return { ...defaults, ...cached };
+            } catch(e) {}
+            return defaults;
         }
 
-        let current = 0;
+        const cfg = await loadConfig();
+
+        const slides      = (cfg.active && cfg.active.length) ? cfg.active : DEFAULTS;
+        const displayTime = cfg.displayTime || 5000;
+        const fadeTime    = cfg.fadeTime    || 2250;
+
+        let current   = 0;
         let animating = false;
         const front = document.getElementById('slide-front');
         const back  = document.getElementById('slide-back');

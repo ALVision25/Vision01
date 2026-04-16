@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest126" />
+    <link rel="stylesheet" href="style.css?v=devtest127" />
     <style>
         .admin-panel {
             max-width: 960px;
@@ -175,41 +175,6 @@
         }
         #preview-placeholder { color: #555; font-size: 0.9rem; }
 
-        /* Folder status */
-        .folder-status {
-            display: flex;
-            align-items: center;
-            gap: 1em;
-            padding: 0.8em 1em;
-            background: #1a120c;
-            border: 1px solid #2a1e14;
-            border-radius: 8px;
-        }
-        .folder-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .folder-dot.connected    { background: #7ab87a; }
-        .folder-dot.disconnected { background: #666; }
-        .folder-path {
-            flex: 1;
-            color: #888;
-            font-size: 0.85rem;
-        }
-        .btn-folder {
-            background: #221810;
-            border: 1px solid #3a2a1a;
-            color: #e7d8b1;
-            border-radius: 4px;
-            padding: 0.4em 1em;
-            cursor: pointer;
-            font-size: 0.82rem;
-            flex-shrink: 0;
-        }
-        .btn-folder:hover { background: #2e2010; }
-
         /* Speed controls */
         .speed-row {
             display: flex;
@@ -267,9 +232,46 @@
             font-size: 0.9rem;
             display: none;
         }
+
+        /* Sign out button */
+        .btn-signout {
+            background: none;
+            border: 1px solid #3a2a1a;
+            color: #888;
+            border-radius: 4px;
+            padding: 0.35em 0.9em;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+        .btn-signout:hover { color: #e7d8b1; border-color: #554433; }
+        .admin-header-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5em;
+        }
+        .admin-header-row h2 {
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-size: 1rem;
+            font-weight: normal;
+            margin: 0;
+            color: #666;
+        }
     </style>
 </head>
 <body class="subpage">
+
+    <!-- Login Overlay -->
+    <div id="login-overlay" style="position:fixed;inset:0;background:#0a0705;display:flex;align-items:center;justify-content:center;z-index:1000;">
+        <div style="background:#1a120c;border:1px solid #2a1e14;border-radius:12px;padding:2.5em 2em;width:320px;text-align:center;">
+            <h2 style="font-family:'OldEnglishFive',serif;color:#e7d8b1;margin-bottom:1em;">Admin Login</h2>
+            <input id="login-email" type="email" placeholder="Email" style="width:100%;padding:0.6em;margin-bottom:0.8em;background:#0a0705;border:1px solid #3a2e1e;color:#e7d8b1;border-radius:4px;box-sizing:border-box;" />
+            <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:0.6em;margin-bottom:0.8em;background:#0a0705;border:1px solid #3a2e1e;color:#e7d8b1;border-radius:4px;box-sizing:border-box;" />
+            <div id="login-error" style="color:#e74c3c;font-size:0.85em;margin-bottom:0.8em;min-height:1.2em;"></div>
+            <button id="login-btn" style="width:100%;background:#e7d8b1;color:#0a0705;font-family:'OldEnglishFive',serif;padding:0.7em;border:none;border-radius:6px;cursor:pointer;font-size:1rem;">Sign In</button>
+        </div>
+    </div>
 
     <header class="site-header-unwrapped">
         <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
@@ -295,15 +297,9 @@
 
     <main class="admin-panel">
 
-        <!-- Project Folder -->
-        <div class="admin-section">
-            <h3>Project Folder</h3>
-            <p class="section-note">Connect the folder where this site lives so uploaded images are saved as real files (Chrome / Edge only). The browser will remember your choice.</p>
-            <div class="folder-status">
-                <span class="folder-dot disconnected" id="folder-dot"></span>
-                <span class="folder-path" id="folder-path">Not connected — uploads stored in browser memory only.</span>
-                <button class="btn-folder" id="btn-connect-folder">Connect Project Folder</button>
-            </div>
+        <div class="admin-header-row">
+            <h2 id="admin-user-label"></h2>
+            <button class="btn-signout" id="btn-signout">Sign Out</button>
         </div>
 
         <!-- Active Slideshow -->
@@ -326,7 +322,7 @@
             <div class="upload-area">
                 <input type="file" id="file-upload" accept="image/*" multiple />
                 <label for="file-upload" class="upload-label">Choose images from your computer</label>
-                <p class="upload-note">Selected images are added to the slideshow immediately.</p>
+                <p class="upload-note">Selected images are uploaded to Firebase Storage and added to the slideshow immediately.</p>
             </div>
         </div>
 
@@ -364,8 +360,8 @@
 
     </main>
 
+    <!-- Nav script (non-module, runs immediately) -->
     <script>
-        // ── Nav ────────────────────────────────────────────────
         const toggle  = document.getElementById('menu-toggle');
         const sideMenu = document.getElementById('side-menu');
         const overlay = document.getElementById('menu-overlay');
@@ -373,99 +369,50 @@
         toggle.addEventListener('click', () => { sideMenu.classList.add('open'); overlay.classList.add('open'); });
         closeBtn.addEventListener('click', () => { sideMenu.classList.remove('open'); overlay.classList.remove('open'); });
         overlay.addEventListener('click', () => { sideMenu.classList.remove('open'); overlay.classList.remove('open'); });
+    </script>
 
-        // ── IndexedDB — persist directory handle ───────────────
-        function openHandleDB() {
-            return new Promise((resolve, reject) => {
-                const req = indexedDB.open('slideshowAdmin', 1);
-                req.onupgradeneeded = () => req.result.createObjectStore('handles');
-                req.onsuccess = () => resolve(req.result);
-                req.onerror  = () => reject(req.error);
-            });
-        }
-        async function storeHandle(h) {
-            const db = await openHandleDB();
-            return new Promise((resolve, reject) => {
-                const req = db.transaction('handles','readwrite').objectStore('handles').put(h, 'projectDir');
-                req.onsuccess = () => resolve();
-                req.onerror  = () => reject(req.error);
-            });
-        }
-        async function retrieveHandle() {
-            const db = await openHandleDB();
-            return new Promise((resolve, reject) => {
-                const req = db.transaction('handles','readonly').objectStore('handles').get('projectDir');
-                req.onsuccess = () => resolve(req.result || null);
-                req.onerror  = () => reject(req.error);
-            });
-        }
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp }          from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
+                                          from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, setDoc }
+                                          from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL, listAll }
+                                          from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
 
-        // ── Folder connection ──────────────────────────────────
-        let folderHandle = null;
+        const app     = initializeApp(firebaseConfig);
+        const auth    = getAuth(app);
+        const db      = getFirestore(app);
+        const storage = getStorage(app);
 
-        function updateFolderUI(name, connected) {
-            document.getElementById('folder-dot').className  = 'folder-dot ' + (connected ? 'connected' : 'disconnected');
-            document.getElementById('folder-path').textContent = connected
-                ? 'Connected: ' + name
-                : 'Not connected — uploads stored in browser memory only.';
-            document.getElementById('btn-connect-folder').textContent = connected ? 'Change Folder' : 'Connect Project Folder';
-        }
-
-        async function initFolder() {
+        // ── Auth UI ────────────────────────────────────────────
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value;
+            const pw    = document.getElementById('login-password').value;
+            document.getElementById('login-error').textContent = '';
             try {
-                const h = await retrieveHandle();
-                if (h && (await h.queryPermission({ mode: 'readwrite' })) === 'granted') {
-                    folderHandle = h;
-                    updateFolderUI(h.name, true);
-                    return;
-                }
-            } catch(e) {}
-            updateFolderUI(null, false);
-        }
-
-        document.getElementById('btn-connect-folder').addEventListener('click', async () => {
-            if (!window.showDirectoryPicker) {
-                alert('Your browser does not support folder access. Use Chrome or Edge to enable physical file saving.');
-                return;
+                await signInWithEmailAndPassword(auth, email, pw);
+            } catch(e) {
+                document.getElementById('login-error').textContent = 'Invalid email or password.';
             }
-            try {
-                const h = await window.showDirectoryPicker({ mode: 'readwrite' });
-                folderHandle = h;
-                await storeHandle(h);
-                updateFolderUI(h.name, true);
-            } catch(e) { /* user cancelled */ }
         });
 
-        // ── Physical file save ─────────────────────────────────
-        async function getNextSlideNum() {
-            const nums = [];
-            try {
-                for await (const name of folderHandle.keys()) {
-                    const m = name.match(/^slide(\d+)\.(jpe?g|png|webp|gif)$/i);
-                    if (m) nums.push(parseInt(m[1]));
-                }
-            } catch(e) {}
-            return nums.length ? Math.max(...nums) + 1 : 13;
-        }
+        document.getElementById('login-password').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('login-btn').click();
+        });
 
-        async function saveFileToFolder(file) {
-            if (!folderHandle) return null;
-            try {
-                const perm = await folderHandle.requestPermission({ mode: 'readwrite' });
-                if (perm !== 'granted') return null;
-                const nextNum = await getNextSlideNum();
-                const ext     = (file.name.split('.').pop() || 'jpg').toLowerCase();
-                const newName = 'slide' + nextNum + '.' + ext;
-                const fh      = await folderHandle.getFileHandle(newName, { create: true });
-                const writable = await fh.createWritable();
-                await writable.write(file);
-                await writable.close();
-                return newName;
-            } catch(e) {
-                console.error('File save failed:', e);
-                return null;
+        document.getElementById('btn-signout').addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('admin-user-label').textContent = user.email;
+                initAdmin();
+            } else {
+                document.getElementById('login-overlay').style.display = 'flex';
             }
-        }
+        });
 
         // ── Data ───────────────────────────────────────────────
         const DEFAULTS = [
@@ -474,34 +421,98 @@
             'slide9.jpg','slide10.jpg','slide11.jpg','slide12.jpg'
         ];
 
-        function loadConfig() {
+        async function loadConfig() {
+            const d = { active: [...DEFAULTS], uploaded: [], custom: [], displayTime: 5000, fadeTime: 2250 };
+            try {
+                const snap = await getDoc(doc(db, 'slideshow', 'config'));
+                if (snap.exists()) {
+                    const c = snap.data();
+                    const cfg = {
+                        active:      Array.isArray(c.active)   ? c.active   : d.active,
+                        uploaded:    Array.isArray(c.uploaded) ? c.uploaded : [],
+                        custom:      Array.isArray(c.custom)   ? c.custom   : [],
+                        displayTime: c.displayTime || 5000,
+                        fadeTime:    c.fadeTime    || 2250
+                    };
+                    localStorage.setItem('slideshowConfig', JSON.stringify(cfg));
+                    return cfg;
+                }
+            } catch(e) {}
             try {
                 const s = localStorage.getItem('slideshowConfig');
-                const d = { active: [...DEFAULTS], uploaded: [], custom: [], displayTime: 5000, fadeTime: 2250 };
-                if (!s) return d;
-                const c = JSON.parse(s);
-                return {
-                    active:      Array.isArray(c.active)   ? c.active   : d.active,
-                    uploaded:    Array.isArray(c.uploaded) ? c.uploaded : [],
-                    custom:      Array.isArray(c.custom)   ? c.custom   : [],
-                    displayTime: c.displayTime || 5000,
-                    fadeTime:    c.fadeTime    || 2250
-                };
-            } catch(e) {
-                return { active: [...DEFAULTS], uploaded: [], custom: [], displayTime: 5000, fadeTime: 2250 };
-            }
+                if (s) {
+                    const c = JSON.parse(s);
+                    return {
+                        active:      Array.isArray(c.active)   ? c.active   : d.active,
+                        uploaded:    Array.isArray(c.uploaded) ? c.uploaded : [],
+                        custom:      Array.isArray(c.custom)   ? c.custom   : [],
+                        displayTime: c.displayTime || 5000,
+                        fadeTime:    c.fadeTime    || 2250
+                    };
+                }
+            } catch(e) {}
+            return d;
         }
 
-        function saveConfig() {
+        async function saveConfig(cfg) {
             try {
+                await setDoc(doc(db, 'slideshow', 'config'), cfg);
                 localStorage.setItem('slideshowConfig', JSON.stringify(cfg));
                 return true;
             } catch(e) {
+                console.error('Save failed:', e);
+                // Fall back to localStorage only
+                try { localStorage.setItem('slideshowConfig', JSON.stringify(cfg)); } catch(e2) {}
                 return false;
             }
         }
 
-        let cfg = loadConfig();
+        async function saveFileToStorage(file, cfg) {
+            try {
+                // Determine next slide number from existing uploaded URLs
+                let maxN = 12;
+                const allUrls = [...(cfg.uploaded || [])];
+                allUrls.forEach(url => {
+                    const m = url.match(/slide(\d+)\.(jpe?g|png|webp|gif)/i);
+                    if (m) {
+                        const n = parseInt(m[1]);
+                        if (n > maxN) maxN = n;
+                    }
+                });
+                // Also check storage listing for accuracy
+                try {
+                    const listRef = ref(storage, 'slides');
+                    const result  = await listAll(listRef);
+                    result.items.forEach(item => {
+                        const m = item.name.match(/^slide(\d+)\.(jpe?g|png|webp|gif)$/i);
+                        if (m) {
+                            const n = parseInt(m[1]);
+                            if (n > maxN) maxN = n;
+                        }
+                    });
+                } catch(e) {}
+
+                const nextNum = maxN + 1;
+                const ext     = (file.name.split('.').pop() || 'jpg').toLowerCase();
+                const newName = 'slide' + nextNum + '.' + ext;
+                const storageRef = ref(storage, 'slides/' + newName);
+                const snapshot   = await uploadBytes(storageRef, file);
+                const url        = await getDownloadURL(snapshot.ref);
+                return url;
+            } catch(e) {
+                console.error('Storage upload failed:', e);
+                return null;
+            }
+        }
+
+        // ── Admin init ─────────────────────────────────────────
+        let cfg = null;
+
+        async function initAdmin() {
+            cfg = await loadConfig();
+            initSpeedControls();
+            renderActive();
+        }
 
         // ── Speed controls ─────────────────────────────────────
         function initSpeedControls() {
@@ -528,6 +539,10 @@
         // ── Helpers ────────────────────────────────────────────
         function shortName(src) {
             if (src.startsWith('data:')) return 'uploaded image';
+            if (src.startsWith('https://')) {
+                const m = src.match(/slides%2F([^?]+)/);
+                return m ? decodeURIComponent(m[1]) : 'uploaded image';
+            }
             return src;
         }
 
@@ -626,17 +641,18 @@
         // ── File upload ────────────────────────────────────────
         document.getElementById('file-upload').addEventListener('change', async function() {
             for (const file of Array.from(this.files)) {
-                const savedName = await saveFileToFolder(file);
-                if (savedName) {
-                    if (!cfg.uploaded.includes(savedName)) cfg.uploaded.push(savedName);
-                    cfg.active.push(savedName);
+                const url = await saveFileToStorage(file, cfg);
+                if (url) {
+                    if (!cfg.uploaded.includes(url)) cfg.uploaded.push(url);
+                    cfg.active.push(url);
                     renderActive();
                 } else {
+                    // Fallback: use data URL (stored in custom array)
                     const reader = new FileReader();
                     reader.onload = e => {
-                        const url = e.target.result;
-                        cfg.custom.push(url);
-                        cfg.active.push(url);
+                        const dataUrl = e.target.result;
+                        cfg.custom.push(dataUrl);
+                        cfg.active.push(dataUrl);
                         renderActive();
                     };
                     reader.readAsDataURL(file);
@@ -678,24 +694,21 @@
         });
 
         // ── Commit to site ─────────────────────────────────────
-        document.getElementById('btn-commit').addEventListener('click', () => {
-            const ok  = saveConfig();
+        document.getElementById('btn-commit').addEventListener('click', async () => {
             const msg = document.getElementById('save-msg');
+            msg.style.display = 'none';
+            const ok = await saveConfig(cfg);
             if (ok) {
-                msg.textContent = '✓ Saved — slideshow is now live on the homepage.';
+                msg.textContent = '\u2713 Saved \u2014 slideshow is now live on the homepage.';
                 msg.style.color = '#7ab87a';
             } else {
-                msg.textContent = '✗ Save failed — uploaded images may be too large for browser storage.';
+                msg.textContent = '\u2717 Save to Firebase failed \u2014 check your connection.';
                 msg.style.color = '#d07050';
             }
             msg.style.display = 'inline';
             setTimeout(() => msg.style.display = 'none', 7000);
         });
 
-        // ── Init ───────────────────────────────────────────────
-        initFolder();
-        initSpeedControls();
-        renderActive();
     </script>
 
 </body>
