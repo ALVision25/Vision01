@@ -196,15 +196,13 @@
                 document.getElementById('login-view').style.display  = 'none';
                 document.getElementById('member-view').style.display = 'block';
                 document.getElementById('member-email-display').textContent = user.email || user.displayName || '';
-                // Bootstrap: register as admin if bootstrap doc exists and no admin doc yet
+                // Check / bootstrap admin role
                 try {
                     let adminSnap = await getDoc(doc(db, 'admins', user.uid));
                     if (!adminSnap.exists()) {
-                        const bootstrapSnap = await getDoc(doc(db, 'admins', 'bootstrap'));
-                        if (bootstrapSnap.exists()) {
-                            await setDoc(doc(db, 'admins', user.uid), { registeredAt: new Date().toISOString() });
-                            adminSnap = await getDoc(doc(db, 'admins', user.uid));
-                        }
+                        // Try to self-register; Firestore rule only allows this if admins/bootstrap exists
+                        try { await setDoc(doc(db, 'admins', user.uid), { registeredAt: new Date().toISOString() }); } catch(_) {}
+                        adminSnap = await getDoc(doc(db, 'admins', user.uid));
                     }
                     document.getElementById('admin-panel-link').style.display = adminSnap.exists() ? 'block' : 'none';
                 } catch(e) {
