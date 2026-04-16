@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest127" />
+    <link rel="stylesheet" href="style.css?v=devtest128" />
     <style>
         .admin-panel {
             max-width: 960px;
@@ -404,10 +404,20 @@
 
         document.getElementById('btn-signout').addEventListener('click', () => signOut(auth));
 
-        onAuthStateChanged(auth, user => {
+        onAuthStateChanged(auth, async user => {
             if (user) {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-user-label').textContent = user.email;
+                // Bootstrap: if not yet an admin but bootstrap doc exists, register as admin
+                try {
+                    const myAdminSnap = await getDoc(doc(db, 'admins', user.uid));
+                    if (!myAdminSnap.exists()) {
+                        const bootstrapSnap = await getDoc(doc(db, 'admins', 'bootstrap'));
+                        if (bootstrapSnap.exists()) {
+                            await setDoc(doc(db, 'admins', user.uid), { registeredAt: new Date().toISOString() });
+                        }
+                    }
+                } catch(e) { /* non-critical */ }
                 initAdmin();
             } else {
                 document.getElementById('login-overlay').style.display = 'flex';

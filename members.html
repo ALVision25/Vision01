@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Members — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest127" />
+    <link rel="stylesheet" href="style.css?v=devtest128" />
     <style>
         .members-card {
             max-width: 500px;
@@ -97,6 +97,19 @@
             font-size: 0.85rem;
         }
         .btn-signout:hover { color: #e7d8b1; border-color: #554433; }
+        .btn-admin {
+            display: inline-block;
+            background: #e7d8b1;
+            color: #0a0705;
+            font-family: 'OldEnglishFive', serif;
+            font-size: 1rem;
+            padding: 0.7em 2em;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-bottom: 1.2em;
+            transition: background 0.2s;
+        }
+        .btn-admin:hover { background: #fff; }
     </style>
 </head>
 <body class="subpage">
@@ -143,6 +156,10 @@
             <div id="member-view" class="member-content">
                 <p class="member-welcome">Welcome back</p>
                 <p class="member-email" id="member-email-display"></p>
+                <!-- Admin panel link — only visible to admin account -->
+                <div id="admin-panel-link" style="display:none; margin-bottom:1.5em;">
+                    <a href="admin.html" class="btn-admin">&#9881; Admin Panel</a>
+                </div>
                 <p class="member-placeholder">Member content coming soon.</p>
                 <button id="btn-signout" class="btn-signout">Sign Out</button>
             </div>
@@ -167,19 +184,29 @@
         import { initializeApp }     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut }
                                      from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
         const app  = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db   = getFirestore(app);
 
         // Auth state observer
-        onAuthStateChanged(auth, user => {
+        onAuthStateChanged(auth, async user => {
             if (user) {
                 document.getElementById('login-view').style.display  = 'none';
                 document.getElementById('member-view').style.display = 'block';
                 document.getElementById('member-email-display').textContent = user.email || user.displayName || '';
+                // Check admin role from Firestore
+                try {
+                    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+                    document.getElementById('admin-panel-link').style.display = adminSnap.exists() ? 'block' : 'none';
+                } catch(e) {
+                    document.getElementById('admin-panel-link').style.display = 'none';
+                }
             } else {
                 document.getElementById('login-view').style.display  = 'block';
                 document.getElementById('member-view').style.display = 'none';
+                document.getElementById('admin-panel-link').style.display = 'none';
             }
         });
 
