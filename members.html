@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Members — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest131" />
+    <link rel="stylesheet" href="style.css?v=devtest132" />
     <style>
         .members-card {
             max-width: 500px;
@@ -156,12 +156,8 @@
             <div id="member-view" class="member-content">
                 <p class="member-welcome">Welcome back</p>
                 <p class="member-email" id="member-email-display"></p>
-                <!-- Admin panel link — only visible to admin account -->
-                <div id="admin-panel-link" style="display:none; margin-bottom:1.5em;">
-                    <a href="admin.html" class="btn-admin">&#9881; Admin Panel</a>
-                </div>
                 <div id="status-pending" style="display:none; color:#e7c96a; font-style:italic; margin-bottom:1.5em; padding:1em; border:1px solid #3a2e14; border-radius:6px; background:#1a1505;">
-                    Your membership request is pending admin approval. You will be notified when approved.
+                    Your membership request is pending approval. Please check your email &mdash; you will receive a notification once approved.
                 </div>
                 <div id="status-inactive" style="display:none; color:#e74c3c; font-style:italic; margin-bottom:1.5em; padding:1em; border:1px solid #3a1205; border-radius:6px; background:#1a0505;">
                     Your account has been deactivated. Please contact the admin.
@@ -199,52 +195,49 @@
         // Auth state observer
         onAuthStateChanged(auth, async user => {
             if (user) {
+                // Hide both views while async checks run (prevents any flash)
                 document.getElementById('login-view').style.display  = 'none';
-                document.getElementById('member-view').style.display = 'block';
-                document.getElementById('member-email-display').textContent = user.email || user.displayName || '';
+                document.getElementById('member-view').style.display = 'none';
 
-                // Ensure users/{uid} doc exists; create if not
+                // Check admin role FIRST — admins go straight to admin panel
+                try {
+                    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+                    if (adminSnap.exists()) {
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+                } catch(e) { /* not an admin, continue */ }
+
+                // Regular member flow — ensure users/{uid} doc exists
                 const userRef = doc(db, 'users', user.uid);
                 const userSnap = await getDoc(userRef);
                 if (!userSnap.exists()) {
                     await setDoc(userRef, {
-                        email: user.email || '',
+                        email:       user.email       || '',
                         displayName: user.displayName || '',
-                        photoURL: user.photoURL || '',
-                        phone: '',
-                        address: '',
-                        joinedAt: new Date().toISOString(),
-                        status: 'pending',
-                        role: 'member',
-                        notes: ''
+                        photoURL:    user.photoURL    || '',
+                        phone:       '',
+                        address:     '',
+                        joinedAt:    new Date().toISOString(),
+                        status:      'pending',
+                        role:        'member',
+                        notes:       ''
                     });
                 }
 
-                // Re-fetch user data (after possible create)
+                // Re-fetch to get latest status
                 const freshSnap = await getDoc(userRef);
-                const userData = freshSnap.data();
-                const userStatus = userData?.status || 'pending';
+                const userStatus = freshSnap.data()?.status || 'pending';
 
-                // Check admin role
-                let adminSnap;
-                try {
-                    adminSnap = await getDoc(doc(db, 'admins', user.uid));
-                    document.getElementById('admin-panel-link').style.display = adminSnap.exists() ? 'block' : 'none';
-                } catch(e) {
-                    adminSnap = { exists: () => false };
-                    document.getElementById('admin-panel-link').style.display = 'none';
-                }
-
-                // Show content based on admin status or membership status
-                const isAdmin = adminSnap.exists();
-                const showFull = isAdmin || userStatus === 'active';
-                document.getElementById('status-pending').style.display  = (!isAdmin && userStatus === 'pending')  ? 'block' : 'none';
-                document.getElementById('status-inactive').style.display = (!isAdmin && userStatus === 'inactive') ? 'block' : 'none';
-                document.getElementById('member-placeholder').style.display = showFull ? 'block' : 'none';
+                // Now reveal member view with correct state — no flash possible
+                document.getElementById('member-email-display').textContent = user.email || user.displayName || '';
+                document.getElementById('member-view').style.display = 'block';
+                document.getElementById('status-pending').style.display  = userStatus === 'pending'  ? 'block' : 'none';
+                document.getElementById('status-inactive').style.display = userStatus === 'inactive' ? 'block' : 'none';
+                document.getElementById('member-placeholder').style.display = userStatus === 'active' ? 'block' : 'none';
             } else {
                 document.getElementById('login-view').style.display  = 'block';
                 document.getElementById('member-view').style.display = 'none';
-                document.getElementById('admin-panel-link').style.display = 'none';
             }
         });
 

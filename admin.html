@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest131" />
+    <link rel="stylesheet" href="style.css?v=devtest132" />
     <style>
         .admin-panel {
             max-width: 960px;
@@ -245,6 +245,19 @@
             margin-left: auto;
         }
         .btn-signout:hover { color: #e7d8b1; border-color: #554433; }
+        .master-badge {
+            display: none;
+            background: #2a1a00;
+            border: 1px solid #a07830;
+            color: #e7c96a;
+            font-size: 0.7rem;
+            font-family: 'OldEnglishFive', serif;
+            letter-spacing: 0.05em;
+            padding: 0.2em 0.6em;
+            border-radius: 4px;
+            margin-left: 0.8em;
+            vertical-align: middle;
+        }
         .admin-header-row {
             display: flex;
             align-items: center;
@@ -396,6 +409,7 @@
 
         <div class="admin-header-row">
             <h2 id="admin-user-label"></h2>
+            <span id="master-badge" class="master-badge">&#9733; Master Admin</span>
             <button class="btn-signout" id="btn-signout">Sign Out</button>
         </div>
 
@@ -521,6 +535,13 @@
             if (user) {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-user-label').textContent = user.email;
+                // Check for master admin designation
+                try {
+                    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+                    if (adminSnap.exists() && adminSnap.data()?.role === 'master') {
+                        document.getElementById('master-badge').style.display = 'inline';
+                    }
+                } catch(e) { /* non-critical */ }
                 initAdmin();
             } else {
                 document.getElementById('login-overlay').style.display = 'flex';
