@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Member Videos — The Antwerp Inn 1845</title>
+    <link rel="stylesheet" href="style.css?v=devtest133" />
+    <style>
+        .videos-main { max-width: 960px; margin: 2em auto; padding: 0 1.5em 4em; }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5em;
+            margin-top: 0.5em;
+        }
+        .video-tile {
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .video-tile video {
+            width: 100%;
+            display: block;
+            background: #000;
+            max-height: 180px;
+            object-fit: cover;
+        }
+        .video-tile-info { padding: 0.8em 1em 1em; }
+        .video-tile-title {
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-size: 1rem;
+            font-weight: normal;
+            margin: 0 0 0.3em;
+        }
+        .video-tile-desc { color: #888; font-size: 0.85rem; line-height: 1.45; margin: 0; }
+        .access-msg {
+            text-align: center;
+            padding: 4em 2em;
+        }
+        .access-msg h3 {
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-weight: normal;
+            font-size: 1.3rem;
+            margin: 0 0 0.6em;
+        }
+        .access-msg p { color: #888; font-size: 0.95rem; }
+        .access-msg a { color: #e7d8b1; text-decoration: underline; }
+        .loading-msg { color: #555; text-align: center; padding: 3em; font-style: italic; }
+    </style>
+</head>
+<body class="subpage">
+
+    <header class="site-header-unwrapped">
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+    </header>
+
+    <div class="subpage-subtitle-wrap">
+        <h2 class="subpage-subtitle">Member Videos</h2>
+    </div>
+
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="index.html">The Antwerp Inn</a></li>
+            <li><a href="fort-drum.html">Fort Drum</a></li>
+            <li><a href="antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="mcallister-house.html">McAllister House</a></li>
+            <li><a href="north-country.html">North Country</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="videos.html">Videos</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="videos-main">
+        <div id="content">
+            <p class="loading-msg">Checking access&hellip;</p>
+        </div>
+    </main>
+
+    <script>
+        const toggle  = document.getElementById('menu-toggle');
+        const sideMenu = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const closeBtn = document.getElementById('menu-close');
+        toggle.addEventListener('click',  () => { sideMenu.classList.add('open');    overlay.classList.add('open'); });
+        closeBtn.addEventListener('click',() => { sideMenu.classList.remove('open'); overlay.classList.remove('open'); });
+        overlay.addEventListener('click', () => { sideMenu.classList.remove('open'); overlay.classList.remove('open'); });
+    </script>
+
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp }   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, collection, getDocs, doc, getDoc }
+                                   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
+
+        onAuthStateChanged(auth, async user => {
+            const content = document.getElementById('content');
+
+            if (!user) {
+                content.innerHTML = `
+                    <div class="access-msg">
+                        <h3>Members Only</h3>
+                        <p>Please <a href="members.html">sign in</a> to access member videos.</p>
+                    </div>`;
+                return;
+            }
+
+            // Check active member status
+            try {
+                const userSnap = await getDoc(doc(db, 'users', user.uid));
+                const status   = userSnap.exists() ? userSnap.data().status : 'pending';
+                if (status !== 'active') {
+                    content.innerHTML = `
+                        <div class="access-msg">
+                            <h3>Access Pending</h3>
+                            <p>Your membership is awaiting approval. Check back soon or <a href="members.html">return to the members page</a>.</p>
+                        </div>`;
+                    return;
+                }
+            } catch(e) {
+                content.innerHTML = `<div class="access-msg"><p>Error checking membership. Please <a href="members.html">try again</a>.</p></div>`;
+                return;
+            }
+
+            // Load published videos
+            try {
+                const snap   = await getDocs(collection(db, 'videos'));
+                const videos = snap.docs
+                    .map(d => d.data())
+                    .filter(v => v.published)
+                    .sort((a, b) => (b.uploadedAt || '') > (a.uploadedAt || '') ? 1 : -1);
+
+                if (videos.length === 0) {
+                    content.innerHTML = '<p class="loading-msg">No videos available yet &mdash; check back soon.</p>';
+                    return;
+                }
+
+                const grid = document.createElement('div');
+                grid.className = 'video-grid';
+                videos.forEach(v => {
+                    const tile = document.createElement('div');
+                    tile.className = 'video-tile';
+                    tile.innerHTML = `
+                        <video src="${v.url}" controls preload="metadata"></video>
+                        <div class="video-tile-info">
+                            <h3 class="video-tile-title">${v.title || 'Untitled Video'}</h3>
+                            ${v.description ? `<p class="video-tile-desc">${v.description}</p>` : ''}
+                        </div>
+                    `;
+                    grid.appendChild(tile);
+                });
+                content.innerHTML = '';
+                content.appendChild(grid);
+            } catch(e) {
+                content.innerHTML = `<div class="access-msg"><p>Error loading videos: ${e.message}</p></div>`;
+            }
+        });
+    </script>
+</body>
+</html>

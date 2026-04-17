@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Admin — The Antwerp Inn 1845</title>
+    <link rel="stylesheet" href="style.css?v=devtest133" />
+    <style>
+        .admin-panel { max-width: 960px; margin: 2em auto; padding: 0 1.5em 4em; }
+        .admin-section { margin-bottom: 2.5em; }
+        .admin-section h3 {
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-size: 1.2rem;
+            font-weight: normal;
+            margin: 0 0 0.4em;
+            padding-bottom: 0.5em;
+            border-bottom: 1px solid #2a1e14;
+        }
+        .section-note { color: #666; font-size: 0.85rem; margin: 0 0 1em; }
+        .admin-header-row { display: flex; align-items: center; margin-bottom: 1.5em; }
+        .admin-header-row h2 {
+            font-family: 'OldEnglishFive', serif;
+            color: #666;
+            font-size: 1rem;
+            font-weight: normal;
+            margin: 0;
+        }
+        .btn-signout {
+            background: none;
+            border: 1px solid #3a2a1a;
+            color: #888;
+            border-radius: 4px;
+            padding: 0.35em 0.9em;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+        .btn-signout:hover { color: #e7d8b1; border-color: #554433; }
+
+        .admin-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 2em;
+            border-bottom: 2px solid #2a1e14;
+        }
+        .admin-tab {
+            padding: 0.7em 2em;
+            cursor: pointer;
+            color: #888;
+            font-family: 'OldEnglishFive', serif;
+            font-size: 1rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .admin-tab.active { color: #e7d8b1; border-bottom-color: #e7d8b1; }
+        .admin-tab:hover { color: #e7d8b1; }
+
+        .upload-area {
+            border: 2px dashed #2a1e14;
+            border-radius: 8px;
+            padding: 1.8em;
+            text-align: center;
+            color: #555;
+            transition: border-color 0.2s;
+        }
+        .upload-area.dragover { border-color: #e7d8b1; }
+        .upload-area input[type=file] { display: none; }
+        .upload-label { color: #e7d8b1; cursor: pointer; text-decoration: underline; font-size: 0.95rem; }
+        .upload-note { color: #555; font-size: 0.82rem; margin-top: 0.5em; margin-bottom: 0; }
+
+        .progress-wrap { margin-top: 1.2em; display: none; }
+        .progress-track {
+            background: #1a120c;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 0.5em;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #e7d8b1;
+            border-radius: 4px;
+            transition: width 0.2s;
+            width: 0%;
+        }
+        .progress-text { color: #888; font-size: 0.85rem; }
+
+        .video-card {
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+            padding: 1em 1.2em;
+            margin-bottom: 0.8em;
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 1.2em;
+            align-items: start;
+        }
+        @media (max-width: 640px) { .video-card { grid-template-columns: 1fr; } }
+        .video-preview {
+            width: 100%;
+            border-radius: 5px;
+            background: #0a0705;
+            display: block;
+            max-height: 130px;
+            object-fit: cover;
+        }
+        .video-info-col { display: flex; flex-direction: column; gap: 0.6em; }
+        .video-title-input {
+            background: #0a0705;
+            border: 1px solid #3a2e1e;
+            color: #e7d8b1;
+            border-radius: 4px;
+            padding: 0.4em 0.6em;
+            font-size: 0.95em;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'OldEnglishFive', serif;
+        }
+        .video-desc-input {
+            background: #0a0705;
+            border: 1px solid #3a2e1e;
+            color: #bbb;
+            border-radius: 4px;
+            padding: 0.4em 0.6em;
+            font-size: 0.85em;
+            width: 100%;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .video-meta-line { color: #555; font-size: 0.78rem; }
+        .video-actions { display: flex; gap: 0.5em; flex-wrap: wrap; align-items: center; margin-top: 0.2em; }
+        .pub-label { color: #888; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35em; cursor: pointer; }
+        .pub-label input { accent-color: #7ab87a; cursor: pointer; }
+        .btn-save-vid  { background: #e7d8b1; color: #0a0705; border: none; padding: 0.35em 1em; border-radius: 4px; cursor: pointer; font-size: 0.82rem; font-family: 'OldEnglishFive', serif; }
+        .btn-dl-vid    { background: #0a1520; color: #6090c0; border: 1px solid #1a3050; padding: 0.35em 0.8em; border-radius: 4px; cursor: pointer; font-size: 0.82rem; }
+        .btn-del-vid   { background: #200808; color: #c06050; border: 1px solid #401010; padding: 0.35em 0.8em; border-radius: 4px; cursor: pointer; font-size: 0.82rem; }
+        .btn-dl-vid:hover  { background: #1a2a40; }
+        .btn-del-vid:hover { background: #380f0f; }
+        .empty-note { color: #555; font-style: italic; font-size: 0.9rem; padding: 1em 0; }
+
+        .pub-status-on  { color: #4ecc91; font-size: 0.78rem; }
+        .pub-status-off { color: #666;    font-size: 0.78rem; }
+    </style>
+</head>
+<body class="subpage">
+
+    <!-- Login Overlay — starts in loading state; login form only shown if no session -->
+    <div id="login-overlay" style="position:fixed;inset:0;background:#0a0705;display:flex;align-items:center;justify-content:center;z-index:1000;">
+        <div id="login-loading" style="color:#555;font-family:'OldEnglishFive',serif;font-size:1rem;">Checking access&hellip;</div>
+        <div id="login-form" style="display:none;background:#1a120c;border:1px solid #2a1e14;border-radius:12px;padding:2.5em 2em;width:320px;text-align:center;">
+            <h2 style="font-family:'OldEnglishFive',serif;color:#e7d8b1;margin-bottom:1em;">Admin Login</h2>
+            <input id="login-email" type="email" placeholder="Email" style="width:100%;padding:0.6em;margin-bottom:0.8em;background:#0a0705;border:1px solid #3a2e1e;color:#e7d8b1;border-radius:4px;box-sizing:border-box;" />
+            <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:0.6em;margin-bottom:0.8em;background:#0a0705;border:1px solid #3a2e1e;color:#e7d8b1;border-radius:4px;box-sizing:border-box;" />
+            <div id="login-error" style="color:#e74c3c;font-size:0.85em;margin-bottom:0.8em;min-height:1.2em;"></div>
+            <button id="login-btn" style="width:100%;background:#e7d8b1;color:#0a0705;font-family:'OldEnglishFive',serif;padding:0.7em;border:none;border-radius:6px;cursor:pointer;font-size:1rem;">Sign In</button>
+        </div>
+    </div>
+
+    <header class="site-header-unwrapped">
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+    </header>
+
+    <div class="subpage-subtitle-wrap">
+        <h2 class="subpage-subtitle">Admin — Videos</h2>
+    </div>
+
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="index.html">The Antwerp Inn</a></li>
+            <li><a href="fort-drum.html">Fort Drum</a></li>
+            <li><a href="antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="mcallister-house.html">McAllister House</a></li>
+            <li><a href="north-country.html">North Country</a></li>
+            <li><a href="members.html">Members</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="admin-panel">
+
+        <div class="admin-header-row">
+            <h2 id="admin-user-label"></h2>
+            <button class="btn-signout" id="btn-signout">Sign Out</button>
+        </div>
+
+        <div class="admin-tabs">
+            <a class="admin-tab" href="admin.html">Slideshow</a>
+            <a class="admin-tab" href="admin.html">Users</a>
+            <a class="admin-tab active" href="video-admin.html">Videos</a>
+        </div>
+
+        <!-- Upload -->
+        <div class="admin-section">
+            <h3>Upload New Video</h3>
+            <div class="upload-area" id="upload-area">
+                <input type="file" id="video-input" accept="video/*" multiple />
+                <label for="video-input" class="upload-label">Choose video files from your computer</label>
+                <p class="upload-note">MP4, MOV, WebM supported &mdash; stored in Firebase and accessible to active members only.</p>
+                <div class="progress-wrap" id="progress-wrap">
+                    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+                    <div class="progress-text" id="progress-text">Uploading&hellip;</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video list -->
+        <div class="admin-section">
+            <h3>Video Library</h3>
+            <p class="section-note">Edit title and description, toggle Published to make visible to members, or permanently delete.</p>
+            <div id="video-list"><p class="empty-note">Loading&hellip;</p></div>
+        </div>
+
+    </main>
+
+    <script>
+        const toggle  = document.getElementById('menu-toggle');
+        const sideMenu = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const closeBtn = document.getElementById('menu-close');
+        toggle.addEventListener('click',  () => { sideMenu.classList.add('open');    overlay.classList.add('open'); });
+        closeBtn.addEventListener('click',() => { sideMenu.classList.remove('open'); overlay.classList.remove('open'); });
+        overlay.addEventListener('click', () => { sideMenu.classList.remove('open'); overlay.classList.remove('open'); });
+    </script>
+
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp }   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
+                                   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc }
+                                   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+        import { getStorage, ref, getDownloadURL, deleteObject, uploadBytesResumable }
+                                   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
+
+        const app     = initializeApp(firebaseConfig);
+        const auth    = getAuth(app);
+        const db      = getFirestore(app);
+        const storage = getStorage(app);
+
+        // ── Auth ───────────────────────────────────────────────
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value;
+            const pw    = document.getElementById('login-password').value;
+            document.getElementById('login-error').textContent = '';
+            try {
+                await signInWithEmailAndPassword(auth, email, pw);
+            } catch(e) {
+                document.getElementById('login-error').textContent = 'Invalid email or password.';
+            }
+        });
+        document.getElementById('login-password').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('login-btn').click();
+        });
+        document.getElementById('btn-signout').addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('login-overlay').style.display  = 'none';
+                document.getElementById('admin-user-label').textContent = user.email;
+                loadVideos();
+            } else {
+                document.getElementById('login-loading').style.display = 'none';
+                document.getElementById('login-form').style.display    = 'block';
+            }
+        });
+
+        // ── Helpers ────────────────────────────────────────────
+        function formatBytes(bytes) {
+            if (!bytes) return '';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // ── Load videos ────────────────────────────────────────
+        async function loadVideos() {
+            const listEl = document.getElementById('video-list');
+            try {
+                const snap = await getDocs(collection(db, 'videos'));
+                const videos = snap.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .sort((a, b) => (b.uploadedAt || '') > (a.uploadedAt || '') ? 1 : -1);
+
+                if (videos.length === 0) {
+                    listEl.innerHTML = '<p class="empty-note">No videos yet. Upload one above.</p>';
+                    return;
+                }
+                listEl.innerHTML = '';
+                videos.forEach(v => renderVideoCard(listEl, v.id, v));
+            } catch(e) {
+                listEl.innerHTML = '<p class="empty-note">Error loading videos: ' + e.message + '</p>';
+            }
+        }
+
+        function renderVideoCard(container, id, data) {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.dataset.id = id;
+            const pubStatus = data.published
+                ? '<span class="pub-status-on">&#9679; Live to members</span>'
+                : '<span class="pub-status-off">&#9675; Not published</span>';
+            card.innerHTML = `
+                <video class="video-preview" src="${data.url}" preload="metadata" controls></video>
+                <div class="video-info-col">
+                    <input class="video-title-input" type="text" value="${(data.title || '').replace(/"/g,'&quot;')}" placeholder="Video title&hellip;" />
+                    <textarea class="video-desc-input" placeholder="Description (optional)&hellip;">${data.description || ''}</textarea>
+                    <div class="video-meta-line">${data.filename || ''} &middot; ${formatBytes(data.size)} &middot; ${(data.uploadedAt || '').slice(0,10)} &nbsp; ${pubStatus}</div>
+                    <div class="video-actions">
+                        <label class="pub-label">
+                            <input type="checkbox" class="pub-check" ${data.published ? 'checked' : ''} />
+                            Published
+                        </label>
+                        <button class="btn-save-vid">Save</button>
+                        <button class="btn-dl-vid">&#8595; Download</button>
+                        <button class="btn-del-vid">&#10005; Delete</button>
+                    </div>
+                </div>
+            `;
+            card.querySelector('.btn-save-vid').addEventListener('click', () => saveVideo(card, id));
+            card.querySelector('.btn-dl-vid').addEventListener('click',  () => downloadVideo(data.url, data.filename || 'video.mp4'));
+            card.querySelector('.btn-del-vid').addEventListener('click', () => deleteVideo(card, id, data.storagePath || ''));
+            container.appendChild(card);
+        }
+
+        async function saveVideo(card, id) {
+            const title       = card.querySelector('.video-title-input').value.trim();
+            const description = card.querySelector('.video-desc-input').value.trim();
+            const published   = card.querySelector('.pub-check').checked;
+            const btn = card.querySelector('.btn-save-vid');
+            try {
+                await updateDoc(doc(db, 'videos', id), { title, description, published });
+                const metaLine = card.querySelector('.video-meta-line');
+                const pubHtml  = published
+                    ? '<span class="pub-status-on">&#9679; Live to members</span>'
+                    : '<span class="pub-status-off">&#9675; Not published</span>';
+                metaLine.lastElementChild && metaLine.lastElementChild.remove();
+                metaLine.insertAdjacentHTML('beforeend', ' &nbsp; ' + pubHtml);
+                btn.textContent = '\u2713 Saved';
+                setTimeout(() => btn.textContent = 'Save', 2000);
+            } catch(e) { alert('Save failed: ' + e.message); }
+        }
+
+        async function deleteVideo(card, id, storagePath) {
+            if (!confirm('Permanently delete this video? This cannot be undone.')) return;
+            try {
+                if (storagePath) await deleteObject(ref(storage, storagePath));
+                await deleteDoc(doc(db, 'videos', id));
+                card.remove();
+                if (!document.querySelector('.video-card')) {
+                    document.getElementById('video-list').innerHTML = '<p class="empty-note">No videos yet. Upload one above.</p>';
+                }
+            } catch(e) { alert('Delete failed: ' + e.message); }
+        }
+
+        async function downloadVideo(url, name) {
+            try {
+                const resp = await fetch(url);
+                const blob = await resp.blob();
+                const a = Object.assign(document.createElement('a'), {
+                    href: URL.createObjectURL(blob), download: name
+                });
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            } catch(e) { window.open(url, '_blank'); }
+        }
+
+        // ── Upload ─────────────────────────────────────────────
+        document.getElementById('video-input').addEventListener('change', async function() {
+            for (const file of Array.from(this.files)) await uploadVideo(file);
+            this.value = '';
+        });
+
+        const uploadArea = document.getElementById('upload-area');
+        uploadArea.addEventListener('dragover',  e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', async e => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
+            for (const file of files) await uploadVideo(file);
+        });
+
+        async function uploadVideo(file) {
+            const progressWrap = document.getElementById('progress-wrap');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+
+            progressWrap.style.display = 'block';
+            progressFill.style.width   = '0%';
+            progressText.textContent   = 'Preparing\u2026';
+
+            const timestamp   = Date.now();
+            const safeName    = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const storagePath = 'videos/' + timestamp + '_' + safeName;
+            const task        = uploadBytesResumable(ref(storage, storagePath), file);
+
+            return new Promise(resolve => {
+                task.on('state_changed',
+                    snap => {
+                        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+                        progressFill.style.width = pct + '%';
+                        progressText.textContent = 'Uploading ' + file.name + ' \u2014 ' + pct + '%';
+                    },
+                    err => {
+                        progressText.textContent = 'Upload failed: ' + err.message;
+                        resolve();
+                    },
+                    async () => {
+                        try {
+                            const url  = await getDownloadURL(task.snapshot.ref);
+                            const meta = {
+                                title:       file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' '),
+                                description: '',
+                                url,
+                                storagePath,
+                                filename:    file.name,
+                                uploadedAt:  new Date().toISOString(),
+                                published:   false,
+                                size:        file.size
+                            };
+                            const docRef = await addDoc(collection(db, 'videos'), meta);
+                            progressText.textContent = '\u2713 Uploaded — edit title and publish when ready.';
+                            progressFill.style.width = '100%';
+                            setTimeout(() => { progressWrap.style.display = 'none'; }, 3000);
+                            const listEl = document.getElementById('video-list');
+                            if (listEl.querySelector('.empty-note')) listEl.innerHTML = '';
+                            renderVideoCard(listEl, docRef.id, meta);
+                        } catch(e) {
+                            progressText.textContent = 'Post-upload error: ' + e.message;
+                        }
+                        resolve();
+                    }
+                );
+            });
+        }
+
+    </script>
+</body>
+</html>

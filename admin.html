@@ -126,6 +126,25 @@
         }
         .btn-add:hover { background: #2e2010; }
 
+        /* Available image footer (download / delete) */
+        .avail-item-footer {
+            display: flex;
+            border-top: 1px solid #1a1008;
+        }
+        .btn-dl-img, .btn-del-img {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 0.38em 0.2em;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: background 0.15s;
+        }
+        .btn-dl-img { color: #6090c0; border-right: 1px solid #1a1008; }
+        .btn-dl-img:hover { background: #0a1520; }
+        .btn-del-img { color: #c06050; }
+        .btn-del-img:hover { background: #200808; }
+
         /* Upload */
         .upload-area {
             border: 2px dashed #2a1e14;
@@ -370,13 +389,57 @@
         .btn-revoke-admin { background: #3a1a00; color: #e7a06a; border: 1px solid #6a3a10; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
         .admin-badge { background: #1a2a4a; color: #6ab0e7; border: 1px solid #2a4a6a; font-size: 0.7em; font-weight: bold; text-transform: uppercase; padding: 0.2em 0.6em; border-radius: 12px; margin-left: 0.4em; letter-spacing: 0.04em; }
         .users-empty { color: #555; text-align: center; padding: 3em; font-style: italic; }
+
+        /* ── Video panel ───────────────────────────────────── */
+        .progress-wrap { margin-top: 1.2em; display: none; }
+        .progress-track { background: #1a120c; border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 0.5em; }
+        .progress-fill  { height: 100%; background: #e7d8b1; border-radius: 4px; transition: width 0.2s; width: 0%; }
+        .progress-text  { color: #888; font-size: 0.85rem; }
+
+        .video-card {
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+            padding: 1em 1.2em;
+            margin-bottom: 0.8em;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 1.2em;
+            align-items: start;
+        }
+        @media (max-width: 640px) { .video-card { grid-template-columns: 1fr; } }
+        .video-preview { width: 100%; border-radius: 5px; background: #0a0705; display: block; max-height: 120px; object-fit: cover; }
+        .video-info-col { display: flex; flex-direction: column; gap: 0.55em; }
+        .video-title-input {
+            background: #0a0705; border: 1px solid #3a2e1e; color: #e7d8b1;
+            border-radius: 4px; padding: 0.4em 0.6em; font-size: 0.95em;
+            width: 100%; box-sizing: border-box; font-family: 'OldEnglishFive', serif;
+        }
+        .video-desc-input {
+            background: #0a0705; border: 1px solid #3a2e1e; color: #bbb;
+            border-radius: 4px; padding: 0.4em 0.6em; font-size: 0.85em;
+            width: 100%; box-sizing: border-box; resize: vertical; min-height: 54px;
+        }
+        .video-meta-line { color: #555; font-size: 0.78rem; }
+        .video-actions { display: flex; gap: 0.5em; flex-wrap: wrap; align-items: center; }
+        .pub-label { color: #888; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35em; cursor: pointer; }
+        .pub-label input { accent-color: #7ab87a; cursor: pointer; }
+        .pub-on  { color: #4ecc91; font-size: 0.78rem; }
+        .pub-off { color: #555;    font-size: 0.78rem; }
+        .btn-save-vid { background: #e7d8b1; color: #0a0705; border: none; padding: 0.35em 1em; border-radius: 4px; cursor: pointer; font-size: 0.82rem; font-family: 'OldEnglishFive', serif; }
+        .btn-dl-vid   { background: #0a1520; color: #6090c0; border: 1px solid #1a3050; padding: 0.35em 0.8em; border-radius: 4px; cursor: pointer; font-size: 0.82rem; }
+        .btn-del-vid  { background: #200808; color: #c06050; border: 1px solid #401010; padding: 0.35em 0.8em; border-radius: 4px; cursor: pointer; font-size: 0.82rem; }
+        .btn-dl-vid:hover  { background: #1a2a40; }
+        .btn-del-vid:hover { background: #380f0f; }
+        .upload-area.dragover { border-color: #e7d8b1; }
     </style>
 </head>
 <body class="subpage">
 
-    <!-- Login Overlay -->
+    <!-- Login Overlay — starts in loading state; login form only shown if no session -->
     <div id="login-overlay" style="position:fixed;inset:0;background:#0a0705;display:flex;align-items:center;justify-content:center;z-index:1000;">
-        <div style="background:#1a120c;border:1px solid #2a1e14;border-radius:12px;padding:2.5em 2em;width:320px;text-align:center;">
+        <div id="login-loading" style="color:#555;font-family:'OldEnglishFive',serif;font-size:1rem;">Checking access&hellip;</div>
+        <div id="login-form" style="display:none;background:#1a120c;border:1px solid #2a1e14;border-radius:12px;padding:2.5em 2em;width:320px;text-align:center;">
             <h2 style="font-family:'OldEnglishFive',serif;color:#e7d8b1;margin-bottom:1em;">Admin Login</h2>
             <input id="login-email" type="email" placeholder="Email" style="width:100%;padding:0.6em;margin-bottom:0.8em;background:#0a0705;border:1px solid #3a2e1e;color:#e7d8b1;border-radius:4px;box-sizing:border-box;" />
             <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:0.6em;margin-bottom:0.8em;background:#0a0705;border:1px solid #3a2e1e;color:#e7d8b1;border-radius:4px;box-sizing:border-box;" />
@@ -418,6 +481,7 @@
         <div class="admin-tabs">
             <button class="admin-tab active" data-panel="slideshow">Slideshow</button>
             <button class="admin-tab" data-panel="users">Users</button>
+            <button class="admin-tab" data-panel="videos">Videos</button>
         </div>
 
         <div id="panel-slideshow" class="admin-panel-tab active">
@@ -487,6 +551,31 @@
             </div>
         </div><!-- /panel-users -->
 
+        <div id="panel-videos" class="admin-panel-tab">
+
+            <!-- Upload -->
+            <div class="admin-section">
+                <h3>Upload New Video</h3>
+                <div class="upload-area" id="vid-upload-area">
+                    <input type="file" id="vid-file-input" accept="video/*" multiple />
+                    <label for="vid-file-input" class="upload-label">Choose video files from your computer</label>
+                    <p class="upload-note">MP4, MOV, WebM supported &mdash; stored in Firebase, visible to active members only.</p>
+                    <div class="progress-wrap" id="vid-progress-wrap">
+                        <div class="progress-track"><div class="progress-fill" id="vid-progress-fill"></div></div>
+                        <div class="progress-text" id="vid-progress-text">Uploading&hellip;</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video library -->
+            <div class="admin-section">
+                <h3>Video Library</h3>
+                <p class="section-note">Edit title and description, toggle Published to make visible to members, or permanently delete.</p>
+                <div id="video-list"><p class="empty-note">Click the Videos tab to load.</p></div>
+            </div>
+
+        </div><!-- /panel-videos -->
+
     </main>
 
     <!-- Nav script (non-module, runs immediately) -->
@@ -505,9 +594,9 @@
         import { initializeApp }          from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, updateDoc }
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, updateDoc, addDoc }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
-        import { getStorage, ref, uploadBytes, getDownloadURL, listAll }
+        import { getStorage, ref, uploadBytes, getDownloadURL, listAll, deleteObject, uploadBytesResumable }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
 
         const app     = initializeApp(firebaseConfig);
@@ -538,7 +627,7 @@
 
         onAuthStateChanged(auth, async user => {
             if (user) {
-                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('login-overlay').style.display  = 'none';
                 document.getElementById('admin-user-label').textContent = user.email;
                 // Check for master admin designation
                 try {
@@ -551,7 +640,8 @@
                 initAdmin();
             } else {
                 isMasterAdmin = false;
-                document.getElementById('login-overlay').style.display = 'flex';
+                document.getElementById('login-loading').style.display = 'none';
+                document.getElementById('login-form').style.display    = 'block';
             }
         });
 
@@ -658,11 +748,13 @@
         // ── Tab switching ──────────────────────────────────────
         document.querySelectorAll('.admin-tab').forEach(tab => {
             tab.addEventListener('click', () => {
+                if (tab.dataset.panel === 'videos') { window.location.href = 'video-admin.html'; return; }
                 document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.admin-panel-tab').forEach(p => p.classList.remove('active'));
                 tab.classList.add('active');
                 document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
-                if (tab.dataset.panel === 'users') loadUsers();
+                if (tab.dataset.panel === 'users')  loadUsers();
+                if (tab.dataset.panel === 'videos') loadVideos();
             });
         });
 
@@ -896,12 +988,17 @@
             section.style.display = 'block';
             grid.innerHTML = '';
             pool.forEach(src => {
+                const isDefault = DEFAULTS.includes(src);
                 const div = document.createElement('div');
                 div.className = 'avail-item';
                 div.innerHTML = `
                     <img src="${src}" alt="" />
                     <div class="avail-label">${shortName(src)}</div>
                     <button class="btn-add" data-src="${src}">+ Add to Slideshow</button>
+                    <div class="avail-item-footer">
+                        <button class="btn-dl-img" data-src="${src}" data-name="${shortName(src)}" title="Download image">&#8595; Download</button>
+                        ${!isDefault ? `<button class="btn-del-img" data-src="${src}" title="Permanently delete">&#10005; Delete</button>` : ''}
+                    </div>
                 `;
                 grid.appendChild(div);
             });
@@ -911,6 +1008,44 @@
                     renderActive();
                 });
             });
+            grid.querySelectorAll('.btn-dl-img').forEach(btn => {
+                btn.addEventListener('click', () => downloadImage(btn.dataset.src, btn.dataset.name));
+            });
+            grid.querySelectorAll('.btn-del-img').forEach(btn => {
+                btn.addEventListener('click', () => deleteImage(btn.dataset.src));
+            });
+        }
+
+        // ── Delete image (permanent) ───────────────────────────
+        async function deleteImage(src) {
+            if (!confirm('Permanently delete this image? This cannot be undone.')) return;
+            cfg.active   = cfg.active.filter(s => s !== src);
+            cfg.uploaded = cfg.uploaded.filter(s => s !== src);
+            cfg.custom   = cfg.custom.filter(s => s !== src);
+            if (src.startsWith('https://')) {
+                try {
+                    const m = src.match(/slides%2F([^?&#]+)/);
+                    if (m) await deleteObject(ref(storage, 'slides/' + decodeURIComponent(m[1])));
+                } catch(e) { console.warn('Storage delete failed:', e); }
+            }
+            await saveConfig(cfg);
+            renderActive();
+        }
+
+        // ── Download image ─────────────────────────────────────
+        async function downloadImage(src, name) {
+            try {
+                const resp = await fetch(src);
+                const blob = await resp.blob();
+                const url  = URL.createObjectURL(blob);
+                const a    = Object.assign(document.createElement('a'), { href: url, download: name || 'image.jpg' });
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            } catch(e) {
+                window.open(src, '_blank');
+            }
         }
 
         // ── File upload ────────────────────────────────────────
@@ -983,6 +1118,136 @@
             msg.style.display = 'inline';
             setTimeout(() => msg.style.display = 'none', 7000);
         });
+
+        // ── Video management ───────────────────────────────────
+        let videosLoaded = false;
+
+        async function loadVideos() {
+            if (videosLoaded) return;
+            videosLoaded = true;
+            const listEl = document.getElementById('video-list');
+            listEl.innerHTML = '<p class="empty-note">Loading\u2026</p>';
+            try {
+                const snap   = await getDocs(collection(db, 'videos'));
+                const videos = snap.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .sort((a, b) => (b.uploadedAt || '') > (a.uploadedAt || '') ? 1 : -1);
+                if (videos.length === 0) {
+                    listEl.innerHTML = '<p class="empty-note">No videos yet. Upload one above.</p>';
+                    return;
+                }
+                listEl.innerHTML = '';
+                videos.forEach(v => renderVideoCard(listEl, v.id, v));
+            } catch(e) {
+                listEl.innerHTML = '<p class="empty-note">Error loading videos: ' + e.message + '</p>';
+            }
+        }
+
+        function fmtBytes(b) {
+            if (!b) return '';
+            return b < 1048576 ? (b/1024).toFixed(0)+' KB' : (b/1048576).toFixed(1)+' MB';
+        }
+
+        function renderVideoCard(container, id, data) {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            const pubTag = data.published
+                ? '<span class="pub-on">&#9679; Live to members</span>'
+                : '<span class="pub-off">&#9675; Not published</span>';
+            card.innerHTML = `
+                <video class="video-preview" src="${data.url}" preload="metadata" controls></video>
+                <div class="video-info-col">
+                    <input  class="video-title-input" type="text" value="${(data.title||'').replace(/"/g,'&quot;')}" placeholder="Video title\u2026" />
+                    <textarea class="video-desc-input" placeholder="Description (optional)\u2026">${data.description||''}</textarea>
+                    <div class="video-meta-line">${data.filename||''} &middot; ${fmtBytes(data.size)} &middot; ${(data.uploadedAt||'').slice(0,10)} &nbsp;${pubTag}</div>
+                    <div class="video-actions">
+                        <label class="pub-label"><input type="checkbox" class="pub-check" ${data.published?'checked':''} /> Published</label>
+                        <button class="btn-save-vid">Save</button>
+                        <button class="btn-dl-vid">&#8595; Download</button>
+                        <button class="btn-del-vid">&#10005; Delete</button>
+                    </div>
+                </div>`;
+            card.querySelector('.btn-save-vid').addEventListener('click', () => saveVideoCard(card, id));
+            card.querySelector('.btn-dl-vid').addEventListener('click',  () => dlVideo(data.url, data.filename||'video.mp4'));
+            card.querySelector('.btn-del-vid').addEventListener('click', () => delVideo(card, id, data.storagePath||''));
+            container.appendChild(card);
+        }
+
+        async function saveVideoCard(card, id) {
+            const title       = card.querySelector('.video-title-input').value.trim();
+            const description = card.querySelector('.video-desc-input').value.trim();
+            const published   = card.querySelector('.pub-check').checked;
+            const btn = card.querySelector('.btn-save-vid');
+            try {
+                await updateDoc(doc(db, 'videos', id), { title, description, published });
+                const tag = card.querySelector('.pub-on, .pub-off');
+                if (tag) { tag.className = published ? 'pub-on' : 'pub-off'; tag.innerHTML = published ? '&#9679; Live to members' : '&#9675; Not published'; }
+                btn.textContent = '\u2713 Saved';
+                setTimeout(() => btn.textContent = 'Save', 2000);
+            } catch(e) { alert('Save failed: ' + e.message); }
+        }
+
+        async function delVideo(card, id, storagePath) {
+            if (!confirm('Permanently delete this video? This cannot be undone.')) return;
+            try {
+                if (storagePath) await deleteObject(ref(storage, storagePath));
+                await deleteDoc(doc(db, 'videos', id));
+                card.remove();
+                if (!document.querySelector('.video-card'))
+                    document.getElementById('video-list').innerHTML = '<p class="empty-note">No videos yet. Upload one above.</p>';
+            } catch(e) { alert('Delete failed: ' + e.message); }
+        }
+
+        async function dlVideo(url, name) {
+            try {
+                const blob = await (await fetch(url)).blob();
+                const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: name });
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            } catch(e) { window.open(url, '_blank'); }
+        }
+
+        document.getElementById('vid-file-input').addEventListener('change', async function() {
+            for (const f of Array.from(this.files)) await uploadVideo(f);
+            this.value = '';
+        });
+
+        const vidUploadArea = document.getElementById('vid-upload-area');
+        vidUploadArea.addEventListener('dragover',  e => { e.preventDefault(); vidUploadArea.classList.add('dragover'); });
+        vidUploadArea.addEventListener('dragleave', () => vidUploadArea.classList.remove('dragover'));
+        vidUploadArea.addEventListener('drop', async e => {
+            e.preventDefault(); vidUploadArea.classList.remove('dragover');
+            for (const f of Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'))) await uploadVideo(f);
+        });
+
+        async function uploadVideo(file) {
+            const wrap = document.getElementById('vid-progress-wrap');
+            const fill = document.getElementById('vid-progress-fill');
+            const txt  = document.getElementById('vid-progress-text');
+            wrap.style.display = 'block'; fill.style.width = '0%'; txt.textContent = 'Preparing\u2026';
+            const path = 'videos/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+            const task = uploadBytesResumable(ref(storage, path), file);
+            return new Promise(resolve => {
+                task.on('state_changed',
+                    s => { const p = Math.round(s.bytesTransferred/s.totalBytes*100); fill.style.width=p+'%'; txt.textContent='Uploading '+file.name+' \u2014 '+p+'%'; },
+                    err => { txt.textContent = 'Failed: '+err.message; resolve(); },
+                    async () => {
+                        try {
+                            const url  = await getDownloadURL(task.snapshot.ref);
+                            const meta = { title: file.name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' '), description:'', url, storagePath: path, filename: file.name, uploadedAt: new Date().toISOString(), published: false, size: file.size };
+                            const ref2 = await addDoc(collection(db, 'videos'), meta);
+                            txt.textContent = '\u2713 Uploaded \u2014 edit title and publish when ready.';
+                            fill.style.width = '100%';
+                            setTimeout(() => { wrap.style.display='none'; }, 3000);
+                            const listEl = document.getElementById('video-list');
+                            if (listEl.querySelector('.empty-note')) listEl.innerHTML = '';
+                            renderVideoCard(listEl, ref2.id, meta);
+                        } catch(e) { txt.textContent = 'Error: '+e.message; }
+                        resolve();
+                    }
+                );
+            });
+        }
 
     </script>
 
