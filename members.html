@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Members — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest132" />
+    <link rel="stylesheet" href="style.css?v=devtest138" />
     <style>
+        /* ── Login card (shown when logged out) ─────────────────── */
         .members-card {
             max-width: 500px;
             margin: 3em auto;
@@ -15,8 +16,6 @@
             padding: 2.5em 2em;
             text-align: center;
         }
-
-        /* Login form */
         .auth-form input {
             width: 100%;
             padding: 0.6em;
@@ -29,87 +28,136 @@
             font-size: 0.95rem;
         }
         .auth-form input::placeholder { color: #555; }
-        .auth-error {
-            color: #e74c3c;
-            font-size: 0.85em;
-            margin-bottom: 0.8em;
-            min-height: 1.2em;
-        }
+        .auth-error { color: #e74c3c; font-size: 0.85em; margin-bottom: 0.8em; min-height: 1.2em; }
         .btn-signin {
-            width: 100%;
-            background: #e7d8b1;
-            color: #0a0705;
-            font-family: 'OldEnglishFive', serif;
-            padding: 0.7em;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            margin-bottom: 0.8em;
-            transition: background 0.2s;
+            width: 100%; background: #e7d8b1; color: #0a0705;
+            font-family: 'OldEnglishFive', serif; padding: 0.7em;
+            border: none; border-radius: 6px; cursor: pointer;
+            font-size: 1rem; margin-bottom: 0.8em; transition: background 0.2s;
         }
         .btn-signin:hover { background: #fff; }
         .btn-google {
-            width: 100%;
-            background: #221810;
-            color: #e7d8b1;
-            font-family: 'OldEnglishFive', serif;
-            padding: 0.7em;
-            border: 1px solid #3a2a1a;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: background 0.2s;
+            width: 100%; background: #221810; color: #e7d8b1;
+            font-family: 'OldEnglishFive', serif; padding: 0.7em;
+            border: 1px solid #3a2a1a; border-radius: 6px; cursor: pointer;
+            font-size: 0.95rem; transition: background 0.2s;
         }
         .btn-google:hover { background: #2e2010; }
-        .divider {
-            color: #444;
-            font-size: 0.8rem;
-            margin: 0.8em 0;
+        .divider { color: #444; font-size: 0.8rem; margin: 0.8em 0; }
+
+        /* ── Status messages ────────────────────────────────────── */
+        .status-box {
+            max-width: 500px;
+            margin: 3em auto;
+            border-radius: 8px;
+            padding: 1.2em 1.5em;
+            text-align: center;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .status-box.pending  { color: #e7c96a; border: 1px solid #3a2e14; background: #1a1505; }
+        .status-box.inactive { color: #e74c3c; border: 1px solid #3a1205; background: #1a0505; }
+
+        /* ── Member landing page ────────────────────────────────── */
+        .member-landing {
+            display: none;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 1.5em 4em;
         }
 
-        /* Logged-in view */
-        .member-content { display: none; }
-        .member-welcome {
-            color: #e7d8b1;
+        /* Top bar */
+        .member-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2em 0 2em;
+            border-bottom: 1px solid #1e1510;
+            margin-bottom: 2.5em;
+        }
+        .member-greeting {
             font-family: 'OldEnglishFive', serif;
-            font-size: 1.2rem;
-            margin-bottom: 0.4em;
+            color: #e7d8b1;
+            font-size: 1.1rem;
+            font-weight: normal;
+            margin: 0;
         }
-        .member-email {
-            color: #888;
-            font-size: 0.85rem;
-            margin-bottom: 1.5em;
-        }
-        .member-placeholder {
-            color: #aaa;
-            line-height: 1.7;
-            margin-bottom: 2em;
-            font-style: italic;
-        }
+        .member-greeting span { color: #666; font-size: 0.8rem; font-family: sans-serif; display: block; margin-top: 0.2em; }
         .btn-signout {
             background: none;
-            border: 1px solid #3a2a1a;
-            color: #888;
+            border: 1px solid #2a1e14;
+            color: #666;
             border-radius: 4px;
-            padding: 0.4em 1.2em;
+            padding: 0.35em 1em;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            transition: color 0.2s, border-color 0.2s;
         }
         .btn-signout:hover { color: #e7d8b1; border-color: #554433; }
-        .btn-admin {
-            display: inline-block;
-            background: #e7d8b1;
-            color: #0a0705;
+
+        /* Featured video */
+        .featured-label {
             font-family: 'OldEnglishFive', serif;
-            font-size: 1rem;
-            padding: 0.7em 2em;
-            border-radius: 6px;
-            text-decoration: none;
-            margin-bottom: 1.2em;
-            transition: background 0.2s;
+            color: #a07830;
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin: 0 0 0.7em;
         }
-        .btn-admin:hover { background: #fff; }
+        .featured-video-wrap {
+            background: #0d0905;
+            border: 1px solid #2a1e14;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1.2em;
+        }
+        .featured-video-wrap video {
+            width: 100%;
+            display: block;
+            max-height: 480px;
+            object-fit: contain;
+            background: #000;
+        }
+        .featured-video-info {
+            padding: 1.2em 1.5em 1.4em;
+        }
+        .featured-title {
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-size: 1.6rem;
+            font-weight: normal;
+            margin: 0 0 0.4em;
+        }
+        .featured-desc {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* More videos */
+        .more-videos-link {
+            display: inline-block;
+            margin-top: 1.8em;
+            color: #a07830;
+            font-family: 'OldEnglishFive', serif;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border-bottom: 1px solid #3a2a10;
+            padding-bottom: 0.1em;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .more-videos-link:hover { color: #e7d8b1; border-color: #e7d8b1; }
+
+        /* No video fallback */
+        .no-video-note {
+            color: #555;
+            font-style: italic;
+            font-size: 0.95rem;
+            padding: 3em 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="subpage">
@@ -137,36 +185,48 @@
     <div class="menu-overlay" id="menu-overlay"></div>
 
     <main class="subpage-main">
-        <div class="members-card">
 
-            <!-- Login form (shown when logged out) -->
-            <div id="login-view">
-                <h3 style="font-family:'OldEnglishFive',serif;color:#e7d8b1;font-weight:normal;margin:0 0 1.2em;">Member Login</h3>
-                <div class="auth-form">
-                    <input id="mem-email" type="email" placeholder="Email" />
-                    <input id="mem-password" type="password" placeholder="Password" />
-                    <div id="auth-error" class="auth-error"></div>
-                    <button id="btn-email-signin" class="btn-signin">Sign In</button>
-                    <div class="divider">&#8212; or &#8212;</div>
-                    <button id="btn-google-signin" class="btn-google">Sign in with Google</button>
-                </div>
+        <!-- Login form -->
+        <div id="login-view" class="members-card">
+            <h3 style="font-family:'OldEnglishFive',serif;color:#e7d8b1;font-weight:normal;margin:0 0 1.2em;">Member Login</h3>
+            <div class="auth-form">
+                <input id="mem-email" type="email" placeholder="Email" />
+                <input id="mem-password" type="password" placeholder="Password" />
+                <div id="auth-error" class="auth-error"></div>
+                <button id="btn-email-signin" class="btn-signin">Sign In</button>
+                <div class="divider">&#8212; or &#8212;</div>
+                <button id="btn-google-signin" class="btn-google">Sign in with Google</button>
             </div>
+        </div>
 
-            <!-- Member content (shown when logged in) -->
-            <div id="member-view" class="member-content">
-                <p class="member-welcome">Welcome back</p>
-                <p class="member-email" id="member-email-display"></p>
-                <div id="status-pending" style="display:none; color:#e7c96a; font-style:italic; margin-bottom:1.5em; padding:1em; border:1px solid #3a2e14; border-radius:6px; background:#1a1505;">
-                    Your membership request is pending approval. Please check your email &mdash; you will receive a notification once approved.
-                </div>
-                <div id="status-inactive" style="display:none; color:#e74c3c; font-style:italic; margin-bottom:1.5em; padding:1em; border:1px solid #3a1205; border-radius:6px; background:#1a0505;">
-                    Your account has been deactivated. Please contact the admin.
-                </div>
-                <p id="member-placeholder" class="member-placeholder">Membership Section Live &mdash; Summer 2026</p>
+        <!-- Pending approval -->
+        <div id="status-pending" style="display:none;" class="status-box pending">
+            Your membership request is pending approval.<br>
+            Please check your email &mdash; you will receive a notification once approved.
+        </div>
+
+        <!-- Deactivated -->
+        <div id="status-inactive" style="display:none;" class="status-box inactive">
+            Your account has been deactivated. Please contact us for assistance.
+        </div>
+
+        <!-- Active member landing -->
+        <div id="member-landing" class="member-landing">
+
+            <div class="member-topbar">
+                <h2 class="member-greeting">
+                    Welcome back
+                    <span id="member-email-display"></span>
+                </h2>
                 <button id="btn-signout" class="btn-signout">Sign Out</button>
             </div>
 
+            <div id="featured-section">
+                <p class="no-video-note">Loading&hellip;</p>
+            </div>
+
         </div>
+
     </main>
 
     <script>
@@ -174,11 +234,9 @@
         const menu    = document.getElementById('side-menu');
         const overlay = document.getElementById('menu-overlay');
         const close   = document.getElementById('menu-close');
-        function openMenu()  { menu.classList.add('open'); overlay.classList.add('open'); }
-        function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('open'); }
-        toggle.addEventListener('click', openMenu);
-        close.addEventListener('click', closeMenu);
-        overlay.addEventListener('click', closeMenu);
+        toggle.addEventListener('click',  () => { menu.classList.add('open');    overlay.classList.add('open'); });
+        close.addEventListener('click',   () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+        overlay.addEventListener('click', () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
     </script>
 
     <script src="firebase-config.js"></script>
@@ -186,62 +244,100 @@
         import { initializeApp }     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut }
                                      from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs }
+                                     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
         const app  = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db   = getFirestore(app);
 
-        // Auth state observer
+        // ── Auth state ─────────────────────────────────────────
         onAuthStateChanged(auth, async user => {
             if (user) {
-                // Hide both views while async checks run (prevents any flash)
-                document.getElementById('login-view').style.display  = 'none';
-                document.getElementById('member-view').style.display = 'none';
+                document.getElementById('login-view').style.display    = 'none';
+                document.getElementById('status-pending').style.display  = 'none';
+                document.getElementById('status-inactive').style.display = 'none';
+                document.getElementById('member-landing').style.display  = 'none';
 
-                // Check admin role FIRST — admins go straight to admin panel
+                // Admins go straight to admin panel
                 try {
                     const adminSnap = await getDoc(doc(db, 'admins', user.uid));
-                    if (adminSnap.exists()) {
-                        window.location.href = 'admin.html';
-                        return;
-                    }
-                } catch(e) { /* not an admin, continue */ }
+                    if (adminSnap.exists()) { window.location.href = 'admin.html'; return; }
+                } catch(e) {}
 
-                // Regular member flow — ensure users/{uid} doc exists
-                const userRef = doc(db, 'users', user.uid);
+                // Ensure users/{uid} doc exists
+                const userRef  = doc(db, 'users', user.uid);
                 const userSnap = await getDoc(userRef);
                 if (!userSnap.exists()) {
                     await setDoc(userRef, {
-                        email:       user.email       || '',
-                        displayName: user.displayName || '',
-                        photoURL:    user.photoURL    || '',
-                        phone:       '',
-                        address:     '',
-                        joinedAt:    new Date().toISOString(),
-                        status:      'pending',
-                        role:        'member',
-                        notes:       ''
+                        email: user.email || '', displayName: user.displayName || '',
+                        photoURL: user.photoURL || '', phone: '', address: '',
+                        joinedAt: new Date().toISOString(), status: 'pending',
+                        role: 'member', notes: ''
                     });
                 }
 
-                // Re-fetch to get latest status
-                const freshSnap = await getDoc(userRef);
+                const freshSnap  = await getDoc(userRef);
                 const userStatus = freshSnap.data()?.status || 'pending';
 
-                // Now reveal member view with correct state — no flash possible
-                document.getElementById('member-email-display').textContent = user.email || user.displayName || '';
-                document.getElementById('member-view').style.display = 'block';
-                document.getElementById('status-pending').style.display  = userStatus === 'pending'  ? 'block' : 'none';
-                document.getElementById('status-inactive').style.display = userStatus === 'inactive' ? 'block' : 'none';
-                document.getElementById('member-placeholder').style.display = userStatus === 'active' ? 'block' : 'none';
+                if (userStatus === 'pending') {
+                    document.getElementById('status-pending').style.display = 'block';
+                } else if (userStatus === 'inactive') {
+                    document.getElementById('status-inactive').style.display = 'block';
+                } else {
+                    // Active member — show landing
+                    document.getElementById('member-email-display').textContent = user.email || user.displayName || '';
+                    document.getElementById('member-landing').style.display = 'block';
+                    loadFeaturedVideo();
+                }
+
             } else {
-                document.getElementById('login-view').style.display  = 'block';
-                document.getElementById('member-view').style.display = 'none';
+                document.getElementById('login-view').style.display     = 'block';
+                document.getElementById('status-pending').style.display   = 'none';
+                document.getElementById('status-inactive').style.display  = 'none';
+                document.getElementById('member-landing').style.display   = 'none';
             }
         });
 
-        // Email/password sign-in
+        // ── Load featured video ────────────────────────────────
+        async function loadFeaturedVideo() {
+            const section = document.getElementById('featured-section');
+            try {
+                const snap   = await getDocs(collection(db, 'videos'));
+                const videos = snap.docs
+                    .map(d => d.data())
+                    .filter(v => v.published)
+                    .sort((a, b) => (b.uploadedAt || '') > (a.uploadedAt || '') ? 1 : -1);
+
+                if (videos.length === 0) {
+                    section.innerHTML = '<p class="no-video-note">No videos available yet &mdash; check back soon.</p>';
+                    return;
+                }
+
+                const v = videos[0]; // Most recently uploaded published video
+                section.innerHTML = `
+                    <p class="featured-label">&#9654; Member Exclusive</p>
+                    <div class="featured-video-wrap">
+                        <video src="${v.url}" controls preload="metadata"></video>
+                        <div class="featured-video-info">
+                            <h3 class="featured-title">${v.title || 'Untitled'}</h3>
+                            ${v.description ? `<p class="featured-desc">${v.description}</p>` : ''}
+                        </div>
+                    </div>
+                    ${videos.length > 1 ? '<a class="more-videos-link" href="videos.html">View all member videos &rarr;</a>' : ''}
+                `;
+            } catch(e) {
+                section.innerHTML = '<p class="no-video-note">Unable to load video. Please try again.</p>';
+            }
+        }
+
+        // ── Sign out (instant) ─────────────────────────────────
+        document.getElementById('btn-signout').addEventListener('click', () => {
+            signOut(auth).catch(() => {});
+            window.location.href = 'members.html';
+        });
+
+        // ── Sign in ────────────────────────────────────────────
         document.getElementById('btn-email-signin').addEventListener('click', async () => {
             const email = document.getElementById('mem-email').value.trim();
             const pw    = document.getElementById('mem-password').value;
@@ -257,20 +353,16 @@
             if (e.key === 'Enter') document.getElementById('btn-email-signin').click();
         });
 
-        // Google sign-in
         document.getElementById('btn-google-signin').addEventListener('click', async () => {
             document.getElementById('auth-error').textContent = '';
             try {
                 await signInWithPopup(auth, new GoogleAuthProvider());
             } catch(e) {
-                if (e.code !== 'auth/popup-closed-by-user') {
+                if (e.code !== 'auth/popup-closed-by-user')
                     document.getElementById('auth-error').textContent = 'Google sign-in failed. Please try again.';
-                }
             }
         });
 
-        // Sign out
-        document.getElementById('btn-signout').addEventListener('click', () => signOut(auth));
     </script>
 
 </body>
