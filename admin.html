@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest133" />
+    <link rel="stylesheet" href="style.css?v=devtest136" />
     <style>
         .admin-panel {
             max-width: 960px;
@@ -620,7 +620,7 @@
             if (e.key === 'Enter') document.getElementById('login-btn').click();
         });
 
-        document.getElementById('btn-signout').addEventListener('click', () => signOut(auth));
+        document.getElementById('btn-signout').addEventListener('click', () => signOut(auth).then(() => { window.location.href = 'members.html'; }));
 
         // Master admin flag — set on login, used throughout
         let isMasterAdmin = false;
@@ -748,7 +748,6 @@
         // ── Tab switching ──────────────────────────────────────
         document.querySelectorAll('.admin-tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                if (tab.dataset.panel === 'videos') { window.location.href = 'video-admin.html'; return; }
                 document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.admin-panel-tab').forEach(p => p.classList.remove('active'));
                 tab.classList.add('active');
