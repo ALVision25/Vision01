@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest132" />
+    <link rel="stylesheet" href="style.css?v=devtest133" />
     <style>
         .admin-panel {
             max-width: 960px;
@@ -366,7 +366,9 @@
         .btn-approve    { background: #1a4a2e; color: #4ecc91; border: 1px solid #2a6a3e; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
         .btn-deactivate { background: #4a1a1a; color: #e74c3c; border: 1px solid #6a2a2a; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
         .btn-save-user  { background: #e7d8b1; color: #0a0705; border: none; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; font-family: 'OldEnglishFive', serif; }
-        .btn-make-admin { background: #1a2a4a; color: #6ab0e7; border: 1px solid #2a4a6a; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
+        .btn-make-admin   { background: #1a2a4a; color: #6ab0e7; border: 1px solid #2a4a6a; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
+        .btn-revoke-admin { background: #3a1a00; color: #e7a06a; border: 1px solid #6a3a10; padding: 0.4em 1em; border-radius: 4px; cursor: pointer; font-size: 0.85em; }
+        .admin-badge { background: #1a2a4a; color: #6ab0e7; border: 1px solid #2a4a6a; font-size: 0.7em; font-weight: bold; text-transform: uppercase; padding: 0.2em 0.6em; border-radius: 12px; margin-left: 0.4em; letter-spacing: 0.04em; }
         .users-empty { color: #555; text-align: center; padding: 3em; font-style: italic; }
     </style>
 </head>
@@ -503,7 +505,7 @@
         import { initializeApp }          from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, updateDoc }
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, updateDoc }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
         import { getStorage, ref, uploadBytes, getDownloadURL, listAll }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
@@ -531,6 +533,9 @@
 
         document.getElementById('btn-signout').addEventListener('click', () => signOut(auth));
 
+        // Master admin flag — set on login, used throughout
+        let isMasterAdmin = false;
+
         onAuthStateChanged(auth, async user => {
             if (user) {
                 document.getElementById('login-overlay').style.display = 'none';
@@ -539,11 +544,13 @@
                 try {
                     const adminSnap = await getDoc(doc(db, 'admins', user.uid));
                     if (adminSnap.exists() && adminSnap.data()?.role === 'master') {
+                        isMasterAdmin = true;
                         document.getElementById('master-badge').style.display = 'inline';
                     }
                 } catch(e) { /* non-critical */ }
                 initAdmin();
             } else {
+                isMasterAdmin = false;
                 document.getElementById('login-overlay').style.display = 'flex';
             }
         });
@@ -664,6 +671,10 @@
             const listEl = document.getElementById('users-list');
             listEl.innerHTML = '<p class="users-empty">Loading...</p>';
             try {
+                // Load all existing admin UIDs in one shot
+                const adminDocs = await getDocs(collection(db, 'admins'));
+                const adminUids = new Set(adminDocs.docs.map(d => d.id));
+
                 const snap = await getDocs(collection(db, 'users'));
                 if (snap.empty) {
                     listEl.innerHTML = '<p class="users-empty">No registered users yet.</p>';
@@ -671,8 +682,22 @@
                 }
                 listEl.innerHTML = '';
                 snap.forEach(docSnap => {
-                    const u = docSnap.data();
+                    const u   = docSnap.data();
                     const uid = docSnap.id;
+                    const isUserAdmin = adminUids.has(uid);
+
+                    // Admin badge in card header
+                    const adminBadge = isUserAdmin
+                        ? `<span class="admin-badge">&#9733; Admin</span>` : '';
+
+                    // Grant / Revoke button — only master admin sees these
+                    let adminActionBtn = '';
+                    if (isMasterAdmin) {
+                        adminActionBtn = isUserAdmin
+                            ? `<button class="btn-revoke-admin" onclick="revokeAdmin('${uid}', this)">&#10007; Revoke Admin</button>`
+                            : `<button class="btn-make-admin"   onclick="grantAdmin('${uid}', this)">&#9733; Grant Admin</button>`;
+                    }
+
                     const card = document.createElement('div');
                     card.className = 'user-card';
                     card.innerHTML = `
@@ -683,7 +708,7 @@
                                 <div class="user-email">${u.email || ''}</div>
                             </div>
                             <span class="status-badge status-${u.status || 'pending'}">${u.status || 'pending'}</span>
-                            <span style="color:#555;margin-left:0.5em;font-size:0.8em;">${u.role || 'member'}</span>
+                            ${adminBadge}
                         </div>
                         <div class="user-detail">
                             <div class="user-field"><label>Display Name</label><input data-field="displayName" value="${u.displayName || ''}" /></div>
@@ -692,23 +717,18 @@
                             <div class="user-field"><label>Address</label><input data-field="address" value="${u.address || ''}" /></div>
                             <div class="user-field"><label>Status</label>
                                 <select data-field="status">
-                                    <option value="pending" ${u.status==='pending'?'selected':''}>Pending</option>
-                                    <option value="active" ${u.status==='active'?'selected':''}>Active</option>
+                                    <option value="pending"  ${u.status==='pending' ?'selected':''}>Pending</option>
+                                    <option value="active"   ${u.status==='active'  ?'selected':''}>Active</option>
                                     <option value="inactive" ${u.status==='inactive'?'selected':''}>Inactive</option>
-                                </select>
-                            </div>
-                            <div class="user-field"><label>Role</label>
-                                <select data-field="role">
-                                    <option value="member" ${u.role==='member'?'selected':''}>Member</option>
-                                    <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
                                 </select>
                             </div>
                             <div class="user-field"><label>Joined</label><input value="${(u.joinedAt||'').slice(0,10)}" disabled /></div>
                             <div class="user-field" style="align-items:start"><label>Notes</label><textarea data-field="notes">${u.notes || ''}</textarea></div>
                             <div class="user-actions">
-                                <button class="btn-approve" onclick="updateUserStatus('${uid}', 'active', this)">&#10003; Approve</button>
+                                <button class="btn-approve"    onclick="updateUserStatus('${uid}', 'active',   this)">&#10003; Approve</button>
                                 <button class="btn-deactivate" onclick="updateUserStatus('${uid}', 'inactive', this)">&#10007; Deactivate</button>
-                                <button class="btn-save-user" onclick="saveUser('${uid}', this)">Save</button>
+                                <button class="btn-save-user"  onclick="saveUser('${uid}', this)">Save</button>
+                                ${adminActionBtn}
                             </div>
                         </div>`;
                     listEl.appendChild(card);
@@ -742,8 +762,32 @@
             } catch(e) { alert('Error: ' + e.message); }
         }
 
+        async function grantAdmin(uid, btn) {
+            if (!isMasterAdmin) return;
+            if (!confirm('Grant admin access to this user?')) return;
+            try {
+                await setDoc(doc(db, 'admins', uid), { registeredAt: new Date().toISOString(), role: 'admin' });
+                await updateDoc(doc(db, 'users', uid), { role: 'admin', status: 'active' });
+                btn.textContent = '&#10003; Done';
+                setTimeout(() => loadUsers(), 1200);
+            } catch(e) { alert('Error granting admin: ' + e.message); }
+        }
+
+        async function revokeAdmin(uid, btn) {
+            if (!isMasterAdmin) return;
+            if (!confirm('Remove admin access from this user?')) return;
+            try {
+                await deleteDoc(doc(db, 'admins', uid));
+                await updateDoc(doc(db, 'users', uid), { role: 'member' });
+                btn.textContent = '&#10003; Done';
+                setTimeout(() => loadUsers(), 1200);
+            } catch(e) { alert('Error revoking admin: ' + e.message); }
+        }
+
         window.updateUserStatus = updateUserStatus;
-        window.saveUser = saveUser;
+        window.saveUser         = saveUser;
+        window.grantAdmin       = grantAdmin;
+        window.revokeAdmin      = revokeAdmin;
 
         // ── Speed controls ─────────────────────────────────────
         function initSpeedControls() {
