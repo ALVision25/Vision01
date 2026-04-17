@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Historical Archive — The Antwerp Inn 1845</title>
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css?v=hist01" />
+    <link rel="stylesheet" href="style.css?v=hist02" />
     <style>
         .hist-wrap {
             max-width: 960px;
@@ -68,6 +68,70 @@
         .access-msg p  { color: #888; }
         .access-msg a  { color: #e7d8b1; }
 
+        /* User topbar */
+        .hist-userbar {
+            display: flex;
+            align-items: center;
+            gap: 0.8em;
+            padding: 1em 0 1.4em;
+            border-bottom: 1px solid #1e1510;
+            margin-bottom: 1.5em;
+            flex-wrap: wrap;
+        }
+        .hist-userbar-greeting {
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-size: 1rem;
+            font-weight: normal;
+            margin: 0;
+            flex: 1;
+        }
+        .hist-userbar-greeting span {
+            color: #666;
+            font-size: 0.78rem;
+            font-family: sans-serif;
+            display: block;
+            margin-top: 0.15em;
+        }
+        .hist-role-badge {
+            font-size: 0.72rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.2em 0.6em;
+            border-radius: 10px;
+        }
+        .hist-role-admin  { background: #1a2a4a; color: #6ab0e7; border: 1px solid #2a4a6a; }
+        .hist-role-member { background: #003a1a; color: #4ecc91; border: 1px solid #1a5a2a; }
+        .btn-hist-signout {
+            background: none; border: 1px solid #2a1e14; color: #666;
+            border-radius: 4px; padding: 0.3em 0.8em; cursor: pointer;
+            font-size: 0.78rem; transition: color 0.2s, border-color 0.2s;
+        }
+        .btn-hist-signout:hover { color: #e7d8b1; border-color: #554433; }
+
+        /* Admin review banner */
+        .hist-admin-banner {
+            background: #0d1a0d;
+            border: 1px solid #1a4a1a;
+            border-radius: 8px;
+            padding: 0.8em 1.2em;
+            margin-bottom: 1.5em;
+            display: none;
+            align-items: center;
+            gap: 1em;
+            flex-wrap: wrap;
+        }
+        .hist-admin-banner.visible { display: flex; }
+        .hist-admin-banner-text { color: #4ecc91; font-size: 0.88rem; flex: 1; }
+        .hist-admin-banner-text strong { font-family: 'OldEnglishFive', serif; }
+        .btn-review-link {
+            background: #1a4a2e; color: #4ecc91; border: 1px solid #2a6a3e;
+            border-radius: 4px; padding: 0.35em 1em;
+            font-size: 0.82rem; text-decoration: none; white-space: nowrap;
+        }
+        .btn-review-link:hover { background: #235e3a; }
+
         /* Map popup */
         .mapboxgl-popup-content {
             background: #1a120c !important;
@@ -116,6 +180,24 @@
 
         <div id="hist-root" style="display:none;">
             <div class="hist-wrap">
+
+                <!-- User topbar -->
+                <div class="hist-userbar">
+                    <h2 class="hist-userbar-greeting" id="hist-greeting">
+                        Welcome back
+                        <span id="hist-user-email"></span>
+                    </h2>
+                    <span class="hist-role-badge" id="hist-role-badge"></span>
+                    <button class="btn-hist-signout" id="btn-hist-signout">Sign Out</button>
+                </div>
+
+                <!-- Admin pending-review banner (shown only to admins) -->
+                <div class="hist-admin-banner" id="hist-admin-banner">
+                    <span class="hist-admin-banner-text" id="hist-banner-text">
+                        <strong>Admin:</strong> There are pending records awaiting your review.
+                    </span>
+                    <a href="history-admin.html" class="btn-review-link">Review in History Admin &rarr;</a>
+                </div>
 
                 <!-- Top bar: search + contribute button -->
                 <div class="hist-topbar">
@@ -188,8 +270,8 @@
     <script src="firebase-config.js"></script>
     <script type="module">
         import { initializeApp }   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, getDocs, collection, query, where }
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, getDocs, collection }
                                    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
         const app  = initializeApp(firebaseConfig);
@@ -201,6 +283,12 @@
         let searchQuery = '';
         let mapInited   = false;
         let mapInstance = null;
+
+        // ── Sign out ───────────────────────────────────────────
+        document.getElementById('btn-hist-signout').addEventListener('click', () => {
+            signOut(auth).catch(() => {});
+            window.location.href = 'members.html';
+        });
 
         // ── Auth gate ──────────────────────────────────────────
         onAuthStateChanged(auth, async user => {
@@ -215,8 +303,10 @@
                 const adminSnap = await getDoc(doc(db, 'admins', user.uid));
                 if (adminSnap.exists()) {
                     checkEl.style.display = 'none';
+                    showUserBar(user, 'admin');
                     document.getElementById('hist-root').style.display = 'block';
                     loadAllRecords();
+                    checkPendingCount();
                     return;
                 }
             } catch(e) {}
@@ -234,9 +324,38 @@
             }
 
             checkEl.style.display = 'none';
+            showUserBar(user, 'member');
             document.getElementById('hist-root').style.display = 'block';
             loadAllRecords();
         });
+
+        // ── Populate user topbar ───────────────────────────────
+        function showUserBar(user, role) {
+            document.getElementById('hist-user-email').textContent = user.email || user.displayName || '';
+            const badge = document.getElementById('hist-role-badge');
+            if (role === 'admin') {
+                badge.textContent = 'Admin';
+                badge.className = 'hist-role-badge hist-role-admin';
+            } else {
+                badge.textContent = 'Member';
+                badge.className = 'hist-role-badge hist-role-member';
+            }
+        }
+
+        // ── Check pending record count (admins only) ───────────
+        async function checkPendingCount() {
+            try {
+                const cols = ['histPeople','histPlaces','histEvents','histDocs'];
+                const snaps = await Promise.all(cols.map(c => getDocs(collection(db, c))));
+                const pending = snaps.flatMap(s => s.docs).filter(d => d.data().status === 'pending').length;
+                const banner  = document.getElementById('hist-admin-banner');
+                const text    = document.getElementById('hist-banner-text');
+                if (pending > 0) {
+                    text.innerHTML = `<strong>Admin:</strong> ${pending} record${pending !== 1 ? 's' : ''} awaiting your review.`;
+                    banner.classList.add('visible');
+                }
+            } catch(e) {}
+        }
 
         // ── Load all four collections in parallel ──────────────
         async function loadAllRecords() {
@@ -292,7 +411,9 @@
             count.textContent = `${recs.length} record${recs.length !== 1 ? 's' : ''}`;
 
             if (recs.length === 0) {
-                grid.innerHTML = '<p class="hist-empty">No records found.</p>';
+                grid.innerHTML = allRecords.length === 0
+                    ? '<p class="hist-empty">No published records yet &mdash; check back soon.</p>'
+                    : '<p class="hist-empty">No records match your search.</p>';
                 return;
             }
 
