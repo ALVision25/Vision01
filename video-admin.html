@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Video Admin — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest133" />
+    <link rel="stylesheet" href="style.css?v=devtest135" />
     <style>
         .admin-panel { max-width: 960px; margin: 2em auto; padding: 0 1.5em 4em; }
         .admin-section { margin-bottom: 2.5em; }
@@ -237,7 +237,7 @@
         import { initializeApp }   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
                                    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc }
+        import { getFirestore, collection, addDoc, getDocs, getDoc, updateDoc, deleteDoc, doc }
                                    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
         import { getStorage, ref, getDownloadURL, deleteObject, uploadBytesResumable }
                                    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
@@ -263,8 +263,23 @@
         });
         document.getElementById('btn-signout').addEventListener('click', () => signOut(auth));
 
-        onAuthStateChanged(auth, user => {
+        onAuthStateChanged(auth, async user => {
             if (user) {
+                // Verify admin access before showing anything
+                try {
+                    const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+                    if (!adminSnap.exists()) {
+                        await signOut(auth);
+                        document.getElementById('login-loading').style.display = 'none';
+                        document.getElementById('login-error').textContent = 'Admin access required.';
+                        document.getElementById('login-form').style.display  = 'block';
+                        return;
+                    }
+                } catch(e) {
+                    document.getElementById('login-loading').style.display = 'none';
+                    document.getElementById('login-form').style.display    = 'block';
+                    return;
+                }
                 document.getElementById('login-overlay').style.display  = 'none';
                 document.getElementById('admin-user-label').textContent = user.email;
                 loadVideos();
