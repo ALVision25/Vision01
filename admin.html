@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest136" />
+    <link rel="stylesheet" href="style.css?v=devtest137" />
     <style>
         .admin-panel {
             max-width: 960px;
@@ -620,7 +620,10 @@
             if (e.key === 'Enter') document.getElementById('login-btn').click();
         });
 
-        document.getElementById('btn-signout').addEventListener('click', () => signOut(auth).then(() => { window.location.href = 'members.html'; }));
+        document.getElementById('btn-signout').addEventListener('click', () => {
+            signOut(auth).catch(() => {}); // fire — don't wait
+            window.location.href = 'members.html';
+        });
 
         // Master admin flag — set on login, used throughout
         let isMasterAdmin = false;
