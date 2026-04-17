@@ -21,7 +21,17 @@
       "Bash(grep -o '.\\\\{0,800\\\\}April 13, 2026' /tmp/log_edit/word/document.xml)",
       "Bash(grep -o 'no need to ask.\\\\\\(.\\\\{1,800\\\\}\\\\\\)April 13' /tmp/log_edit/word/document.xml)",
       "Bash(node -e ':*)",
-      "Bash(wslpath -w /tmp/log_edit/word/document.xml)"
+      "Bash(wslpath -w /tmp/log_edit/word/document.xml)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__javascript_tool",
+      "WebFetch(domain:alvision25.github.io)",
+      "mcp__Claude_in_Chrome__read_page",
+      "mcp__Claude_in_Chrome__find",
+      "Bash(dir /a \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCODE\\\\Vision01\")",
+      "Bash(findstr /i git)",
+      "Bash(dir /a \"C:/Users/Cowork26/Desktop/ClaudeCODE/Vision01\")"
     ]
   }
 }

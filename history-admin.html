@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>History Admin — The Antwerp Inn 1845</title>
+    <link rel="stylesheet" href="style.css?v=hist01" />
+    <style>
+        .hadmin-wrap {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 1.5em 5em;
+        }
+
+        /* Header row */
+        .hadmin-header {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            padding: 1.2em 0 2em;
+            border-bottom: 1px solid #1e1510;
+            margin-bottom: 2em;
+        }
+        .hadmin-header h2 {
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-size: 1rem;
+            font-weight: normal;
+            margin: 0;
+            color: #666;
+            flex: 1;
+        }
+        .btn-back-link {
+            color: #666; font-size: 0.82rem; text-decoration: none;
+            border: 1px solid #2a1e14; border-radius: 4px; padding: 0.3em 0.8em;
+        }
+        .btn-back-link:hover { color: #e7d8b1; border-color: #554433; }
+        .btn-signout {
+            background: none; border: 1px solid #2a1e14; color: #666;
+            border-radius: 4px; padding: 0.35em 0.9em; cursor: pointer;
+            font-size: 0.8rem; transition: color 0.2s, border-color 0.2s;
+        }
+        .btn-signout:hover { color: #e7d8b1; border-color: #554433; }
+
+        /* Record card (expandable) */
+        .hrec-card {
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+            margin-bottom: 0.7em;
+            overflow: hidden;
+        }
+        .hrec-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8em;
+            padding: 0.85em 1.1em;
+            cursor: pointer;
+            user-select: none;
+        }
+        .hrec-card-header:hover { background: #1e1610; }
+        .hrec-card-title {
+            flex: 1;
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-size: 0.95rem;
+            font-weight: normal;
+        }
+        .hrec-card-subtitle { color: #666; font-size: 0.78rem; }
+        .hrec-card-chevron { color: #444; font-size: 0.8rem; transition: transform 0.2s; }
+        .hrec-card.open .hrec-card-chevron { transform: rotate(180deg); }
+
+        .hrec-card-body {
+            display: none;
+            padding: 0 1.1em 1.2em;
+            border-top: 1px solid #2a1e14;
+        }
+        .hrec-card.open .hrec-card-body { display: block; }
+
+        .hrec-contributor {
+            color: #555; font-size: 0.78rem; margin: 0.6em 0 1em;
+        }
+
+        .hrec-actions {
+            display: flex; gap: 0.5em; flex-wrap: wrap; margin-top: 1em;
+            padding-top: 0.8em; border-top: 1px solid #2a1e14;
+            align-items: center;
+        }
+        .hrec-save-msg { color: #7ab87a; font-size: 0.82rem; display: none; margin-left: auto; }
+
+        /* Quick-add form */
+        .qadd-section {
+            margin-bottom: 2em;
+        }
+        .qadd-toggle {
+            display: flex; align-items: center; gap: 0.5em;
+            background: none; border: 1px solid #2a1e14; border-radius: 6px;
+            color: #888; padding: 0.5em 1em; cursor: pointer; font-size: 0.85rem;
+            width: 100%; text-align: left; transition: color 0.2s;
+        }
+        .qadd-toggle:hover { color: #e7d8b1; border-color: #554433; }
+        .qadd-body {
+            display: none;
+            background: #130e08;
+            border: 1px solid #2a1e14;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 1.2em;
+            margin-bottom: 0.5em;
+        }
+        .qadd-body.open { display: block; }
+        .btn-qadd-submit {
+            background: #e7d8b1; color: #0a0705; border: none;
+            padding: 0.6em 2em; border-radius: 6px; cursor: pointer;
+            font-family: 'OldEnglishFive', serif; font-size: 0.95rem; margin-top: 0.5em;
+        }
+        .btn-qadd-submit:hover { background: #fff; }
+        .qadd-msg { color: #7ab87a; font-size: 0.82rem; margin-top: 0.4em; display: none; }
+        .qadd-err { color: #e74c3c; font-size: 0.82rem; margin-top: 0.4em; }
+
+        /* Empty state */
+        .hadmin-empty { color: #555; font-style: italic; text-align: center; padding: 3em; }
+
+        /* Loading */
+        .hadmin-loading { color: #555; font-style: italic; text-align: center; padding: 2em; }
+
+        /* Section count badge */
+        .tab-count {
+            display: inline-block;
+            background: #2a1e14;
+            color: #a07830;
+            font-size: 0.65rem;
+            padding: 0.1em 0.45em;
+            border-radius: 10px;
+            margin-left: 0.3em;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="subpage">
+
+    <!-- Login overlay -->
+    <div id="login-overlay" style="position:fixed;inset:0;background:#0a0705;display:flex;align-items:center;justify-content:center;z-index:1000;">
+        <div id="login-loading" style="color:#555;font-family:'OldEnglishFive',serif;font-size:1rem;">Checking access&hellip;</div>
+        <div id="login-form" style="display:none;background:#1a120c;border:1px solid #2a1e14;border-radius:12px;padding:2.5em 2em;width:320px;text-align:center;">
+            <h2 style="font-family:'OldEnglishFive',serif;color:#e7d8b1;margin-bottom:1em;">Admin Login</h2>
+            <input id="login-email" type="email" placeholder="Email" style="width:100%;padding:0.6em;margin-bottom:0.8em;background:#0a0705;border:1px solid #3a2e1e;color:#e7d8b1;border-radius:4px;box-sizing:border-box;" />
+            <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:0.6em;margin-bottom:0.8em;background:#0a0705;border:1px solid #3a2e1e;color:#e7d8b1;border-radius:4px;box-sizing:border-box;" />
+            <div id="login-error" style="color:#e74c3c;font-size:0.85em;margin-bottom:0.8em;min-height:1.2em;"></div>
+            <button id="login-btn" style="width:100%;background:#e7d8b1;color:#0a0705;font-family:'OldEnglishFive',serif;padding:0.7em;border:none;border-radius:6px;cursor:pointer;font-size:1rem;">Sign In</button>
+        </div>
+    </div>
+
+    <header class="site-header-unwrapped">
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+    </header>
+
+    <div class="subpage-subtitle-wrap">
+        <h2 class="subpage-subtitle">History Admin</h2>
+    </div>
+
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="index.html">The Antwerp Inn</a></li>
+            <li><a href="fort-drum.html">Fort Drum</a></li>
+            <li><a href="antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="mcallister-house.html">McAllister House</a></li>
+            <li><a href="north-country.html">North Country</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="history.html">History</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="subpage-main" style="max-width:960px;">
+        <div class="hadmin-wrap">
+
+            <div class="hadmin-header">
+                <h2 id="hadmin-user-label">History Administration</h2>
+                <a href="admin.html" class="btn-back-link">&larr; Main Admin</a>
+                <button class="btn-signout" id="btn-signout">Sign Out</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="hist-tabs" id="hadmin-tabs">
+                <button class="hist-tab active" data-col="histPeople">People <span class="tab-count" id="count-people">…</span></button>
+                <button class="hist-tab" data-col="histPlaces">Places <span class="tab-count" id="count-places">…</span></button>
+                <button class="hist-tab" data-col="histEvents">Events <span class="tab-count" id="count-events">…</span></button>
+                <button class="hist-tab" data-col="histDocs">Documents <span class="tab-count" id="count-docs">…</span></button>
+            </div>
+
+            <!-- Tab panels -->
+            <div id="panel-histPeople"  class="hadmin-panel"></div>
+            <div id="panel-histPlaces"  class="hadmin-panel" style="display:none;"></div>
+            <div id="panel-histEvents"  class="hadmin-panel" style="display:none;"></div>
+            <div id="panel-histDocs"    class="hadmin-panel" style="display:none;"></div>
+
+        </div>
+    </main>
+
+    <script>
+        const toggle  = document.getElementById('menu-toggle');
+        const menu    = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const close   = document.getElementById('menu-close');
+        toggle.addEventListener('click',  () => { menu.classList.add('open');    overlay.classList.add('open'); });
+        close.addEventListener('click',   () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+        overlay.addEventListener('click', () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+    </script>
+
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp }   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
+                                   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, collection, query, orderBy }
+                                   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject }
+                                   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
+
+        const app     = initializeApp(firebaseConfig);
+        const auth    = getAuth(app);
+        const db      = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+
+        // ── Auth gate ──────────────────────────────────────────
+        onAuthStateChanged(auth, async user => {
+            if (user) {
+                try {
+                    const snap = await getDoc(doc(db, 'admins', user.uid));
+                    if (!snap.exists()) {
+                        document.getElementById('login-loading').style.display = 'none';
+                        document.getElementById('login-error').textContent = 'Admin access required.';
+                        document.getElementById('login-form').style.display = 'block';
+                        await signOut(auth);
+                        return;
+                    }
+                } catch(e) {
+                    document.getElementById('login-loading').style.display = 'none';
+                    document.getElementById('login-form').style.display = 'block';
+                    return;
+                }
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('hadmin-user-label').textContent = user.email;
+                currentUser = user;
+                initTabs();
+                loadCollection('histPeople');
+            } else {
+                document.getElementById('login-loading').style.display = 'none';
+                document.getElementById('login-form').style.display = 'block';
+            }
+        });
+
+        // ── Login ──────────────────────────────────────────────
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value.trim();
+            const pw    = document.getElementById('login-password').value;
+            document.getElementById('login-error').textContent = '';
+            try {
+                await signInWithEmailAndPassword(auth, email, pw);
+            } catch(e) {
+                document.getElementById('login-error').textContent = 'Invalid email or password.';
+            }
+        });
+        document.getElementById('login-password').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('login-btn').click();
+        });
+
+        // ── Sign out ───────────────────────────────────────────
+        document.getElementById('btn-signout').addEventListener('click', () => {
+            signOut(auth).catch(() => {});
+            window.location.href = 'members.html';
+        });
+
+        // ── Tab switching ──────────────────────────────────────
+        const colCountIds = {
+            histPeople: 'count-people',
+            histPlaces: 'count-places',
+            histEvents: 'count-events',
+            histDocs:   'count-docs'
+        };
+        const loaded = {};
+
+        function initTabs() {
+            document.querySelectorAll('#hadmin-tabs .hist-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('#hadmin-tabs .hist-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.querySelectorAll('.hadmin-panel').forEach(p => p.style.display = 'none');
+                    const col = tab.dataset.col;
+                    document.getElementById(`panel-${col}`).style.display = 'block';
+                    if (!loaded[col]) loadCollection(col);
+                });
+            });
+        }
+
+        // ── Load collection ────────────────────────────────────
+        async function loadCollection(col) {
+            loaded[col] = true;
+            const panel = document.getElementById(`panel-${col}`);
+            panel.innerHTML = `<p class="hadmin-loading">Loading&hellip;</p>`;
+
+            try {
+                const snap = await getDocs(collection(db, col));
+                const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                // Sort: pending → flagged → published
+                const order = { pending: 0, flagged: 1, published: 2 };
+                docs.sort((a, b) => (order[a.status] ?? 99) - (order[b.status] ?? 99));
+
+                // Update count badge
+                const pendingCount = docs.filter(d => d.status === 'pending').length;
+                const countEl = document.getElementById(colCountIds[col]);
+                if (countEl) countEl.textContent = pendingCount ? `${pendingCount} pending` : docs.length;
+
+                panel.innerHTML = '';
+
+                // Quick-add form
+                panel.appendChild(buildQuickAdd(col));
+
+                if (docs.length === 0) {
+                    panel.insertAdjacentHTML('beforeend', '<p class="hadmin-empty">No records yet.</p>');
+                    return;
+                }
+
+                docs.forEach(d => panel.appendChild(buildRecordCard(col, d)));
+
+            } catch(e) {
+                panel.innerHTML = `<p class="hadmin-empty">Error loading records: ${e.message}</p>`;
+            }
+        }
+
+        // ── Record card ────────────────────────────────────────
+        function buildRecordCard(col, data) {
+            const card = document.createElement('div');
+            card.className = 'hrec-card';
+            card.id = `card-${data.id}`;
+
+            const title = data.title || (data.firstName ? `${data.firstName} ${data.lastName}` : 'Untitled');
+            const subtitle = (() => {
+                if (col === 'histPeople') return [data.birthDateText, data.deathDateText].filter(Boolean).join(' – ') || data.occupations?.[0] || '';
+                if (col === 'histPlaces') return data.placeType || '';
+                if (col === 'histEvents') return data.dateStartText || '';
+                if (col === 'histDocs')   return data.fileType || '';
+                return '';
+            })();
+
+            const statusClass = `hist-status-${data.status || 'pending'}`;
+            const statusLabel = (data.status || 'pending').toUpperCase();
+
+            card.innerHTML = `
+                <div class="hrec-card-header">
+                    <span class="hist-status ${statusClass}">${statusLabel}</span>
+                    <span class="hrec-card-title">${esc(title)}</span>
+                    <span class="hrec-card-subtitle">${esc(subtitle)}</span>
+                    <span class="hrec-card-chevron">&#9660;</span>
+                </div>
+                <div class="hrec-card-body">
+                    ${data.contributedBy ? `<p class="hrec-contributor">Contributed by UID: ${esc(data.contributedBy)} &mdash; ${data.contributedAt ? data.contributedAt.slice(0,10) : ''}</p>` : ''}
+                    <div id="fields-${data.id}">${buildEditFields(col, data)}</div>
+                    <div class="hrec-actions">
+                        <button class="btn-hist-publish" data-id="${data.id}" data-col="${col}">Publish</button>
+                        <button class="btn-hist-flag"    data-id="${data.id}" data-col="${col}">Flag</button>
+                        <button class="btn-hist-save"    data-id="${data.id}" data-col="${col}">Save</button>
+                        <button class="btn-hist-delete"  data-id="${data.id}" data-col="${col}">Delete</button>
+                        <span class="hrec-save-msg" id="msg-${data.id}">&#10003; Saved</span>
+                    </div>
+                </div>`;
+
+            // Toggle expand
+            card.querySelector('.hrec-card-header').addEventListener('click', () => {
+                card.classList.toggle('open');
+            });
+
+            // Action buttons
+            card.querySelector('.btn-hist-publish').addEventListener('click', () => updateStatus(col, data.id, 'published'));
+            card.querySelector('.btn-hist-flag').addEventListener('click',    () => updateStatus(col, data.id, 'flagged'));
+            card.querySelector('.btn-hist-delete').addEventListener('click',  () => deleteRecord(col, data.id, card));
+            card.querySelector('.btn-hist-save').addEventListener('click',    () => saveRecord(col, data.id, card));
+
+            return card;
+        }
+
+        function buildEditFields(col, data) {
+            const inp = (id, val, label, type='text') =>
+                `<div class="hf-group"><label>${label}</label><input id="ef-${id}-${data.id}" type="${type}" value="${esc(val||'')}" /></div>`;
+            const ta = (id, val, label) =>
+                `<div class="hf-group"><label>${label}</label><textarea id="ef-${id}-${data.id}">${esc(val||'')}</textarea></div>`;
+            const sel = (id, val, label, options) =>
+                `<div class="hf-group"><label>${label}</label><select id="ef-${id}-${data.id}">${options.map(o => `<option value="${o}" ${o===val?'selected':''}>${o}</option>`).join('')}</select></div>`;
+
+            const statusSel = sel('status', data.status||'pending', 'Status',
+                ['pending','published','flagged']);
+
+            if (col === 'histPeople') return `
+                ${statusSel}
+                <div class="hf-row">${inp('firstName', data.firstName, 'First Name')}${inp('lastName', data.lastName, 'Last Name')}</div>
+                <div class="hf-row">${inp('title', data.title, 'Title')}${inp('middleName', data.middleName, 'Middle Name')}</div>
+                <div class="hf-row">${inp('birthDateText', data.birthDateText, 'Birth Date')}${inp('deathDateText', data.deathDateText, 'Death Date')}</div>
+                <div class="hf-row">${inp('birthPlace', data.birthPlace, 'Birth Place')}${inp('deathPlace', data.deathPlace, 'Death Place')}</div>
+                ${inp('occupations', (data.occupations||[]).join(', '), 'Occupations (comma-sep)')}
+                ${ta('biography', data.biography, 'Biography')}
+                <div class="hf-row">${inp('lat', data.lat, 'Latitude', 'number')}${inp('lng', data.lng, 'Longitude', 'number')}</div>
+                ${inp('sources', (data.sources||[]).join('\n'), 'Sources')}
+                ${ta('notes', data.notes, 'Admin Notes')}
+                ${inp('tags', (data.tags||[]).join(', '), 'Tags (comma-sep)')}`;
+
+            if (col === 'histPlaces') return `
+                ${statusSel}
+                ${inp('title', data.title, 'Place Name')}
+                ${sel('placeType', data.placeType, 'Place Type', ['building','farm','district','road','natural','cemetery','military','indigenous','other'])}
+                ${ta('description', data.description, 'Description')}
+                <div class="hf-row">${inp('fromText', data.timespan?.fromText, 'From')}${inp('toText', data.timespan?.toText, 'To')}</div>
+                ${inp('address', data.address, 'Address')}
+                <div class="hf-row">${inp('municipality', data.municipality, 'Municipality')}${inp('county', data.county, 'County')}</div>
+                <div class="hf-row">${inp('lat', data.lat, 'Latitude', 'number')}${inp('lng', data.lng, 'Longitude', 'number')}</div>
+                ${inp('sources', (data.sources||[]).join('\n'), 'Sources')}
+                ${ta('notes', data.notes, 'Admin Notes')}
+                ${inp('tags', (data.tags||[]).join(', '), 'Tags (comma-sep)')}`;
+
+            if (col === 'histEvents') return `
+                ${statusSel}
+                ${inp('title', data.title, 'Event Title')}
+                ${sel('eventType', data.eventType, 'Event Type', ['fire','founding','battle','death','ceremony','disaster','census','election','legal','migration','construction','demolition','indigenous','other'])}
+                <div class="hf-row">${inp('dateStartText', data.dateStartText, 'Start Date')}${inp('dateEndText', data.dateEndText, 'End Date')}</div>
+                ${ta('description', data.description, 'Description')}
+                ${inp('location', data.location, 'Location')}
+                <div class="hf-row">${inp('lat', data.lat, 'Latitude', 'number')}${inp('lng', data.lng, 'Longitude', 'number')}</div>
+                ${inp('sources', (data.sources||[]).join('\n'), 'Sources')}
+                ${ta('notes', data.notes, 'Admin Notes')}
+                ${inp('tags', (data.tags||[]).join(', '), 'Tags (comma-sep)')}`;
+
+            if (col === 'histDocs') return `
+                ${statusSel}
+                ${inp('title', data.title, 'Title')}
+                ${sel('fileType', data.fileType, 'Document Type', ['photo','deed','letter','newspaper','map','census','legal','will','tax','military','church','birth','death','marriage','other'])}
+                ${inp('dateText', data.dateText, 'Date')}
+                ${ta('description', data.description, 'Description')}
+                ${inp('repository', data.repository, 'Repository')}
+                ${inp('collectionName', data.collectionName, 'Collection Name')}
+                ${inp('callNumber', data.callNumber, 'Call Number')}
+                ${ta('transcription', data.transcription, 'Transcription')}
+                ${inp('sources', (data.sources||[]).join('\n'), 'Sources')}
+                ${ta('notes', data.notes, 'Admin Notes')}
+                ${inp('tags', (data.tags||[]).join(', '), 'Tags (comma-sep)')}`;
+
+            return '';
+        }
+
+        function getFieldVal(id, docId) {
+            const el = document.getElementById(`ef-${id}-${docId}`);
+            return el ? el.value.trim() : '';
+        }
+
+        async function saveRecord(col, docId, card) {
+            const now = new Date().toISOString();
+            const arrOf = id => getFieldVal(id, docId).split(',').map(s=>s.trim()).filter(Boolean);
+            const numOf = id => { const v = getFieldVal(id, docId); return v ? parseFloat(v) : null; };
+
+            const base = {
+                status: getFieldVal('status', docId),
+                lastUpdatedBy: currentUser.uid,
+                lastUpdatedAt: now,
+                notes: getFieldVal('notes', docId),
+                tags: arrOf('tags'),
+                sources: getFieldVal('sources', docId).split('\n').map(s=>s.trim()).filter(Boolean),
+                lat: numOf('lat'),
+                lng: numOf('lng')
+            };
+
+            if (col === 'histPeople') Object.assign(base, {
+                firstName: getFieldVal('firstName', docId),
+                lastName: getFieldVal('lastName', docId),
+                title: getFieldVal('title', docId),
+                middleName: getFieldVal('middleName', docId),
+                birthDateText: getFieldVal('birthDateText', docId),
+                deathDateText: getFieldVal('deathDateText', docId),
+                birthPlace: getFieldVal('birthPlace', docId),
+                deathPlace: getFieldVal('deathPlace', docId),
+                occupations: arrOf('occupations'),
+                biography: getFieldVal('biography', docId)
+            });
+            else if (col === 'histPlaces') Object.assign(base, {
+                title: getFieldVal('title', docId),
+                placeType: getFieldVal('placeType', docId),
+                description: getFieldVal('description', docId),
+                address: getFieldVal('address', docId),
+                municipality: getFieldVal('municipality', docId),
+                county: getFieldVal('county', docId),
+                timespan: { fromText: getFieldVal('fromText', docId), toText: getFieldVal('toText', docId) }
+            });
+            else if (col === 'histEvents') Object.assign(base, {
+                title: getFieldVal('title', docId),
+                eventType: getFieldVal('eventType', docId),
+                description: getFieldVal('description', docId),
+                location: getFieldVal('location', docId),
+                dateStartText: getFieldVal('dateStartText', docId),
+                dateEndText: getFieldVal('dateEndText', docId)
+            });
+            else if (col === 'histDocs') Object.assign(base, {
+                title: getFieldVal('title', docId),
+                fileType: getFieldVal('fileType', docId),
+                dateText: getFieldVal('dateText', docId),
+                description: getFieldVal('description', docId),
+                repository: getFieldVal('repository', docId),
+                collectionName: getFieldVal('collectionName', docId),
+                callNumber: getFieldVal('callNumber', docId),
+                transcription: getFieldVal('transcription', docId)
+            });
+
+            try {
+                await updateDoc(doc(db, col, docId), base);
+                // Refresh status badge in card header
+                card.querySelector('.hist-status').className = `hist-status hist-status-${base.status}`;
+                card.querySelector('.hist-status').textContent = base.status.toUpperCase();
+                const msg = document.getElementById(`msg-${docId}`);
+                msg.style.display = 'inline';
+                setTimeout(() => { msg.style.display = 'none'; }, 2500);
+            } catch(e) {
+                alert(`Save failed: ${e.message}`);
+            }
+        }
+
+        async function updateStatus(col, docId, status) {
+            try {
+                await updateDoc(doc(db, col, docId), {
+                    status,
+                    lastUpdatedBy: currentUser.uid,
+                    lastUpdatedAt: new Date().toISOString()
+                });
+                // Update the status select and badge inline
+                const sel = document.getElementById(`ef-status-${docId}`);
+                if (sel) sel.value = status;
+                const card = document.getElementById(`card-${docId}`);
+                if (card) {
+                    card.querySelector('.hist-status').className = `hist-status hist-status-${status}`;
+                    card.querySelector('.hist-status').textContent = status.toUpperCase();
+                }
+                const msg = document.getElementById(`msg-${docId}`);
+                if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); }
+            } catch(e) {
+                alert(`Status update failed: ${e.message}`);
+            }
+        }
+
+        async function deleteRecord(col, docId, card) {
+            if (!confirm('Permanently delete this record? This cannot be undone.')) return;
+            try {
+                await deleteDoc(doc(db, col, docId));
+                card.remove();
+            } catch(e) {
+                alert(`Delete failed: ${e.message}`);
+            }
+        }
+
+        // ── Quick-add form ─────────────────────────────────────
+        function buildQuickAdd(col) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'qadd-section';
+
+            const toggle = document.createElement('button');
+            toggle.className = 'qadd-toggle';
+            toggle.textContent = '+ Quick Add Record';
+            wrapper.appendChild(toggle);
+
+            const body = document.createElement('div');
+            body.className = 'qadd-body';
+
+            const label = { histPeople: 'Person', histPlaces: 'Place', histEvents: 'Event', histDocs: 'Document' };
+
+            // Minimal required fields for quick add
+            const fields = {
+                histPeople: [
+                    {id:'qa-firstName', label:'First Name *', type:'input'},
+                    {id:'qa-lastName',  label:'Last Name *',  type:'input'},
+                    {id:'qa-biography', label:'Notes / Biography', type:'textarea'}
+                ],
+                histPlaces: [
+                    {id:'qa-title',       label:'Place Name *', type:'input'},
+                    {id:'qa-placeType',   label:'Place Type *', type:'select', options:['building','farm','district','road','natural','cemetery','military','indigenous','other']},
+                    {id:'qa-description', label:'Description *', type:'textarea'}
+                ],
+                histEvents: [
+                    {id:'qa-title',       label:'Event Title *', type:'input'},
+                    {id:'qa-eventType',   label:'Event Type *', type:'select', options:['fire','founding','battle','death','ceremony','disaster','census','election','legal','migration','construction','demolition','indigenous','other']},
+                    {id:'qa-description', label:'Description *', type:'textarea'}
+                ],
+                histDocs: [
+                    {id:'qa-title',       label:'Title *', type:'input'},
+                    {id:'qa-fileType',    label:'Document Type *', type:'select', options:['photo','deed','letter','newspaper','map','census','legal','will','tax','military','church','birth','death','marriage','other']},
+                    {id:'qa-description', label:'Description *', type:'textarea'}
+                ]
+            };
+
+            let html = '';
+            (fields[col]||[]).forEach(f => {
+                const uid = `${f.id}-${col}`;
+                if (f.type === 'input') {
+                    html += `<div class="hf-group"><label>${f.label}</label><input id="${uid}" type="text" /></div>`;
+                } else if (f.type === 'textarea') {
+                    html += `<div class="hf-group"><label>${f.label}</label><textarea id="${uid}"></textarea></div>`;
+                } else if (f.type === 'select') {
+                    html += `<div class="hf-group"><label>${f.label}</label><select id="${uid}"><option value="">— select —</option>${f.options.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+                }
+            });
+            html += `<button class="btn-qadd-submit">Add ${label[col]||'Record'}</button>`;
+            html += `<p class="qadd-msg" id="qadd-msg-${col}">&#10003; Record added — pending review.</p>`;
+            html += `<p class="qadd-err" id="qadd-err-${col}"></p>`;
+            body.innerHTML = html;
+
+            body.querySelector('.btn-qadd-submit').addEventListener('click', () => quickAddSubmit(col, body));
+            toggle.addEventListener('click', () => {
+                body.classList.toggle('open');
+                toggle.textContent = body.classList.contains('open') ? '▲ Hide Quick Add' : '+ Quick Add Record';
+            });
+
+            wrapper.appendChild(body);
+            return wrapper;
+        }
+
+        async function quickAddSubmit(col, body) {
+            const msgEl = document.getElementById(`qadd-msg-${col}`);
+            const errEl = document.getElementById(`qadd-err-${col}`);
+            msgEl.style.display = 'none';
+            errEl.textContent = '';
+
+            const gv = id => { const el = document.getElementById(`${id}-${col}`); return el ? el.value.trim() : ''; };
+
+            let record = {
+                status: 'published',
+                contributedBy: currentUser.uid,
+                contributedAt: new Date().toISOString(),
+                lastUpdatedBy: currentUser.uid,
+                lastUpdatedAt: new Date().toISOString(),
+                sources: [], notes: '', tags: [],
+                photoURL: '', photoPath: '', thumbnailURL: '',
+                lat: null, lng: null
+            };
+
+            if (col === 'histPeople') {
+                if (!gv('qa-firstName') || !gv('qa-lastName')) { errEl.textContent = 'First and last name required.'; return; }
+                Object.assign(record, {
+                    firstName: gv('qa-firstName'), lastName: gv('qa-lastName'),
+                    title:'', middleName:'', nameSuffix:'', altNames:[],
+                    birthDateText:'', deathDateText:'', birthDateISO:'', deathDateISO:'',
+                    birthDateApprox:true, deathDateApprox:true,
+                    birthPlace:'', deathPlace:'', gender:'', religion:'',
+                    occupations:[], biography: gv('qa-biography'),
+                    relatedPlaces:[], relatedEvents:[], relatedDocs:[], relationships:[]
+                });
+            } else if (col === 'histPlaces') {
+                if (!gv('qa-title') || !gv('qa-placeType') || !gv('qa-description')) { errEl.textContent = 'All required fields must be filled.'; return; }
+                Object.assign(record, {
+                    title: gv('qa-title'), placeType: gv('qa-placeType'),
+                    description: gv('qa-description'),
+                    address:'', municipality:'', county:'', state:'NY',
+                    timespan:{ fromText:'', toText:'' },
+                    relatedPeople:[], relatedEvents:[], relatedDocs:[], polygon:[]
+                });
+            } else if (col === 'histEvents') {
+                if (!gv('qa-title') || !gv('qa-eventType') || !gv('qa-description')) { errEl.textContent = 'All required fields must be filled.'; return; }
+                Object.assign(record, {
+                    title: gv('qa-title'), eventType: gv('qa-eventType'),
+                    description: gv('qa-description'),
+                    dateStartText:'', dateEndText:'', dateStartISO:'', dateEndISO:'',
+                    dateStartApprox:true, dateEndApprox:true,
+                    location:'',
+                    relatedPeople:[], relatedPlaces:[], relatedDocs:[]
+                });
+            } else if (col === 'histDocs') {
+                if (!gv('qa-title') || !gv('qa-fileType') || !gv('qa-description')) { errEl.textContent = 'All required fields must be filled.'; return; }
+                Object.assign(record, {
+                    title: gv('qa-title'), fileType: gv('qa-fileType'),
+                    description: gv('qa-description'),
+                    dateText:'', dateISO:'', dateApprox:true,
+                    repository:'', collectionName:'', callNumber:'',
+                    transcription:'', fileURL:'', filePath:'',
+                    thumbnailPath:'', mimeType:'', fileSizeBytes:0,
+                    relatedPeople:[], relatedPlaces:[], relatedEvents:[]
+                });
+            }
+
+            try {
+                await addDoc(collection(db, col), record);
+                msgEl.style.display = 'block';
+                setTimeout(() => msgEl.style.display = 'none', 3000);
+                // Clear fields
+                body.querySelectorAll('input, textarea').forEach(el => el.value = '');
+                body.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+                // Reload the collection
+                loaded[col] = false;
+                loadCollection(col);
+            } catch(e) {
+                errEl.textContent = `Error: ${e.message}`;
+            }
+        }
+
+        // ── Utility ────────────────────────────────────────────
+        function esc(str) {
+            return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+    </script>
+</body>
+</html>

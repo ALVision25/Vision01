@@ -168,3 +168,248 @@ body.subpage .site-header-unwrapped {
     margin: 0 0 0.5em 0;
     letter-spacing: 0.03em;
 }
+
+/* ══════════════════════════════════════════════════════
+   HISTORY DATABASE — shared tokens
+   ══════════════════════════════════════════════════════ */
+
+/* Filter tab bar */
+.hist-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #2a1e14;
+    margin-bottom: 1.5em;
+    flex-wrap: wrap;
+}
+.hist-tab {
+    padding: 0.55em 1.4em;
+    cursor: pointer;
+    color: #888;
+    font-family: 'OldEnglishFive', serif;
+    font-size: 0.9rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s;
+    white-space: nowrap;
+}
+.hist-tab.active { color: #e7d8b1; border-bottom-color: #e7d8b1; }
+.hist-tab:hover  { color: #e7d8b1; }
+
+/* Record cards */
+.hist-card {
+    background: #1a120c;
+    border: 1px solid #2a1e14;
+    border-radius: 8px;
+    padding: 1em 1.2em;
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+.hist-card:hover { border-color: #554433; }
+.hist-card-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #a07830;
+    margin: 0 0 0.3em;
+    font-family: 'OldEnglishFive', serif;
+}
+.hist-card-title {
+    font-family: 'OldEnglishFive', serif;
+    color: #e7d8b1;
+    font-size: 1rem;
+    font-weight: normal;
+    margin: 0 0 0.3em;
+}
+.hist-card-meta {
+    color: #666;
+    font-size: 0.8rem;
+    margin: 0;
+}
+.hist-card-thumb {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 0.6em;
+    display: block;
+}
+
+/* Cards grid */
+.hist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1em;
+}
+
+/* Status pill */
+.hist-status {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.15em 0.55em;
+    border-radius: 10px;
+}
+.hist-status-pending  { background: #3a2e00; color: #e7c96a; }
+.hist-status-published{ background: #003a1a; color: #4ecc91; }
+.hist-status-flagged  { background: #3a1800; color: #e7803c; }
+
+/* Form fields (shared across contribute + history-admin) */
+.hf-group {
+    margin-bottom: 1em;
+}
+.hf-group label {
+    display: block;
+    color: #888;
+    font-size: 0.82rem;
+    margin-bottom: 0.3em;
+}
+.hf-group input,
+.hf-group textarea,
+.hf-group select {
+    width: 100%;
+    box-sizing: border-box;
+    background: #0a0705;
+    border: 1px solid #3a2e1e;
+    color: #e7d8b1;
+    border-radius: 4px;
+    padding: 0.45em 0.65em;
+    font-size: 0.9rem;
+    font-family: sans-serif;
+}
+.hf-group textarea { resize: vertical; min-height: 80px; }
+.hf-group input::placeholder,
+.hf-group textarea::placeholder { color: #444; }
+.hf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8em;
+}
+@media (max-width: 520px) { .hf-row { grid-template-columns: 1fr; } }
+
+/* Section heading inside form */
+.hf-section-title {
+    font-family: 'OldEnglishFive', serif;
+    color: #a07830;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 1.4em 0 0.6em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #2a1e14;
+}
+
+/* Collapsible optional block */
+.hf-optional-toggle {
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0.3em 0;
+    text-decoration: underline;
+    display: block;
+    margin: 0.5em 0 0.8em;
+}
+.hf-optional-toggle:hover { color: #888; }
+.hf-optional { display: none; }
+.hf-optional.open { display: block; }
+
+/* Action buttons for history admin */
+.btn-hist-publish { background: #1a4a2e; color: #4ecc91; border: 1px solid #2a6a3e; padding: 0.35em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.82rem; }
+.btn-hist-flag    { background: #3a1800; color: #e7803c; border: 1px solid #5a3000; padding: 0.35em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.82rem; }
+.btn-hist-delete  { background: #200808; color: #c06050; border: 1px solid #401010; padding: 0.35em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.82rem; }
+.btn-hist-save    { background: #e7d8b1; color: #0a0705; border: none; padding: 0.35em 0.9em; border-radius: 4px; cursor: pointer; font-size: 0.82rem; font-family: 'OldEnglishFive', serif; }
+.btn-hist-publish:hover { background: #235e3a; }
+.btn-hist-flag:hover    { background: #4a2200; }
+.btn-hist-delete:hover  { background: #380f0f; }
+.btn-hist-save:hover    { background: #fff; }
+
+/* Modal overlay */
+.hist-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 2000;
+    overflow-y: auto;
+    padding: 2em 1em;
+}
+.hist-modal-overlay.open { display: block; }
+.hist-modal {
+    background: #1a120c;
+    border: 1px solid #2a1e14;
+    border-radius: 12px;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 2em;
+    position: relative;
+}
+.hist-modal-close {
+    position: absolute;
+    top: 0.8em; right: 1em;
+    background: none; border: none;
+    color: #888; font-size: 1.4em;
+    cursor: pointer;
+}
+.hist-modal-close:hover { color: #e7d8b1; }
+.hist-modal-type {
+    font-family: 'OldEnglishFive', serif;
+    color: #a07830;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0 0 0.4em;
+}
+.hist-modal-title {
+    font-family: 'OldEnglishFive', serif;
+    color: #e7d8b1;
+    font-size: 1.5rem;
+    font-weight: normal;
+    margin: 0 0 1em;
+    padding-bottom: 0.6em;
+    border-bottom: 1px solid #2a1e14;
+}
+.hist-modal-photo {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 1em;
+    display: block;
+}
+.hist-modal-field { margin-bottom: 0.7em; }
+.hist-modal-field-label { color: #666; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.15em; }
+.hist-modal-field-value { color: #ccc; font-size: 0.9rem; line-height: 1.6; }
+.hist-modal-bio { color: #bbb; font-size: 0.9rem; line-height: 1.75; white-space: pre-wrap; }
+
+/* Map/list toggle */
+.view-toggle {
+    display: flex;
+    gap: 0.5em;
+    margin-bottom: 1.2em;
+}
+.btn-view-toggle {
+    background: #1a120c;
+    border: 1px solid #2a1e14;
+    color: #888;
+    padding: 0.4em 1.2em;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+}
+.btn-view-toggle.active { background: #2a1e14; color: #e7d8b1; border-color: #554433; }
+.btn-view-toggle:hover  { color: #e7d8b1; }
+
+/* Map container */
+#hist-map {
+    width: 100%;
+    height: 460px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #2a1e14;
+    display: none;
+}
+#hist-map.visible { display: block; }

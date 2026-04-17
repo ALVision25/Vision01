@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contribute a Record — The Antwerp Inn 1845</title>
+    <link rel="stylesheet" href="style.css?v=hist01" />
+    <style>
+        .contrib-wrap {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 1.5em 5em;
+        }
+
+        /* Step indicator */
+        .step-bar {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 2em;
+            padding-top: 0.5em;
+        }
+        .step-dot {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: #1a120c;
+            border: 2px solid #2a1e14;
+            color: #555;
+            font-size: 0.78rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .step-dot.active  { border-color: #e7d8b1; color: #e7d8b1; }
+        .step-dot.done    { background: #2a1e14; border-color: #554433; color: #a07830; }
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background: #2a1e14;
+        }
+        .step-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.35em;
+            margin-bottom: 1.5em;
+        }
+        .step-label {
+            font-size: 0.72rem;
+            color: #555;
+            text-align: center;
+            width: 28px;
+            margin-left: -28px; /* align with dots — rough centering */
+        }
+        .step-label:first-child { margin-left: 0; text-align: left; }
+        .step-label:last-child  { text-align: right; margin-left: auto; }
+
+        /* Type choice buttons */
+        .type-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1em;
+            margin-top: 1em;
+        }
+        @media (max-width: 460px) { .type-grid { grid-template-columns: 1fr; } }
+        .type-btn {
+            background: #1a120c;
+            border: 2px solid #2a1e14;
+            border-radius: 10px;
+            color: #e7d8b1;
+            font-family: 'OldEnglishFive', serif;
+            font-size: 1.1rem;
+            padding: 1.4em 1em;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .type-btn:hover    { border-color: #554433; background: #221810; }
+        .type-btn.selected { border-color: #e7d8b1; background: #221810; }
+        .type-btn span {
+            display: block;
+            font-family: sans-serif;
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 0.4em;
+        }
+
+        /* Nav buttons */
+        .contrib-nav {
+            display: flex;
+            gap: 0.8em;
+            margin-top: 2em;
+        }
+        .btn-back {
+            background: none;
+            border: 1px solid #2a1e14;
+            color: #888;
+            border-radius: 6px;
+            padding: 0.65em 1.5em;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn-back:hover { color: #e7d8b1; border-color: #554433; }
+        .btn-next {
+            background: #e7d8b1;
+            color: #0a0705;
+            border: none;
+            border-radius: 6px;
+            padding: 0.65em 2em;
+            cursor: pointer;
+            font-family: 'OldEnglishFive', serif;
+            font-size: 1rem;
+            flex: 1;
+        }
+        .btn-next:hover { background: #fff; }
+        .btn-next:disabled { background: #2a1e14; color: #555; cursor: not-allowed; }
+
+        /* File upload */
+        .upload-drop {
+            border: 2px dashed #2a1e14;
+            border-radius: 8px;
+            padding: 2em;
+            text-align: center;
+            color: #555;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .upload-drop:hover, .upload-drop.dragover { border-color: #554433; }
+        .upload-drop input { display: none; }
+        .upload-drop-label { color: #e7d8b1; cursor: pointer; font-size: 0.95rem; }
+        .upload-drop-note  { font-size: 0.8rem; margin-top: 0.5em; }
+        .upload-preview-list { margin-top: 1em; }
+        .upload-preview-item {
+            display: flex; align-items: center; gap: 0.7em;
+            background: #1a120c; border: 1px solid #2a1e14;
+            border-radius: 6px; padding: 0.5em 0.8em; margin-bottom: 0.4em;
+        }
+        .upload-preview-item img {
+            width: 44px; height: 44px; object-fit: cover; border-radius: 4px;
+        }
+        .upload-preview-item .upi-name { flex: 1; color: #bbb; font-size: 0.85rem; }
+        .upload-preview-item .upi-size { color: #555; font-size: 0.78rem; }
+        .btn-upi-remove {
+            background: none; border: none; color: #c06050;
+            cursor: pointer; font-size: 1rem; padding: 0.1em 0.3em;
+        }
+
+        /* Progress */
+        .progress-wrap { margin-top: 1.2em; display: none; }
+        .progress-track { background: #1a120c; border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 0.5em; }
+        .progress-fill  { height: 100%; background: #e7d8b1; border-radius: 4px; width: 0%; transition: width 0.2s; }
+        .progress-text  { color: #888; font-size: 0.85rem; }
+
+        /* Confirmation */
+        .confirm-box {
+            text-align: center;
+            padding: 3em 1em;
+        }
+        .confirm-icon { font-size: 2.5rem; margin-bottom: 0.5em; }
+        .confirm-box h3 {
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1; font-weight: normal; font-size: 1.4rem; margin: 0 0 0.6em;
+        }
+        .confirm-box p { color: #888; font-size: 0.95rem; line-height: 1.6; }
+        .confirm-links { display: flex; gap: 1em; justify-content: center; margin-top: 1.8em; flex-wrap: wrap; }
+        .confirm-links a {
+            color: #a07830; font-family: 'OldEnglishFive', serif; font-size: 0.9rem;
+            text-decoration: none; border-bottom: 1px solid #3a2a10; padding-bottom: 0.1em;
+        }
+        .confirm-links a:hover { color: #e7d8b1; border-color: #e7d8b1; }
+
+        /* Misc */
+        .form-intro { color: #888; font-size: 0.9rem; margin: 0 0 1.5em; line-height: 1.6; }
+        .error-msg  { color: #e74c3c; font-size: 0.85rem; margin-top: 0.5em; min-height: 1.2em; }
+        .step-view  { display: none; }
+        .step-view.active { display: block; }
+        .access-msg { text-align: center; padding: 4em 2em; }
+        .access-msg h3 { font-family: 'OldEnglishFive', serif; color: #e7d8b1; font-weight: normal; }
+        .access-msg p  { color: #888; }
+        .access-msg a  { color: #e7d8b1; }
+    </style>
+</head>
+<body class="subpage">
+
+    <header class="site-header-unwrapped">
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+    </header>
+
+    <div class="subpage-subtitle-wrap">
+        <h2 class="subpage-subtitle">Contribute a Record</h2>
+    </div>
+
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="index.html">The Antwerp Inn</a></li>
+            <li><a href="fort-drum.html">Fort Drum</a></li>
+            <li><a href="antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="mcallister-house.html">McAllister House</a></li>
+            <li><a href="north-country.html">North Country</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="history.html">History</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="subpage-main">
+        <div id="access-check">
+            <p style="text-align:center;color:#555;font-style:italic;">Checking access&hellip;</p>
+        </div>
+        <div id="contrib-root" style="display:none;">
+            <div class="contrib-wrap">
+
+                <!-- Step indicator -->
+                <div class="step-bar">
+                    <div class="step-dot active" id="dot-1">1</div>
+                    <div class="step-line"></div>
+                    <div class="step-dot" id="dot-2">2</div>
+                    <div class="step-line"></div>
+                    <div class="step-dot" id="dot-3">3</div>
+                </div>
+
+                <!-- Step 1 — Choose type -->
+                <div id="step-1" class="step-view active">
+                    <p class="form-intro">Choose the type of record you'd like to contribute. All submissions are reviewed before being published to the archive.</p>
+                    <div class="type-grid">
+                        <button class="type-btn" data-type="people">
+                            &#9876; Person
+                            <span>An individual from Antwerp's history</span>
+                        </button>
+                        <button class="type-btn" data-type="places">
+                            &#9968; Place
+                            <span>A building, farm, road, or landmark</span>
+                        </button>
+                        <button class="type-btn" data-type="events">
+                            &#128197; Event
+                            <span>A historical occurrence or milestone</span>
+                        </button>
+                        <button class="type-btn" data-type="docs">
+                            &#128196; Document / Media
+                            <span>Photo, deed, letter, newspaper, map&hellip;</span>
+                        </button>
+                    </div>
+                    <div class="contrib-nav">
+                        <button class="btn-next" id="btn-step1-next" disabled>Next &rarr;</button>
+                    </div>
+                </div>
+
+                <!-- Step 2 — Form -->
+                <div id="step-2" class="step-view">
+                    <div id="form-container"></div>
+                    <div id="form-error" class="error-msg"></div>
+                    <div class="contrib-nav">
+                        <button class="btn-back" id="btn-step2-back">&larr; Back</button>
+                        <button class="btn-next" id="btn-step2-next">Next &rarr;</button>
+                    </div>
+                </div>
+
+                <!-- Step 3 — File upload -->
+                <div id="step-3" class="step-view">
+                    <p class="form-intro">Optionally attach a photo, document, or image file for this record (max 25 MB). You can skip this step.</p>
+                    <div class="upload-drop" id="upload-drop">
+                        <input type="file" id="file-input" accept="image/*,.pdf,.doc,.docx" multiple />
+                        <label for="file-input" class="upload-drop-label">&#128194; Choose a file or drag it here</label>
+                        <p class="upload-drop-note">Images, PDFs — up to 25 MB each</p>
+                    </div>
+                    <div class="upload-preview-list" id="upload-preview-list"></div>
+                    <div class="progress-wrap" id="upload-progress-wrap">
+                        <div class="progress-track"><div class="progress-fill" id="upload-progress-fill"></div></div>
+                        <p class="progress-text" id="upload-progress-text">Uploading&hellip;</p>
+                    </div>
+                    <div id="upload-error" class="error-msg"></div>
+                    <div class="contrib-nav">
+                        <button class="btn-back" id="btn-step3-back">&larr; Back</button>
+                        <button class="btn-next" id="btn-step3-submit">Submit Record</button>
+                    </div>
+                </div>
+
+                <!-- Confirmation -->
+                <div id="step-confirm" class="step-view">
+                    <div class="confirm-box">
+                        <div class="confirm-icon">&#10003;</div>
+                        <h3>Thank You for Contributing!</h3>
+                        <p>Your record has been submitted for review. An admin will approve and publish it to the archive. You'll see it appear once published.</p>
+                        <div class="confirm-links">
+                            <a href="history-contribute.html">Submit Another Record</a>
+                            <a href="history.html">Browse the Archive</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const toggle  = document.getElementById('menu-toggle');
+        const menu    = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const close   = document.getElementById('menu-close');
+        toggle.addEventListener('click',  () => { menu.classList.add('open');    overlay.classList.add('open'); });
+        close.addEventListener('click',   () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+        overlay.addEventListener('click', () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+    </script>
+
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp }     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged }
+                                     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, addDoc, updateDoc, collection }
+                                     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL }
+                                     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js';
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+        let selectedType = null;
+        let newDocId = null;
+        let selectedFiles = [];
+
+        // ── Auth gate ──────────────────────────────────────────
+        onAuthStateChanged(auth, async user => {
+            const checkEl = document.getElementById('access-check');
+            if (!user) {
+                checkEl.innerHTML = `<div class="access-msg"><h3>Members Only</h3><p>Please <a href="members.html">sign in</a> to contribute records.</p></div>`;
+                return;
+            }
+            try {
+                const snap = await getDoc(doc(db, 'users', user.uid));
+                const status = snap.exists() ? snap.data().status : 'pending';
+                if (status !== 'active') {
+                    checkEl.innerHTML = `<div class="access-msg"><h3>Access Pending</h3><p>Your membership is awaiting approval. <a href="members.html">Return to Members</a>.</p></div>`;
+                    return;
+                }
+            } catch(e) {
+                checkEl.innerHTML = `<div class="access-msg"><p>Error checking access. <a href="members.html">Try again</a>.</p></div>`;
+                return;
+            }
+            currentUser = user;
+            checkEl.style.display = 'none';
+            document.getElementById('contrib-root').style.display = 'block';
+        });
+
+        // ── Step helpers ───────────────────────────────────────
+        function showStep(n) {
+            document.querySelectorAll('.step-view').forEach(el => el.classList.remove('active'));
+            document.getElementById(n === 'confirm' ? 'step-confirm' : `step-${n}`).classList.add('active');
+            [1,2,3].forEach(i => {
+                const dot = document.getElementById(`dot-${i}`);
+                dot.classList.toggle('done',   i < n);
+                dot.classList.toggle('active', i === n);
+            });
+        }
+
+        // ── Step 1: type selection ─────────────────────────────
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedType = btn.dataset.type;
+                document.getElementById('btn-step1-next').disabled = false;
+            });
+        });
+        document.getElementById('btn-step1-next').addEventListener('click', () => {
+            if (!selectedType) return;
+            renderForm(selectedType);
+            showStep(2);
+        });
+
+        // ── Step 2: form render ────────────────────────────────
+        function renderForm(type) {
+            const container = document.getElementById('form-container');
+            container.innerHTML = formHTML[type];
+
+            // optional toggles
+            container.querySelectorAll('.hf-optional-toggle').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const target = document.getElementById(btn.dataset.target);
+                    if (target) {
+                        target.classList.toggle('open');
+                        btn.textContent = target.classList.contains('open')
+                            ? '▲ Hide optional fields'
+                            : '▼ Show optional fields';
+                    }
+                });
+            });
+        }
+
+        const formHTML = {
+            people: `
+                <p class="form-intro">Required fields are marked. Dates can be approximate — fill in what you know.</p>
+                <div class="hf-row">
+                    <div class="hf-group"><label>First Name *</label><input id="f-firstName" type="text" placeholder="e.g. Ezra" /></div>
+                    <div class="hf-group"><label>Last Name *</label><input id="f-lastName" type="text" placeholder="e.g. McAllister" /></div>
+                </div>
+                <div class="hf-row">
+                    <div class="hf-group"><label>Birth Date (as known)</label><input id="f-birthDateText" type="text" placeholder="e.g. ca. 1842" /></div>
+                    <div class="hf-group"><label>Death Date (as known)</label><input id="f-deathDateText" type="text" placeholder="e.g. March 1901" /></div>
+                </div>
+                <div class="hf-group"><label>Occupations / Roles</label><input id="f-occupations" type="text" placeholder="e.g. Farmer, Justice of the Peace" /></div>
+                <div class="hf-group"><label>Biography</label><textarea id="f-biography" placeholder="Write what you know about this person…"></textarea></div>
+                <div class="hf-group"><label>Sources / Citations</label><textarea id="f-sources" placeholder="List your sources, one per line. e.g. 1880 US Census, Jefferson County"></textarea></div>
+                <button class="hf-optional-toggle" data-target="opt-people">&#9660; Show optional fields</button>
+                <div class="hf-optional" id="opt-people">
+                    <div class="hf-row">
+                        <div class="hf-group"><label>Title (Mr, Mrs, Dr…)</label><input id="f-title" type="text" /></div>
+                        <div class="hf-group"><label>Middle Name</label><input id="f-middleName" type="text" /></div>
+                    </div>
+                    <div class="hf-row">
+                        <div class="hf-group"><label>Alternate Names</label><input id="f-altNames" type="text" placeholder="comma-separated" /></div>
+                        <div class="hf-group"><label>Name Suffix</label><input id="f-nameSuffix" type="text" placeholder="Jr, Sr, III…" /></div>
+                    </div>
+                    <div class="hf-row">
+                        <div class="hf-group"><label>Birth Place</label><input id="f-birthPlace" type="text" /></div>
+                        <div class="hf-group"><label>Death Place</label><input id="f-deathPlace" type="text" /></div>
+                    </div>
+                    <div class="hf-row">
+                        <div class="hf-group"><label>Gender</label><input id="f-gender" type="text" placeholder="e.g. Male" /></div>
+                        <div class="hf-group"><label>Religion</label><input id="f-religion" type="text" /></div>
+                    </div>
+                    <div class="hf-row">
+                        <div class="hf-group"><label>Latitude (approx)</label><input id="f-lat" type="number" step="any" placeholder="44.178" /></div>
+                        <div class="hf-group"><label>Longitude (approx)</label><input id="f-lng" type="number" step="any" placeholder="-75.610" /></div>
+                    </div>
+                    <div class="hf-group"><label>Research Notes (private)</label><textarea id="f-notes" placeholder="Admin-only notes"></textarea></div>
+                    <div class="hf-group"><label>Tags</label><input id="f-tags" type="text" placeholder="comma-separated keywords" /></div>
+                </div>`,
+
+            places: `
+                <p class="form-intro">Describe a building, farm, road, district, or natural feature from Antwerp's history.</p>
+                <div class="hf-group"><label>Place Name *</label><input id="f-title" type="text" placeholder="e.g. The Antwerp Inn" /></div>
+                <div class="hf-group">
+                    <label>Place Type *</label>
+                    <select id="f-placeType">
+                        <option value="">— select —</option>
+                        <option value="building">Building</option>
+                        <option value="farm">Farm</option>
+                        <option value="district">District</option>
+                        <option value="road">Road</option>
+                        <option value="natural">Natural Feature</option>
+                        <option value="cemetery">Cemetery</option>
+                        <option value="military">Military Site</option>
+                        <option value="indigenous">Indigenous Site</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="hf-group"><label>Description *</label><textarea id="f-description" placeholder="Describe this place and its historical significance…"></textarea></div>
+                <div class="hf-row">
+                    <div class="hf-group"><label>From (date as known)</label><input id="f-fromText" type="text" placeholder="e.g. 1845" /></div>
+                    <div class="hf-group"><label>To (date as known)</label><input id="f-toText" type="text" placeholder="e.g. ca. 1920 or present" /></div>
+                </div>
+                <div class="hf-group"><label>Sources / Citations</label><textarea id="f-sources" placeholder="List your sources, one per line"></textarea></div>
+                <button class="hf-optional-toggle" data-target="opt-places">&#9660; Show optional fields</button>
+                <div class="hf-optional" id="opt-places">
+                    <div class="hf-group"><label>Address</label><input id="f-address" type="text" /></div>
+                    <div class="hf-row">
+                        <div class="hf-group"><label>Municipality</label><input id="f-municipality" type="text" placeholder="e.g. Antwerp" /></div>
+                        <div class="hf-group"><label>County</label><input id="f-county" type="text" placeholder="e.g. Jefferson" /></div>
+                    </div>
+                    <div class="hf-row">
+                        <div class="hf-group"><label>Latitude</label><input id="f-lat" type="number" step="any" placeholder="44.178" /></div>
+                        <div class="hf-group"><label>Longitude</label><input id="f-lng" type="number" step="any" placeholder="-75.610" /></div>
+                    </div>
+                    <div class="hf-group"><label>Research Notes (private)</label><textarea id="f-notes"></textarea></div>
+                    <div class="hf-group"><label>Tags</label><input id="f-tags" type="text" placeholder="comma-separated keywords" /></div>
+                </div>`,
+
+            events: `
+                <p class="form-intro">Document a historical event, occurrence, or milestone in the Antwerp area.</p>
+                <div class="hf-group"><label>Event Title *</label><input id="f-title" type="text" placeholder="e.g. Great Fire of 1898" /></div>
+                <div class="hf-group">
+                    <label>Event Type *</label>
+                    <select id="f-eventType">
+                        <option value="">— select —</option>
+                        <option value="fire">Fire</option>
+                        <option value="founding">Founding</option>
+                        <option value="battle">Battle</option>
+                        <option value="death">Death</option>
+                        <option value="ceremony">Ceremony</option>
+                        <option value="disaster">Disaster</option>
+                        <option value="census">Census</option>
+                        <option value="election">Election</option>
+                        <option value="legal">Legal</option>
+                        <option value="migration">Migration</option>
+                        <option value="construction">Construction</option>
+                        <option value="demolition">Demolition</option>
+                        <option value="indigenous">Indigenous</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="hf-row">
+                    <div class="hf-group"><label>Start Date (as known)</label><input id="f-dateStartText" type="text" placeholder="e.g. Summer 1898" /></div>
+                    <div class="hf-group"><label>End Date (if applicable)</label><input id="f-dateEndText" type="text" placeholder="e.g. 1902" /></div>
+                </div>
+                <div class="hf-group"><label>Description *</label><textarea id="f-description" placeholder="Describe what happened and why it matters…"></textarea></div>
+                <div class="hf-group"><label>Location (free text)</label><input id="f-location" type="text" placeholder="e.g. Main Street, Antwerp Village" /></div>
+                <div class="hf-group"><label>Sources / Citations</label><textarea id="f-sources" placeholder="List your sources, one per line"></textarea></div>
+                <button class="hf-optional-toggle" data-target="opt-events">&#9660; Show optional fields</button>
+                <div class="hf-optional" id="opt-events">
+                    <div class="hf-row">
+                        <div class="hf-group"><label>Latitude</label><input id="f-lat" type="number" step="any" placeholder="44.178" /></div>
+                        <div class="hf-group"><label>Longitude</label><input id="f-lng" type="number" step="any" placeholder="-75.610" /></div>
+                    </div>
+                    <div class="hf-group"><label>Research Notes (private)</label><textarea id="f-notes"></textarea></div>
+                    <div class="hf-group"><label>Tags</label><input id="f-tags" type="text" placeholder="comma-separated keywords" /></div>
+                </div>`,
+
+            docs: `
+                <p class="form-intro">Submit a photograph, deed, letter, newspaper clipping, map, or other primary source.</p>
+                <div class="hf-group"><label>Title *</label><input id="f-title" type="text" placeholder="e.g. 1880 Census — McAllister Family" /></div>
+                <div class="hf-group">
+                    <label>Document Type *</label>
+                    <select id="f-fileType">
+                        <option value="">— select —</option>
+                        <option value="photo">Photograph</option>
+                        <option value="deed">Deed</option>
+                        <option value="letter">Letter</option>
+                        <option value="newspaper">Newspaper</option>
+                        <option value="map">Map</option>
+                        <option value="census">Census</option>
+                        <option value="legal">Legal Document</option>
+                        <option value="will">Will / Estate</option>
+                        <option value="tax">Tax Record</option>
+                        <option value="military">Military Record</option>
+                        <option value="church">Church Record</option>
+                        <option value="birth">Birth Record</option>
+                        <option value="death">Death Record</option>
+                        <option value="marriage">Marriage Record</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="hf-group"><label>Date (as known)</label><input id="f-dateText" type="text" placeholder="e.g. June 1880" /></div>
+                <div class="hf-group"><label>Description *</label><textarea id="f-description" placeholder="Describe the document and its significance…"></textarea></div>
+                <div class="hf-group"><label>Repository</label><input id="f-repository" type="text" placeholder="e.g. Jefferson County Historical Society" /></div>
+                <div class="hf-group"><label>Transcription (if applicable)</label><textarea id="f-transcription" placeholder="Full text of the document…" style="min-height:120px;"></textarea></div>
+                <div class="hf-group"><label>Sources / Citations</label><textarea id="f-sources" placeholder="List your sources, one per line"></textarea></div>
+                <button class="hf-optional-toggle" data-target="opt-docs">&#9660; Show optional fields</button>
+                <div class="hf-optional" id="opt-docs">
+                    <div class="hf-row">
+                        <div class="hf-group"><label>Collection Name</label><input id="f-collectionName" type="text" /></div>
+                        <div class="hf-group"><label>Call Number / Reference</label><input id="f-callNumber" type="text" /></div>
+                    </div>
+                    <div class="hf-group"><label>Research Notes (private)</label><textarea id="f-notes"></textarea></div>
+                    <div class="hf-group"><label>Tags</label><input id="f-tags" type="text" placeholder="comma-separated keywords" /></div>
+                </div>`
+        };
+
+        document.getElementById('btn-step2-back').addEventListener('click', () => {
+            showStep(1);
+        });
+
+        document.getElementById('btn-step2-next').addEventListener('click', () => {
+            const errEl = document.getElementById('form-error');
+            errEl.textContent = '';
+
+            // Validate required fields
+            const getVal = id => {
+                const el = document.getElementById(id);
+                return el ? el.value.trim() : '';
+            };
+
+            let valid = true;
+            if (selectedType === 'people') {
+                if (!getVal('f-firstName') || !getVal('f-lastName')) {
+                    errEl.textContent = 'First name and last name are required.';
+                    valid = false;
+                }
+            } else if (selectedType === 'places') {
+                if (!getVal('f-title') || !getVal('f-placeType') || !getVal('f-description')) {
+                    errEl.textContent = 'Place name, type, and description are required.';
+                    valid = false;
+                }
+            } else if (selectedType === 'events') {
+                if (!getVal('f-title') || !getVal('f-eventType') || !getVal('f-description')) {
+                    errEl.textContent = 'Event title, type, and description are required.';
+                    valid = false;
+                }
+            } else if (selectedType === 'docs') {
+                if (!getVal('f-title') || !getVal('f-fileType') || !getVal('f-description')) {
+                    errEl.textContent = 'Title, document type, and description are required.';
+                    valid = false;
+                }
+            }
+            if (!valid) return;
+            showStep(3);
+        });
+
+        // ── Step 3: file upload handling ───────────────────────
+        document.getElementById('btn-step3-back').addEventListener('click', () => showStep(2));
+
+        const fileInput = document.getElementById('file-input');
+        const uploadDrop = document.getElementById('upload-drop');
+        const previewList = document.getElementById('upload-preview-list');
+
+        fileInput.addEventListener('change', () => {
+            for (const f of fileInput.files) addFile(f);
+            fileInput.value = '';
+        });
+        uploadDrop.addEventListener('dragover', e => { e.preventDefault(); uploadDrop.classList.add('dragover'); });
+        uploadDrop.addEventListener('dragleave', () => uploadDrop.classList.remove('dragover'));
+        uploadDrop.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadDrop.classList.remove('dragover');
+            for (const f of e.dataTransfer.files) addFile(f);
+        });
+
+        function addFile(file) {
+            if (file.size > 25 * 1024 * 1024) {
+                document.getElementById('upload-error').textContent = `${file.name} exceeds 25 MB limit.`;
+                return;
+            }
+            selectedFiles.push(file);
+            renderPreviews();
+        }
+
+        function renderPreviews() {
+            previewList.innerHTML = '';
+            selectedFiles.forEach((f, i) => {
+                const item = document.createElement('div');
+                item.className = 'upload-preview-item';
+                const isImg = f.type.startsWith('image/');
+                item.innerHTML = `
+                    ${isImg ? `<img src="${URL.createObjectURL(f)}" alt="" />` : '<span style="width:44px;text-align:center;font-size:1.4rem;">&#128196;</span>'}
+                    <span class="upi-name">${f.name}</span>
+                    <span class="upi-size">${(f.size/1024/1024).toFixed(1)} MB</span>
+                    <button class="btn-upi-remove" data-index="${i}">&times;</button>
+                `;
+                previewList.appendChild(item);
+            });
+            previewList.querySelectorAll('.btn-upi-remove').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectedFiles.splice(parseInt(btn.dataset.index), 1);
+                    renderPreviews();
+                });
+            });
+        }
+
+        // ── Submit ─────────────────────────────────────────────
+        document.getElementById('btn-step3-submit').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-step3-submit');
+            btn.disabled = true;
+            document.getElementById('upload-error').textContent = '';
+
+            const getVal = id => {
+                const el = document.getElementById(id);
+                return el ? el.value.trim() : '';
+            };
+            const arrVal = id => {
+                const v = getVal(id);
+                return v ? v.split(',').map(s => s.trim()).filter(Boolean) : [];
+            };
+            const numVal = id => {
+                const v = getVal(id);
+                return v ? parseFloat(v) : null;
+            };
+
+            // Build record payload
+            const now = new Date().toISOString();
+            let record = {
+                status: 'pending',
+                contributedBy: currentUser.uid,
+                contributedAt: now,
+                lastUpdatedBy: currentUser.uid,
+                lastUpdatedAt: now,
+                sources: arrVal('f-sources'),
+                notes: getVal('f-notes') || '',
+                tags: arrVal('f-tags'),
+                fileURL: '', filePath: '', thumbnailURL: '', thumbnailPath: '',
+                photoURL: '', photoPath: '',
+                lat: numVal('f-lat'), lng: numVal('f-lng')
+            };
+
+            if (selectedType === 'people') {
+                Object.assign(record, {
+                    title: getVal('f-title'), firstName: getVal('f-firstName'),
+                    lastName: getVal('f-lastName'), middleName: getVal('f-middleName'),
+                    nameSuffix: getVal('f-nameSuffix'),
+                    altNames: arrVal('f-altNames'),
+                    birthDateText: getVal('f-birthDateText'), birthDateISO: '', birthDateApprox: true,
+                    deathDateText: getVal('f-deathDateText'), deathDateISO: '', deathDateApprox: true,
+                    birthPlace: getVal('f-birthPlace'), deathPlace: getVal('f-deathPlace'),
+                    gender: getVal('f-gender'), religion: getVal('f-religion'),
+                    occupations: arrVal('f-occupations'),
+                    biography: getVal('f-biography'),
+                    relatedPlaces: [], relatedEvents: [], relatedDocs: [], relationships: []
+                });
+            } else if (selectedType === 'places') {
+                Object.assign(record, {
+                    title: getVal('f-title'), placeType: getVal('f-placeType'),
+                    description: getVal('f-description'),
+                    address: getVal('f-address'), municipality: getVal('f-municipality'),
+                    county: getVal('f-county'), state: 'NY',
+                    timespan: { fromText: getVal('f-fromText'), toText: getVal('f-toText') },
+                    relatedPeople: [], relatedEvents: [], relatedDocs: [], polygon: []
+                });
+            } else if (selectedType === 'events') {
+                Object.assign(record, {
+                    title: getVal('f-title'), eventType: getVal('f-eventType'),
+                    description: getVal('f-description'), location: getVal('f-location'),
+                    dateStartText: getVal('f-dateStartText'), dateStartISO: '', dateStartApprox: true,
+                    dateEndText: getVal('f-dateEndText'), dateEndISO: '', dateEndApprox: true,
+                    relatedPeople: [], relatedPlaces: [], relatedDocs: []
+                });
+            } else if (selectedType === 'docs') {
+                Object.assign(record, {
+                    title: getVal('f-title'), fileType: getVal('f-fileType'),
+                    description: getVal('f-description'),
+                    dateText: getVal('f-dateText'), dateISO: '', dateApprox: true,
+                    repository: getVal('f-repository'),
+                    collectionName: getVal('f-collectionName'),
+                    callNumber: getVal('f-callNumber'),
+                    transcription: getVal('f-transcription'),
+                    mimeType: '', fileSizeBytes: 0,
+                    relatedPeople: [], relatedPlaces: [], relatedEvents: []
+                });
+            }
+
+            // Map type → collection name
+            const colMap = { people: 'histPeople', places: 'histPlaces', events: 'histEvents', docs: 'histDocs' };
+            const colName = colMap[selectedType];
+
+            try {
+                // Save doc first to get an ID
+                const docRef = await addDoc(collection(db, colName), record);
+                newDocId = docRef.id;
+
+                // Upload files if any
+                if (selectedFiles.length > 0) {
+                    const progressWrap = document.getElementById('upload-progress-wrap');
+                    const progressFill = document.getElementById('upload-progress-fill');
+                    const progressText = document.getElementById('upload-progress-text');
+                    progressWrap.style.display = 'block';
+
+                    const uploadedURLs = [];
+                    let uploadedPath = '';
+                    for (let i = 0; i < selectedFiles.length; i++) {
+                        const file = selectedFiles[i];
+                        const path = `history/${selectedType}/${newDocId}/${file.name}`;
+                        await new Promise((resolve, reject) => {
+                            const task = uploadBytesResumable(ref(storage, path), file);
+                            task.on('state_changed',
+                                snap => {
+                                    const pct = (snap.bytesTransferred / snap.totalBytes * 100).toFixed(0);
+                                    progressFill.style.width = pct + '%';
+                                    progressText.textContent = `Uploading file ${i+1} of ${selectedFiles.length}: ${pct}%`;
+                                },
+                                reject,
+                                async () => {
+                                    const url = await getDownloadURL(task.snapshot.ref);
+                                    uploadedURLs.push(url);
+                                    if (!uploadedPath) uploadedPath = path;
+                                    resolve();
+                                }
+                            );
+                        });
+                    }
+
+                    // Update doc with file URLs
+                    const updateData = {};
+                    if (selectedType === 'docs') {
+                        updateData.fileURL  = uploadedURLs[0] || '';
+                        updateData.filePath = uploadedPath;
+                        updateData.mimeType = selectedFiles[0]?.type || '';
+                        updateData.fileSizeBytes = selectedFiles[0]?.size || 0;
+                    } else {
+                        updateData.photoURL  = uploadedURLs[0] || '';
+                        updateData.photoPath = uploadedPath;
+                    }
+                    await updateDoc(docRef, updateData);
+                }
+
+                showStep('confirm');
+            } catch(e) {
+                document.getElementById('upload-error').textContent = `Submission failed: ${e.message}`;
+                btn.disabled = false;
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Historical Archive — The Antwerp Inn 1845</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css?v=hist01" />
+    <style>
+        .hist-wrap {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 1.5em 5em;
+        }
+
+        /* Top bar */
+        .hist-topbar {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            padding: 1.2em 0 1.5em;
+            flex-wrap: wrap;
+        }
+        .hist-search {
+            flex: 1;
+            min-width: 180px;
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            color: #e7d8b1;
+            border-radius: 6px;
+            padding: 0.55em 0.9em;
+            font-size: 0.9rem;
+        }
+        .hist-search::placeholder { color: #444; }
+        .btn-contribute {
+            background: #e7d8b1;
+            color: #0a0705;
+            border: none;
+            border-radius: 6px;
+            padding: 0.55em 1.4em;
+            cursor: pointer;
+            font-family: 'OldEnglishFive', serif;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-contribute:hover { background: #fff; }
+
+        /* No results */
+        .hist-empty {
+            text-align: center;
+            color: #555;
+            font-style: italic;
+            padding: 4em 2em;
+        }
+
+        /* Record count */
+        .hist-count {
+            color: #555;
+            font-size: 0.82rem;
+            margin-bottom: 1em;
+        }
+
+        /* Access message */
+        .access-msg { text-align: center; padding: 4em 2em; }
+        .access-msg h3 { font-family: 'OldEnglishFive', serif; color: #e7d8b1; font-weight: normal; }
+        .access-msg p  { color: #888; }
+        .access-msg a  { color: #e7d8b1; }
+
+        /* Map popup */
+        .mapboxgl-popup-content {
+            background: #1a120c !important;
+            border: 1px solid #2a1e14 !important;
+            border-radius: 8px !important;
+            color: #e7d8b1 !important;
+            font-family: sans-serif;
+            font-size: 0.85rem;
+            padding: 0.7em 1em !important;
+            cursor: pointer;
+        }
+        .mapboxgl-popup-content strong { font-family: 'OldEnglishFive', serif; display: block; margin-bottom: 0.2em; }
+        .mapboxgl-popup-tip { border-top-color: #2a1e14 !important; border-bottom-color: #2a1e14 !important; }
+        .mapboxgl-popup-close-button { color: #888 !important; }
+    </style>
+</head>
+<body class="subpage">
+
+    <header class="site-header-unwrapped">
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+    </header>
+
+    <div class="subpage-subtitle-wrap">
+        <h2 class="subpage-subtitle">Historical Archive</h2>
+    </div>
+
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="index.html">The Antwerp Inn</a></li>
+            <li><a href="fort-drum.html">Fort Drum</a></li>
+            <li><a href="antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="mcallister-house.html">McAllister House</a></li>
+            <li><a href="north-country.html">North Country</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="history.html">History</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="subpage-main" style="max-width:960px;">
+        <div id="access-check">
+            <p style="text-align:center;color:#555;font-style:italic;">Checking access&hellip;</p>
+        </div>
+
+        <div id="hist-root" style="display:none;">
+            <div class="hist-wrap">
+
+                <!-- Top bar: search + contribute button -->
+                <div class="hist-topbar">
+                    <input type="search" class="hist-search" id="hist-search" placeholder="Search people, places, events&hellip;" />
+                    <div class="view-toggle">
+                        <button class="btn-view-toggle active" id="btn-list-view">List</button>
+                        <button class="btn-view-toggle" id="btn-map-view">Map</button>
+                    </div>
+                    <a href="history-contribute.html" class="btn-contribute">+ Contribute</a>
+                </div>
+
+                <!-- Type filter tabs -->
+                <div class="hist-tabs">
+                    <button class="hist-tab active" data-type="all">All</button>
+                    <button class="hist-tab" data-type="people">People</button>
+                    <button class="hist-tab" data-type="places">Places</button>
+                    <button class="hist-tab" data-type="events">Events</button>
+                    <button class="hist-tab" data-type="docs">Documents</button>
+                </div>
+
+                <!-- Record count line -->
+                <p class="hist-count" id="hist-count"></p>
+
+                <!-- List view -->
+                <div id="hist-list-view">
+                    <div class="hist-grid" id="hist-grid">
+                        <p style="color:#555;font-style:italic;">Loading archive&hellip;</p>
+                    </div>
+                </div>
+
+                <!-- Map view (lazy) -->
+                <div id="hist-map-view" style="display:none;">
+                    <div id="hist-map" class="visible"></div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Detail Modal -->
+    <div class="hist-modal-overlay" id="hist-modal-overlay">
+        <div class="hist-modal">
+            <button class="hist-modal-close" id="modal-close">&times;</button>
+            <p class="hist-modal-type" id="modal-type"></p>
+            <h2 class="hist-modal-title" id="modal-title"></h2>
+            <img class="hist-modal-photo" id="modal-photo" src="" alt="" style="display:none;" />
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const toggle  = document.getElementById('menu-toggle');
+        const menu    = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const close   = document.getElementById('menu-close');
+        toggle.addEventListener('click',  () => { menu.classList.add('open');    overlay.classList.add('open'); });
+        close.addEventListener('click',   () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+        overlay.addEventListener('click', () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+
+        document.getElementById('modal-close').addEventListener('click', () => {
+            document.getElementById('hist-modal-overlay').classList.remove('open');
+        });
+        document.getElementById('hist-modal-overlay').addEventListener('click', e => {
+            if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+        });
+    </script>
+
+    <script src="mapbox-config.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp }   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, getDocs, collection, query, where }
+                                   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
+
+        let allRecords  = [];
+        let activeType  = 'all';
+        let searchQuery = '';
+        let mapInited   = false;
+        let mapInstance = null;
+
+        // ── Auth gate ──────────────────────────────────────────
+        onAuthStateChanged(auth, async user => {
+            const checkEl = document.getElementById('access-check');
+            if (!user) {
+                checkEl.innerHTML = `<div class="access-msg"><h3>Members Only</h3><p>Please <a href="members.html">sign in</a> to access the archive.</p></div>`;
+                return;
+            }
+
+            // Admins can bypass status check
+            try {
+                const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+                if (adminSnap.exists()) {
+                    checkEl.style.display = 'none';
+                    document.getElementById('hist-root').style.display = 'block';
+                    loadAllRecords();
+                    return;
+                }
+            } catch(e) {}
+
+            try {
+                const uSnap  = await getDoc(doc(db, 'users', user.uid));
+                const status = uSnap.exists() ? uSnap.data().status : 'pending';
+                if (status !== 'active') {
+                    checkEl.innerHTML = `<div class="access-msg"><h3>Access Pending</h3><p>Your membership is awaiting approval. <a href="members.html">Return to Members</a>.</p></div>`;
+                    return;
+                }
+            } catch(e) {
+                checkEl.innerHTML = `<div class="access-msg"><p>Error checking access. <a href="members.html">Try again</a>.</p></div>`;
+                return;
+            }
+
+            checkEl.style.display = 'none';
+            document.getElementById('hist-root').style.display = 'block';
+            loadAllRecords();
+        });
+
+        // ── Load all four collections in parallel ──────────────
+        async function loadAllRecords() {
+            try {
+                const [pSnap, plSnap, evSnap, doSnap] = await Promise.all([
+                    getDocs(collection(db, 'histPeople')),
+                    getDocs(collection(db, 'histPlaces')),
+                    getDocs(collection(db, 'histEvents')),
+                    getDocs(collection(db, 'histDocs'))
+                ]);
+
+                const fromSnap = (snap, type) =>
+                    snap.docs.map(d => ({ ...d.data(), _id: d.id, _type: type }))
+                              .filter(r => r.status === 'published');
+
+                allRecords = [
+                    ...fromSnap(pSnap,  'people'),
+                    ...fromSnap(plSnap, 'places'),
+                    ...fromSnap(evSnap, 'events'),
+                    ...fromSnap(doSnap, 'docs')
+                ];
+
+                renderList();
+            } catch(e) {
+                document.getElementById('hist-grid').innerHTML = `<p style="color:#e74c3c;">Error loading archive: ${e.message}</p>`;
+            }
+        }
+
+        // ── Filtering ──────────────────────────────────────────
+        function filteredRecords() {
+            let recs = allRecords;
+            if (activeType !== 'all') recs = recs.filter(r => r._type === activeType);
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                recs = recs.filter(r => {
+                    const text = [
+                        r.title, r.firstName, r.lastName, r.description, r.biography,
+                        r.location, r.address, r.municipality, r.transcription,
+                        ...(r.tags||[]), ...(r.occupations||[])
+                    ].filter(Boolean).join(' ').toLowerCase();
+                    return text.includes(q);
+                });
+            }
+            return recs;
+        }
+
+        // ── Render list ────────────────────────────────────────
+        function renderList() {
+            const recs  = filteredRecords();
+            const grid  = document.getElementById('hist-grid');
+            const count = document.getElementById('hist-count');
+
+            count.textContent = `${recs.length} record${recs.length !== 1 ? 's' : ''}`;
+
+            if (recs.length === 0) {
+                grid.innerHTML = '<p class="hist-empty">No records found.</p>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            recs.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'hist-card';
+
+                const typeLabel = { people:'Person', places:'Place', events:'Event', docs:'Document' }[r._type] || r._type;
+                const title = r.title || (r.firstName ? `${r.firstName} ${r.lastName}` : 'Untitled');
+                const meta  = buildMeta(r);
+                const thumb = r.photoURL || r.thumbnailURL || r.fileURL || '';
+
+                card.innerHTML = `
+                    ${thumb ? `<img class="hist-card-thumb" src="${thumb}" alt="" />` : ''}
+                    <p class="hist-card-type">${typeLabel}</p>
+                    <h3 class="hist-card-title">${esc(title)}</h3>
+                    <p class="hist-card-meta">${esc(meta)}</p>
+                `;
+                card.addEventListener('click', () => openModal(r));
+                grid.appendChild(card);
+            });
+        }
+
+        function buildMeta(r) {
+            if (r._type === 'people') {
+                const dates = [r.birthDateText, r.deathDateText].filter(Boolean).join(' – ');
+                return dates || (r.occupations||[]).join(', ') || '';
+            }
+            if (r._type === 'places') return [r.placeType, r.municipality].filter(Boolean).join(' · ');
+            if (r._type === 'events') return r.dateStartText || '';
+            if (r._type === 'docs')   return [r.fileType, r.dateText].filter(Boolean).join(' · ');
+            return '';
+        }
+
+        // ── Detail modal ───────────────────────────────────────
+        function openModal(r) {
+            const typeLabel = { people:'Person', places:'Place', events:'Event', docs:'Document' }[r._type] || r._type;
+            const title = r.title || (r.firstName ? `${r.firstName} ${r.lastName}` : 'Untitled');
+
+            document.getElementById('modal-type').textContent  = typeLabel;
+            document.getElementById('modal-title').textContent = title;
+
+            const photo = r.photoURL || r.thumbnailURL || (r._type === 'docs' && r.mimeType?.startsWith('image/') ? r.fileURL : '');
+            const photoEl = document.getElementById('modal-photo');
+            if (photo) { photoEl.src = photo; photoEl.style.display = 'block'; }
+            else        { photoEl.style.display = 'none'; }
+
+            const body = document.getElementById('modal-body');
+            body.innerHTML = buildModalBody(r);
+
+            document.getElementById('hist-modal-overlay').classList.add('open');
+        }
+
+        function field(label, value) {
+            if (!value) return '';
+            return `<div class="hist-modal-field"><div class="hist-modal-field-label">${label}</div><div class="hist-modal-field-value">${esc(value)}</div></div>`;
+        }
+
+        function buildModalBody(r) {
+            let html = '';
+            if (r._type === 'people') {
+                const fullName = [r.title, r.firstName, r.middleName, r.lastName, r.nameSuffix].filter(Boolean).join(' ');
+                html += field('Full Name', fullName);
+                if (r.altNames?.length) html += field('Also Known As', r.altNames.join(', '));
+                const life = [r.birthDateText, r.deathDateText].filter(Boolean).join(' – ');
+                if (life) html += field('Life Dates', life);
+                html += field('Birth Place', r.birthPlace);
+                html += field('Death Place', r.deathPlace);
+                if (r.occupations?.length) html += field('Occupations', r.occupations.join(', '));
+                html += field('Religion', r.religion);
+                if (r.biography) html += `<div class="hist-modal-field"><div class="hist-modal-field-label">Biography</div><div class="hist-modal-bio">${esc(r.biography)}</div></div>`;
+            } else if (r._type === 'places') {
+                html += field('Type', r.placeType);
+                if (r.description) html += `<div class="hist-modal-field"><div class="hist-modal-field-label">Description</div><div class="hist-modal-bio">${esc(r.description)}</div></div>`;
+                html += field('Address', r.address);
+                html += field('Municipality', r.municipality);
+                const span = [r.timespan?.fromText, r.timespan?.toText].filter(Boolean).join(' – ');
+                html += field('Time Period', span);
+            } else if (r._type === 'events') {
+                html += field('Type', r.eventType);
+                const dates = [r.dateStartText, r.dateEndText].filter(Boolean).join(' – ');
+                html += field('Date', dates);
+                html += field('Location', r.location);
+                if (r.description) html += `<div class="hist-modal-field"><div class="hist-modal-field-label">Description</div><div class="hist-modal-bio">${esc(r.description)}</div></div>`;
+            } else if (r._type === 'docs') {
+                html += field('Type', r.fileType);
+                html += field('Date', r.dateText);
+                html += field('Repository', r.repository);
+                html += field('Collection', r.collectionName);
+                html += field('Call Number', r.callNumber);
+                if (r.description) html += `<div class="hist-modal-field"><div class="hist-modal-field-label">Description</div><div class="hist-modal-bio">${esc(r.description)}</div></div>`;
+                if (r.transcription) html += `<div class="hist-modal-field"><div class="hist-modal-field-label">Transcription</div><div class="hist-modal-bio">${esc(r.transcription)}</div></div>`;
+                if (r.fileURL && !r.mimeType?.startsWith('image/')) {
+                    html += `<div class="hist-modal-field"><a href="${r.fileURL}" target="_blank" rel="noopener" style="color:#a07830;">View / Download File &rarr;</a></div>`;
+                }
+            }
+            if (r.sources?.length) html += field('Sources', r.sources.join(' | '));
+            if (r.tags?.length) html += field('Tags', r.tags.join(', '));
+            return html;
+        }
+
+        // ── Map view ───────────────────────────────────────────
+        function initMap() {
+            if (mapInited) return;
+            mapInited = true;
+            mapboxgl.accessToken = mapboxConfig.token;
+            mapInstance = new mapboxgl.Map({
+                container: 'hist-map',
+                style: 'mapbox://styles/mapbox/dark-v11',
+                center: [-75.610, 44.178],
+                zoom: 12
+            });
+            mapInstance.addControl(new mapboxgl.NavigationControl());
+            mapInstance.on('load', () => addMapPins(filteredRecords()));
+        }
+
+        function addMapPins(recs) {
+            if (!mapInstance) return;
+            // Clear existing markers
+            document.querySelectorAll('.mapboxgl-marker').forEach(m => m.remove());
+
+            recs.forEach(r => {
+                if (r.lat == null || r.lng == null) return;
+                const title = r.title || (r.firstName ? `${r.firstName} ${r.lastName}` : 'Record');
+                const meta  = buildMeta(r);
+
+                const popup = new mapboxgl.Popup({ offset: 12 })
+                    .setHTML(`<strong>${esc(title)}</strong>${meta ? esc(meta) : ''}`);
+
+                popup.on('open', () => {
+                    popup.getElement().querySelector('.mapboxgl-popup-content').addEventListener('click', () => {
+                        openModal(r);
+                        popup.remove();
+                    });
+                });
+
+                new mapboxgl.Marker({ color: '#a07830' })
+                    .setLngLat([r.lng, r.lat])
+                    .setPopup(popup)
+                    .addTo(mapInstance);
+            });
+        }
+
+        // ── Tab switching ──────────────────────────────────────
+        document.querySelectorAll('.hist-tabs .hist-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.hist-tabs .hist-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                activeType = tab.dataset.type;
+                renderList();
+                if (mapInited) addMapPins(filteredRecords());
+            });
+        });
+
+        // ── Search ─────────────────────────────────────────────
+        document.getElementById('hist-search').addEventListener('input', e => {
+            searchQuery = e.target.value.trim();
+            renderList();
+            if (mapInited) addMapPins(filteredRecords());
+        });
+
+        // ── View toggle ────────────────────────────────────────
+        document.getElementById('btn-list-view').addEventListener('click', () => {
+            document.getElementById('btn-list-view').classList.add('active');
+            document.getElementById('btn-map-view').classList.remove('active');
+            document.getElementById('hist-list-view').style.display = 'block';
+            document.getElementById('hist-map-view').style.display  = 'none';
+        });
+
+        document.getElementById('btn-map-view').addEventListener('click', () => {
+            document.getElementById('btn-map-view').classList.add('active');
+            document.getElementById('btn-list-view').classList.remove('active');
+            document.getElementById('hist-list-view').style.display = 'none';
+            document.getElementById('hist-map-view').style.display  = 'block';
+            initMap();
+            if (mapInited) {
+                setTimeout(() => {
+                    mapInstance.resize();
+                    addMapPins(filteredRecords());
+                }, 50);
+            }
+        });
+
+        // ── Utility ────────────────────────────────────────────
+        function esc(str) {
+            return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+    </script>
+</body>
+</html>
