@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Members — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=devtest139" />
+    <link rel="stylesheet" href="style.css?v=devtest140" />
     <style>
         /* ── Login card (shown when logged out) ─────────────────── */
         .members-card {
@@ -95,6 +95,17 @@
             transition: color 0.2s, border-color 0.2s;
         }
         .btn-signout:hover { color: #e7d8b1; border-color: #554433; }
+
+        /* Admin badges in topbar */
+        .member-badges { display: flex; gap: 0.5em; align-items: center; flex-wrap: wrap; }
+        .mem-badge {
+            font-size: 0.72rem; font-weight: bold; text-transform: uppercase;
+            letter-spacing: 0.06em; padding: 0.2em 0.65em; border-radius: 10px;
+            text-decoration: none; white-space: nowrap;
+        }
+        .mem-badge-admin { background: #1a2a4a; color: #6ab0e7; border: 1px solid #2a4a6a; cursor: pointer; transition: background 0.15s; }
+        .mem-badge-admin:hover { background: #253a5a; }
+        .mem-badge-member { background: #003a1a; color: #4ecc91; border: 1px solid #1a5a2a; }
 
         /* Featured video */
         .featured-label {
@@ -217,6 +228,7 @@
                     Welcome back
                     <span id="member-email-display"></span>
                 </h2>
+                <div id="member-badges" class="member-badges"></div>
                 <button id="btn-signout" class="btn-signout">Sign Out</button>
             </div>
 
@@ -258,10 +270,11 @@
                 document.getElementById('status-inactive').style.display = 'none';
                 document.getElementById('member-landing').style.display  = 'none';
 
-                // Admins go straight to admin panel
+                // Check admin status (no longer redirects — shows badges instead)
+                let isAdmin = false;
                 try {
                     const adminSnap = await getDoc(doc(db, 'admins', user.uid));
-                    if (adminSnap.exists()) { window.location.href = 'admin.html'; return; }
+                    if (adminSnap.exists()) isAdmin = true;
                 } catch(e) {}
 
                 // Ensure users/{uid} doc exists
@@ -271,22 +284,45 @@
                     await setDoc(userRef, {
                         email: user.email || '', displayName: user.displayName || '',
                         photoURL: user.photoURL || '', phone: '', address: '',
-                        joinedAt: new Date().toISOString(), status: 'pending',
-                        role: 'member', notes: ''
+                        joinedAt: new Date().toISOString(),
+                        status: isAdmin ? 'active' : 'pending',
+                        role: isAdmin ? 'admin' : 'member', notes: ''
                     });
                 }
 
                 const freshSnap  = await getDoc(userRef);
-                const userStatus = freshSnap.data()?.status || 'pending';
+                const userStatus = isAdmin ? 'active' : (freshSnap.data()?.status || 'pending');
 
                 if (userStatus === 'pending') {
                     document.getElementById('status-pending').style.display = 'block';
                 } else if (userStatus === 'inactive') {
                     document.getElementById('status-inactive').style.display = 'block';
                 } else {
-                    // Active member — show landing
+                    // Active member (or admin) — show landing
                     document.getElementById('member-email-display').textContent = user.email || user.displayName || '';
                     document.getElementById('member-landing').style.display = 'block';
+
+                    // Build role badges
+                    const badgeWrap = document.getElementById('member-badges');
+                    if (isAdmin) {
+                        [
+                            { label: 'Site Admin',    href: 'admin.html',         title: 'Open Site Admin panel' },
+                            { label: 'History Admin', href: 'history-admin.html', title: 'Open History Admin panel' }
+                        ].forEach(({ label, href, title }) => {
+                            const a = document.createElement('a');
+                            a.textContent = label;
+                            a.href        = href;
+                            a.title       = title;
+                            a.className   = 'mem-badge mem-badge-admin';
+                            badgeWrap.appendChild(a);
+                        });
+                    } else {
+                        const span = document.createElement('span');
+                        span.textContent = 'Member';
+                        span.className   = 'mem-badge mem-badge-member';
+                        badgeWrap.appendChild(span);
+                    }
+
                     loadFeaturedVideo();
                 }
 

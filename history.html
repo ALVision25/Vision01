@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Historical Archive — The Antwerp Inn 1845</title>
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css?v=hist03" />
+    <link rel="stylesheet" href="style.css?v=hist04" />
     <style>
         .hist-wrap {
             max-width: 960px;
@@ -133,6 +133,25 @@
         }
         .btn-review-link:hover { background: #235e3a; }
 
+        /* Map style switcher */
+        .map-style-bar {
+            display: flex;
+            gap: 0.5em;
+            padding: 0.6em 0 0.5em;
+        }
+        .btn-map-style {
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            color: #666;
+            border-radius: 4px;
+            padding: 0.3em 0.85em;
+            cursor: pointer;
+            font-size: 0.78rem;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .btn-map-style:hover { color: #e7d8b1; border-color: #554433; }
+        .btn-map-style.active { background: #1a2a4a; color: #6ab0e7; border-color: #2a4a6a; }
+
         /* Map popup */
         .mapboxgl-popup-content {
             background: #1a120c !important;
@@ -231,6 +250,12 @@
 
                 <!-- Map view (lazy) -->
                 <div id="hist-map-view" style="display:none;">
+                    <div class="map-style-bar">
+                        <button class="btn-map-style active" data-style="mapbox://styles/mapbox/dark-v11">Dark</button>
+                        <button class="btn-map-style" data-style="mapbox://styles/mapbox/satellite-streets-v12">Satellite</button>
+                        <button class="btn-map-style" data-style="mapbox://styles/mapbox/outdoors-v12">Terrain</button>
+                        <button class="btn-map-style" data-style="mapbox://styles/mapbox/streets-v12">Streets</button>
+                    </div>
                     <div id="hist-map" class="visible"></div>
                 </div>
 
@@ -279,12 +304,14 @@
         const auth = getAuth(app);
         const db   = getFirestore(app);
 
-        let allRecords  = [];
-        let activeType  = 'all';
-        let searchQuery = '';
-        let mapInited   = false;
-        let mapInstance = null;
-        let isAdmin     = false;
+        let allRecords      = [];
+        let activeType      = 'all';
+        let searchQuery     = '';
+        let mapInited       = false;
+        let mapLoaded       = false;
+        let mapInstance     = null;
+        let isAdmin         = false;
+        let currentMapStyle = 'mapbox://styles/mapbox/dark-v11';
 
         // ── Sign out ───────────────────────────────────────────
         document.getElementById('btn-hist-signout').addEventListener('click', () => {
@@ -545,13 +572,33 @@
             mapboxgl.accessToken = mapboxConfig.token;
             mapInstance = new mapboxgl.Map({
                 container: 'hist-map',
-                style: 'mapbox://styles/mapbox/dark-v11',
+                style: currentMapStyle,
                 center: [-75.610, 44.178],
                 zoom: 12
             });
             mapInstance.addControl(new mapboxgl.NavigationControl());
-            mapInstance.on('load', () => addMapPins(filteredRecords()));
+            mapInstance.on('load', () => {
+                mapLoaded = true;
+                addMapPins(filteredRecords());
+            });
         }
+
+        // ── Map style switcher ─────────────────────────────────
+        document.querySelectorAll('.btn-map-style').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.btn-map-style').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMapStyle = btn.dataset.style;
+                if (mapInstance) {
+                    mapLoaded = false;
+                    mapInstance.setStyle(currentMapStyle);
+                    mapInstance.once('style.load', () => {
+                        mapLoaded = true;
+                        addMapPins(filteredRecords());
+                    });
+                }
+            });
+        });
 
         function addMapPins(recs) {
             if (!mapInstance) return;
@@ -587,7 +634,7 @@
                 tab.classList.add('active');
                 activeType = tab.dataset.type;
                 renderList();
-                if (mapInited) addMapPins(filteredRecords());
+                if (mapLoaded) addMapPins(filteredRecords());
             });
         });
 
@@ -595,7 +642,7 @@
         document.getElementById('hist-search').addEventListener('input', e => {
             searchQuery = e.target.value.trim();
             renderList();
-            if (mapInited) addMapPins(filteredRecords());
+            if (mapLoaded) addMapPins(filteredRecords());
         });
 
         // ── View toggle ────────────────────────────────────────
@@ -611,12 +658,11 @@
             document.getElementById('btn-list-view').classList.remove('active');
             document.getElementById('hist-list-view').style.display = 'none';
             document.getElementById('hist-map-view').style.display  = 'block';
-            initMap();
-            if (mapInited) {
-                setTimeout(() => {
-                    mapInstance.resize();
-                    addMapPins(filteredRecords());
-                }, 50);
+            if (!mapInited) {
+                initMap(); // load event will call addMapPins when ready
+            } else {
+                mapInstance.resize();
+                if (mapLoaded) addMapPins(filteredRecords());
             }
         });
 
