@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Historical Archive — The Antwerp Inn 1845</title>
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css?v=hist02" />
+    <link rel="stylesheet" href="style.css?v=hist03" />
     <style>
         .hist-wrap {
             max-width: 960px;
@@ -101,8 +101,9 @@
             padding: 0.2em 0.6em;
             border-radius: 10px;
         }
-        .hist-role-admin  { background: #1a2a4a; color: #6ab0e7; border: 1px solid #2a4a6a; }
-        .hist-role-member { background: #003a1a; color: #4ecc91; border: 1px solid #1a5a2a; }
+        .hist-role-admin  { background: #1a2a4a; color: #6ab0e7; border: 1px solid #2a4a6a; text-decoration: none; cursor: pointer; transition: background 0.15s; }
+        .hist-role-admin:hover { background: #253a5a; }
+        .hist-role-member { background: #003a1a; color: #4ecc91; border: 1px solid #1a5a2a; text-decoration: none; }
         .btn-hist-signout {
             background: none; border: 1px solid #2a1e14; color: #666;
             border-radius: 4px; padding: 0.3em 0.8em; cursor: pointer;
@@ -187,7 +188,7 @@
                         Welcome back
                         <span id="hist-user-email"></span>
                     </h2>
-                    <span class="hist-role-badge" id="hist-role-badge"></span>
+                    <a class="hist-role-badge" id="hist-role-badge" href="#"></a>
                     <button class="btn-hist-signout" id="btn-hist-signout">Sign Out</button>
                 </div>
 
@@ -283,6 +284,7 @@
         let searchQuery = '';
         let mapInited   = false;
         let mapInstance = null;
+        let isAdmin     = false;
 
         // ── Sign out ───────────────────────────────────────────
         document.getElementById('btn-hist-signout').addEventListener('click', () => {
@@ -334,11 +336,15 @@
             document.getElementById('hist-user-email').textContent = user.email || user.displayName || '';
             const badge = document.getElementById('hist-role-badge');
             if (role === 'admin') {
-                badge.textContent = 'Admin';
+                isAdmin = true;
+                badge.textContent = 'History Admin';
                 badge.className = 'hist-role-badge hist-role-admin';
+                badge.href = 'history-admin.html';
+                badge.title = 'Open History Admin panel';
             } else {
                 badge.textContent = 'Member';
                 badge.className = 'hist-role-badge hist-role-member';
+                badge.removeAttribute('href');
             }
         }
 
@@ -464,6 +470,22 @@
 
             const body = document.getElementById('modal-body');
             body.innerHTML = buildModalBody(r);
+
+            // Admin edit link — links to history-admin with collection + id pre-selected
+            const existingEdit = document.getElementById('modal-edit-link');
+            if (existingEdit) existingEdit.remove();
+            if (isAdmin) {
+                const colMap = { people:'histPeople', places:'histPlaces', events:'histEvents', docs:'histDocs' };
+                const col    = colMap[r._type];
+                const editLink = document.createElement('a');
+                editLink.id        = 'modal-edit-link';
+                editLink.href      = `history-admin.html?col=${col}&id=${r._id}`;
+                editLink.textContent = '✎ Edit this record in History Admin';
+                editLink.style.cssText = 'display:block;margin-top:1.5em;padding-top:1em;border-top:1px solid #2a1e14;color:#a07830;font-family:"OldEnglishFive",serif;font-size:0.85rem;text-decoration:none;';
+                editLink.onmouseover = () => editLink.style.color = '#e7d8b1';
+                editLink.onmouseout  = () => editLink.style.color = '#a07830';
+                body.appendChild(editLink);
+            }
 
             document.getElementById('hist-modal-overlay').classList.add('open');
         }

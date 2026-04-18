@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>History Admin — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=hist01" />
+    <link rel="stylesheet" href="style.css?v=hist03" />
     <style>
         .hadmin-wrap {
             max-width: 960px;
@@ -248,7 +248,30 @@
                 document.getElementById('hadmin-user-label').textContent = user.email;
                 currentUser = user;
                 initTabs();
-                loadCollection('histPeople');
+
+                // Handle deep-link from history.html: ?col=histPeople&id=XXX
+                const urlParams  = new URLSearchParams(window.location.search);
+                const deepCol    = urlParams.get('col');
+                const deepId     = urlParams.get('id');
+                const startCol   = deepCol || 'histPeople';
+
+                // Switch to the right tab visually
+                document.querySelectorAll('#hadmin-tabs .hist-tab').forEach(t => {
+                    t.classList.toggle('active', t.dataset.col === startCol);
+                });
+                document.querySelectorAll('.hadmin-panel').forEach(p => p.style.display = 'none');
+                document.getElementById(`panel-${startCol}`).style.display = 'block';
+
+                await loadCollection(startCol);
+
+                // If a specific record ID was passed, auto-open its card
+                if (deepId) {
+                    const card = document.getElementById(`card-${deepId}`);
+                    if (card) {
+                        card.classList.add('open');
+                        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
             } else {
                 document.getElementById('login-loading').style.display = 'none';
                 document.getElementById('login-form').style.display = 'block';
