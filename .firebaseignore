@@ -1,0 +1,14 @@
+# Firebase ignore — files NOT deployed to hosting
+.git/
+.gitignore
+.claude/
+firebase.json
+.firebaseignore
+README.md
+node_modules/
+
+# Legacy duplicate pages
+index_comp.html
+fortdrum.html
+antwerpvillage.html
+mcallister.html
