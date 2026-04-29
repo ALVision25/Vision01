@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timeline Admin — The Antwerp Inn 1845</title>
+    <link rel="stylesheet" href="style.css?v=tladmin01" />
+    <style>
+        .tladmin-wrap {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 1.5em 5em;
+        }
+        .tladmin-header {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            padding: 1.2em 0 1.8em;
+            border-bottom: 1px solid #1e1510;
+            margin-bottom: 2em;
+            flex-wrap: wrap;
+        }
+        .tladmin-header h2 {
+            font-family: 'OldEnglishFive', serif;
+            color: #666;
+            font-size: 1rem;
+            font-weight: normal;
+            margin: 0;
+            flex: 1;
+        }
+        .btn-back-link {
+            color: #666; font-size: 0.82rem; text-decoration: none;
+            border: 1px solid #2a1e14; border-radius: 4px; padding: 0.3em 0.8em;
+        }
+        .btn-back-link:hover { color: #e7d8b1; border-color: #554433; }
+
+        /* Quick-add form */
+        .qadd-section { margin-bottom: 2em; }
+        .qadd-toggle {
+            display: flex; align-items: center; gap: 0.5em;
+            background: none; border: 1px solid #2a1e14; border-radius: 6px;
+            color: #888; padding: 0.5em 1em; cursor: pointer; font-size: 0.85rem;
+            width: 100%; text-align: left; transition: color 0.2s, border-color 0.2s;
+        }
+        .qadd-toggle:hover { color: #e7d8b1; border-color: #554433; }
+        .qadd-body {
+            display: none;
+            background: #130e08;
+            border: 1px solid #2a1e14;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 1.4em 1.2em;
+        }
+        .qadd-body.open { display: block; }
+        .qadd-required {
+            font-size: 0.72rem;
+            color: #555;
+            margin: 0 0 1em;
+            letter-spacing: 0.02em;
+        }
+        .qadd-required em { color: #a07830; font-style: normal; }
+        .btn-qadd-submit {
+            background: #e7d8b1; color: #0a0705; border: none;
+            padding: 0.6em 2.2em; border-radius: 6px; cursor: pointer;
+            font-family: 'OldEnglishFive', serif; font-size: 0.95rem;
+            margin-top: 0.3em; transition: background 0.15s;
+        }
+        .btn-qadd-submit:hover { background: #fff; }
+        .qadd-msg { color: #7ab87a; font-size: 0.82rem; margin-top: 0.5em; display: none; }
+        .qadd-err { color: #e74c3c; font-size: 0.82rem; margin-top: 0.5em; min-height: 1.1em; }
+
+        /* Record cards */
+        .trec-list { margin-top: 0.5em; }
+        .trec-card {
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+            margin-bottom: 0.7em;
+            overflow: hidden;
+        }
+        .trec-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8em;
+            padding: 0.85em 1.1em;
+            cursor: pointer;
+            user-select: none;
+        }
+        .trec-card-header:hover { background: #1e1610; }
+        .trec-card-date { color: #a07830; font-size: 0.75rem; font-family: 'OldEnglishFive', serif; white-space: nowrap; }
+        .trec-card-title {
+            flex: 1;
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-size: 0.95rem;
+            font-weight: normal;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .trec-card-chevron { color: #444; font-size: 0.8rem; transition: transform 0.2s; flex-shrink: 0; }
+        .trec-card.open .trec-card-chevron { transform: rotate(180deg); }
+        .trec-card-body {
+            display: none;
+            padding: 0 1.1em 1.2em;
+            border-top: 1px solid #2a1e14;
+        }
+        .trec-card.open .trec-card-body { display: block; }
+        .trec-actions {
+            display: flex; gap: 0.5em; flex-wrap: wrap;
+            margin-top: 1em; padding-top: 0.8em;
+            border-top: 1px solid #2a1e14; align-items: center;
+        }
+        .trec-save-msg { color: #7ab87a; font-size: 0.82rem; display: none; margin-left: auto; }
+
+        /* Sort/count bar */
+        .tladmin-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1em;
+            color: #555;
+            font-size: 0.8rem;
+        }
+
+        /* Auth gate */
+        .tladmin-gate {
+            max-width: 480px;
+            margin: 4em auto;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 2em;
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+        }
+        .tladmin-gate a { color: #a07830; text-decoration: none; }
+        .tladmin-gate a:hover { color: #e7d8b1; }
+    </style>
+</head>
+<body class="subpage">
+
+    <header class="site-header-unwrapped">
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+    </header>
+
+    <div class="subpage-subtitle-wrap">
+        <h2 class="subpage-subtitle">Timeline Admin</h2>
+    </div>
+
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="index.html">The Antwerp Inn</a></li>
+            <li><a href="fort-drum.html">Fort Drum</a></li>
+            <li><a href="antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="mcallister-house.html">McAllister House</a></li>
+            <li><a href="north-country.html">North Country</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="history.html">History</a></li>
+            <li><a href="timeline.html">Timeline</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="subpage-main">
+
+        <!-- Auth gate (shown if not admin) -->
+        <div id="tladmin-gate" class="tladmin-gate" style="display:none;">
+            Admin access required. <a href="members.html">Sign in</a>
+        </div>
+
+        <!-- Admin UI (shown if admin) -->
+        <div id="tladmin-ui" style="display:none;">
+        <div class="tladmin-wrap">
+
+            <div class="tladmin-header">
+                <h2>Timeline Records</h2>
+                <a class="btn-back-link" href="members.html">&larr; Members</a>
+                <a class="btn-back-link" href="timeline.html">View Timeline</a>
+                <button id="btn-signout" class="btn-signout">Sign Out</button>
+            </div>
+
+            <!-- Quick-add form -->
+            <div class="qadd-section">
+                <button class="qadd-toggle" id="qadd-toggle">&#43; Add Timeline Event</button>
+                <div class="qadd-body" id="qadd-body">
+                    <p class="qadd-required"><em>*</em> Date and Title are required. Date can be a year ("1892"), month + year ("June 1892"), or full date ("1892-06-15").</p>
+                    <div class="hf-row">
+                        <div class="hf-group">
+                            <label>Date <em style="color:#a07830">*</em></label>
+                            <input id="qadd-date" type="text" placeholder="e.g. 1892 or June 1892" />
+                        </div>
+                        <div class="hf-group">
+                            <label>Title <em style="color:#a07830">*</em></label>
+                            <input id="qadd-title" type="text" placeholder="Event title" />
+                        </div>
+                    </div>
+                    <div class="hf-group">
+                        <label>Description</label>
+                        <textarea id="qadd-desc" placeholder="Optional narrative or detail…"></textarea>
+                    </div>
+                    <div class="hf-group">
+                        <label>Date / Time (optional precision)</label>
+                        <input id="qadd-datetime" type="text" placeholder="e.g. June 15, 1892 at 2pm — or leave blank" />
+                    </div>
+                    <button class="btn-qadd-submit" id="btn-qadd-submit">Add Event</button>
+                    <p class="qadd-err" id="qadd-err"></p>
+                    <p class="qadd-msg" id="qadd-msg">Event added.</p>
+                </div>
+            </div>
+
+            <!-- Records list -->
+            <div class="tladmin-meta">
+                <span id="tladmin-count">Loading&hellip;</span>
+                <span>sorted oldest &rarr; newest</span>
+            </div>
+            <div class="trec-list" id="trec-list"></div>
+
+        </div>
+        </div><!-- end tladmin-ui -->
+
+    </main>
+
+    <script>
+        const toggle  = document.getElementById('menu-toggle');
+        const menu    = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const close   = document.getElementById('menu-close');
+        toggle.addEventListener('click',  () => { menu.classList.add('open');    overlay.classList.add('open'); });
+        close.addEventListener('click',   () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+        overlay.addEventListener('click', () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+
+        // Quick-add toggle
+        document.getElementById('qadd-toggle').addEventListener('click', function() {
+            document.getElementById('qadd-body').classList.toggle('open');
+        });
+    </script>
+
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp }    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut }
+                                    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, collection, addDoc, updateDoc, deleteDoc,
+                 onSnapshot, query, orderBy, serverTimestamp }
+                                    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
+
+        let unsubscribeList = null;
+
+        // ── Date → sort key ───────────────────────────────────────
+        function parseDateSortKey(dateStr) {
+            if (!dateStr) return '0000-00-00';
+            const s = String(dateStr).trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+            if (/^\d{4}-\d{2}$/.test(s))       return s + '-00';
+            if (/^\d{4}$/.test(s))              return s + '-00-00';
+            const monthMap = {
+                january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',
+                july:'07',august:'08',september:'09',october:'10',november:'11',december:'12',
+                jan:'01',feb:'02',mar:'03',apr:'04',jun:'06',jul:'07',aug:'08',
+                sep:'09',oct:'10',nov:'11',dec:'12'
+            };
+            const yearM  = s.match(/\b(\d{4})\b/);
+            const lower  = s.toLowerCase();
+            let mon = null;
+            for (const [k, v] of Object.entries(monthMap)) {
+                if (lower.includes(k)) { mon = v; break; }
+            }
+            if (yearM && mon) return yearM[1] + '-' + mon + '-00';
+            if (yearM)        return yearM[1] + '-00-00';
+            return '0000-00-00';
+        }
+
+        // ── Auth gate ─────────────────────────────────────────────
+        onAuthStateChanged(auth, async user => {
+            if (!user) {
+                document.getElementById('tladmin-gate').style.display = 'block';
+                return;
+            }
+            const adminSnap = await getDoc(doc(db, 'admins', user.uid)).catch(() => null);
+            if (!adminSnap || !adminSnap.exists()) {
+                document.getElementById('tladmin-gate').style.display = 'block';
+                return;
+            }
+            document.getElementById('tladmin-ui').style.display = 'block';
+            initAdminUI();
+        });
+
+        document.getElementById('btn-signout').addEventListener('click', () => {
+            signOut(auth).catch(() => {});
+            window.location.href = 'members.html';
+        });
+
+        // ── Admin UI ──────────────────────────────────────────────
+        function initAdminUI() {
+            listenRecords();
+            document.getElementById('btn-qadd-submit').addEventListener('click', addRecord);
+        }
+
+        function listenRecords() {
+            if (unsubscribeList) unsubscribeList();
+            const q = query(collection(db, 'timeline'), orderBy('dateSortKey', 'asc'));
+            unsubscribeList = onSnapshot(q, snap => {
+                const records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                document.getElementById('tladmin-count').textContent =
+                    records.length === 0 ? 'No events yet.'
+                    : records.length + ' event' + (records.length === 1 ? '' : 's');
+                renderList(records);
+            }, () => {
+                document.getElementById('tladmin-count').textContent = 'Error loading records.';
+            });
+        }
+
+        function renderList(records) {
+            const list = document.getElementById('trec-list');
+            // Preserve open state
+            const openIds = new Set(
+                [...list.querySelectorAll('.trec-card.open')].map(el => el.dataset.id)
+            );
+            list.innerHTML = '';
+            if (records.length === 0) {
+                list.innerHTML = '<p style="color:#444;font-style:italic;font-size:0.9rem;padding:1em 0;">No timeline events yet. Add one above.</p>';
+                return;
+            }
+            records.forEach(rec => {
+                const card = buildCard(rec, openIds.has(rec.id));
+                list.appendChild(card);
+            });
+        }
+
+        function buildCard(rec, startOpen) {
+            const card = document.createElement('div');
+            card.className = 'trec-card' + (startOpen ? ' open' : '');
+            card.dataset.id = rec.id;
+
+            const header = document.createElement('div');
+            header.className = 'trec-card-header';
+            header.innerHTML = `
+                <span class="trec-card-date">${esc(rec.date || '—')}</span>
+                <span class="trec-card-title">${esc(rec.title || 'Untitled')}</span>
+                <span class="trec-card-chevron">&#9660;</span>
+            `;
+            header.addEventListener('click', () => card.classList.toggle('open'));
+            card.appendChild(header);
+
+            const body = document.createElement('div');
+            body.className = 'trec-card-body';
+            body.innerHTML = `
+                <div style="height:0.8em;"></div>
+                <div class="hf-row">
+                    <div class="hf-group">
+                        <label>Date <em style="color:#a07830">*</em></label>
+                        <input class="rec-date" type="text" value="${esc(rec.date || '')}" placeholder="e.g. 1892" />
+                    </div>
+                    <div class="hf-group">
+                        <label>Title <em style="color:#a07830">*</em></label>
+                        <input class="rec-title" type="text" value="${esc(rec.title || '')}" placeholder="Event title" />
+                    </div>
+                </div>
+                <div class="hf-group">
+                    <label>Description</label>
+                    <textarea class="rec-desc" placeholder="Optional narrative…">${esc(rec.description || '')}</textarea>
+                </div>
+                <div class="hf-group">
+                    <label>Date / Time (optional)</label>
+                    <input class="rec-datetime" type="text" value="${esc(rec.dateTime || '')}" placeholder="e.g. June 15, 1892 at 2pm" />
+                </div>
+                <div class="trec-actions">
+                    <button class="btn-hist-save rec-btn-save">Save</button>
+                    <button class="btn-hist-delete rec-btn-delete">Delete</button>
+                    <span class="trec-save-msg">Saved.</span>
+                </div>
+            `;
+
+            body.querySelector('.rec-btn-save').addEventListener('click', () => saveRecord(rec.id, body, card));
+            body.querySelector('.rec-btn-delete').addEventListener('click', () => deleteRecord(rec.id, card));
+            card.appendChild(body);
+            return card;
+        }
+
+        async function addRecord() {
+            const dateVal  = document.getElementById('qadd-date').value.trim();
+            const titleVal = document.getElementById('qadd-title').value.trim();
+            const descVal  = document.getElementById('qadd-desc').value.trim();
+            const dtVal    = document.getElementById('qadd-datetime').value.trim();
+            const errEl    = document.getElementById('qadd-err');
+            const msgEl    = document.getElementById('qadd-msg');
+
+            errEl.textContent = '';
+            msgEl.style.display = 'none';
+
+            if (!dateVal)  { errEl.textContent = 'Date is required.';  return; }
+            if (!titleVal) { errEl.textContent = 'Title is required.'; return; }
+
+            try {
+                await addDoc(collection(db, 'timeline'), {
+                    date: dateVal,
+                    dateSortKey: parseDateSortKey(dateVal),
+                    title: titleVal,
+                    description: descVal,
+                    dateTime: dtVal,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+                document.getElementById('qadd-date').value     = '';
+                document.getElementById('qadd-title').value    = '';
+                document.getElementById('qadd-desc').value     = '';
+                document.getElementById('qadd-datetime').value = '';
+                msgEl.style.display = 'block';
+                setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
+            } catch(e) {
+                errEl.textContent = 'Error saving: ' + e.message;
+            }
+        }
+
+        async function saveRecord(id, body, card) {
+            const dateVal  = body.querySelector('.rec-date').value.trim();
+            const titleVal = body.querySelector('.rec-title').value.trim();
+            const descVal  = body.querySelector('.rec-desc').value.trim();
+            const dtVal    = body.querySelector('.rec-datetime').value.trim();
+            const msgEl    = body.querySelector('.trec-save-msg');
+
+            if (!dateVal || !titleVal) {
+                msgEl.style.color = '#e74c3c';
+                msgEl.textContent = 'Date and Title are required.';
+                msgEl.style.display = 'inline';
+                setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, 'timeline', id), {
+                    date: dateVal,
+                    dateSortKey: parseDateSortKey(dateVal),
+                    title: titleVal,
+                    description: descVal,
+                    dateTime: dtVal,
+                    updatedAt: serverTimestamp()
+                });
+                msgEl.style.color = '#7ab87a';
+                msgEl.textContent = 'Saved.';
+                msgEl.style.display = 'inline';
+                setTimeout(() => { msgEl.style.display = 'none'; }, 2500);
+            } catch(e) {
+                msgEl.style.color = '#e74c3c';
+                msgEl.textContent = 'Error: ' + e.message;
+                msgEl.style.display = 'inline';
+            }
+        }
+
+        async function deleteRecord(id, card) {
+            const title = card.querySelector('.trec-card-title')?.textContent || 'this event';
+            if (!confirm('Delete "' + title + '"? This cannot be undone.')) return;
+            try {
+                await deleteDoc(doc(db, 'timeline', id));
+            } catch(e) {
+                alert('Error deleting: ' + e.message);
+            }
+        }
+
+        function esc(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+    </script>
+
+</body>
+</html>

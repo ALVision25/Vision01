@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timeline — The Antwerp Inn 1845</title>
+    <link rel="stylesheet" href="style.css?v=tl01" />
+    <style>
+        /* Override subpage-main width constraint for the timeline */
+        body.subpage .tl-page {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body class="subpage">
+
+    <header class="site-header-unwrapped">
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+    </header>
+
+    <div class="subpage-subtitle-wrap">
+        <h2 class="subpage-subtitle">Timeline</h2>
+    </div>
+
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="index.html">The Antwerp Inn</a></li>
+            <li><a href="fort-drum.html">Fort Drum</a></li>
+            <li><a href="antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="mcallister-house.html">McAllister House</a></li>
+            <li><a href="north-country.html">North Country</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="history.html">History</a></li>
+            <li><a href="timeline.html">Timeline</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <!-- Auth gate -->
+    <div id="tl-auth-gate" class="tl-auth-gate" style="display:none; margin:4em auto;">
+        <p>This timeline is available to members.<br><a href="members.html">Sign in to view</a></p>
+    </div>
+
+    <!-- Loading state -->
+    <div id="tl-loading" class="tl-loading-msg">Loading&hellip;</div>
+
+    <!-- Timeline UI -->
+    <div id="tl-page" class="tl-page" style="display:none;">
+
+        <div class="tl-controls-bar">
+            <div>
+                <span class="tl-controls-title">&#x2767; Historical Record</span>
+                <span class="tl-controls-hint">&nbsp;&nbsp;scroll to explore &middot; click any event for details</span>
+            </div>
+            <div class="tl-zoom-btns">
+                <button class="tl-zoom-btn" id="tl-zoom-out" title="Zoom out">&#8722;</button>
+                <span class="tl-zoom-label" id="tl-zoom-label">100%</span>
+                <button class="tl-zoom-btn" id="tl-zoom-in" title="Zoom in">&#43;</button>
+            </div>
+        </div>
+
+        <div class="tl-scroll-outer" id="tl-scroll">
+            <div class="tl-canvas" id="tl-canvas"></div>
+        </div>
+
+    </div><!-- end tl-page -->
+
+    <!-- Detail panel -->
+    <div class="tl-detail" id="tl-detail">
+        <button class="tl-detail-close" id="tl-detail-close">&#10005;</button>
+        <p class="tl-detail-eyebrow">Timeline Event</p>
+        <h2 class="tl-detail-title" id="tl-detail-title"></h2>
+        <p class="tl-detail-date" id="tl-detail-date"></p>
+        <p class="tl-detail-desc" id="tl-detail-desc"></p>
+        <p class="tl-detail-datetime" id="tl-detail-datetime" style="display:none;">
+            &#128336;&nbsp;<span></span>
+        </p>
+    </div>
+
+    <!-- Hover tooltip -->
+    <div class="tl-tooltip" id="tl-tooltip">
+        <div id="tl-tooltip-title"></div>
+        <div class="tl-tooltip-date" id="tl-tooltip-date"></div>
+    </div>
+
+    <script>
+        // Menu toggle
+        const toggle  = document.getElementById('menu-toggle');
+        const menu    = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const close   = document.getElementById('menu-close');
+        toggle.addEventListener('click',  () => { menu.classList.add('open');    overlay.classList.add('open'); });
+        close.addEventListener('click',   () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+        overlay.addEventListener('click', () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+
+        // Detail panel close
+        document.getElementById('tl-detail-close').addEventListener('click', closeDetail);
+        function closeDetail() {
+            document.getElementById('tl-detail').classList.remove('open');
+            document.querySelectorAll('.tl-dot.active').forEach(d => d.classList.remove('active'));
+        }
+
+        // Zoom
+        let zoomLevel = 1.0;
+        const ZOOM_STEP = 0.25;
+        const ZOOM_MIN  = 0.4;
+        const ZOOM_MAX  = 3.0;
+
+        document.getElementById('tl-zoom-in').addEventListener('click', () => {
+            if (zoomLevel < ZOOM_MAX) { zoomLevel = Math.round((zoomLevel + ZOOM_STEP) * 100) / 100; rerender(); }
+        });
+        document.getElementById('tl-zoom-out').addEventListener('click', () => {
+            if (zoomLevel > ZOOM_MIN) { zoomLevel = Math.round((zoomLevel - ZOOM_STEP) * 100) / 100; rerender(); }
+        });
+        document.addEventListener('wheel', e => {
+            const scroll = document.getElementById('tl-scroll');
+            if (!scroll || !scroll.contains(e.target)) return;
+            if (!e.ctrlKey) return; // only on ctrl+scroll
+            e.preventDefault();
+            if (e.deltaY < 0 && zoomLevel < ZOOM_MAX) {
+                zoomLevel = Math.round((zoomLevel + ZOOM_STEP) * 100) / 100;
+            } else if (e.deltaY > 0 && zoomLevel > ZOOM_MIN) {
+                zoomLevel = Math.round((zoomLevel - ZOOM_STEP) * 100) / 100;
+            }
+            rerender();
+        }, { passive: false });
+
+        // Drag-scroll
+        (function() {
+            const el = document.getElementById('tl-scroll');
+            if (!el) return;
+            let isDragging = false, startX = 0, scrollLeft = 0;
+            el.addEventListener('mousedown', e => {
+                if (e.button !== 0) return;
+                isDragging = true;
+                startX = e.pageX - el.offsetLeft;
+                scrollLeft = el.scrollLeft;
+                el.style.cursor = 'grabbing';
+            });
+            document.addEventListener('mouseup', () => { isDragging = false; if(el) el.style.cursor = 'grab'; });
+            el.addEventListener('mousemove', e => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const x = e.pageX - el.offsetLeft;
+                el.scrollLeft = scrollLeft - (x - startX);
+            });
+        })();
+
+    </script>
+
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp }     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged }
+                                     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, collection, onSnapshot, query, orderBy }
+                                     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
+
+        let allEvents = [];
+
+        // ── Auth guard ────────────────────────────────────────────
+        onAuthStateChanged(auth, async user => {
+            const loading = document.getElementById('tl-loading');
+            if (!user) {
+                loading.style.display = 'none';
+                document.getElementById('tl-auth-gate').style.display = 'block';
+                return;
+            }
+            try {
+                const userSnap = await getDoc(doc(db, 'users', user.uid));
+                const adminSnap = await getDoc(doc(db, 'admins', user.uid)).catch(() => null);
+                const isAdmin = adminSnap && adminSnap.exists();
+                const status = isAdmin ? 'active' : (userSnap.data()?.status || 'pending');
+                if (status !== 'active') {
+                    loading.style.display = 'none';
+                    document.getElementById('tl-auth-gate').style.display = 'block';
+                    return;
+                }
+            } catch(e) {
+                loading.style.display = 'none';
+                document.getElementById('tl-auth-gate').style.display = 'block';
+                return;
+            }
+            loading.style.display = 'none';
+            document.getElementById('tl-page').style.display = 'block';
+            startListening();
+        });
+
+        // ── Load events ───────────────────────────────────────────
+        function startListening() {
+            const q = query(collection(db, 'timeline'), orderBy('dateSortKey', 'asc'));
+            onSnapshot(q, snap => {
+                allEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                rerender();
+            });
+        }
+
+        // ── Expose rerender globally (zoom buttons call it) ───────
+        window.rerender = rerender;
+
+        function rerender() {
+            const label = document.getElementById('tl-zoom-label');
+            if (label) label.textContent = Math.round(zoomLevel * 100) + '%';
+            renderTimeline(allEvents, zoomLevel);
+        }
+
+        // ── Timeline layout ───────────────────────────────────────
+        function getYear(event) {
+            const key = event.dateSortKey || '1900-00-00';
+            return parseInt(key.substring(0, 4)) || 1900;
+        }
+
+        function computeLayout(sorted, zoom) {
+            const GAP_PX_PER_YEAR = 5 * zoom;
+            const GAP_MIN         = 45 * zoom;
+            const YEAR_BASE       = 65 * zoom;
+            const EVENT_SPACING   = 70 * zoom;
+            const L_PAD           = 70;
+            const R_PAD           = 70;
+
+            // Group by year
+            const byYear = {};
+            sorted.forEach(e => {
+                const y = getYear(e);
+                if (!byYear[y]) byYear[y] = [];
+                byYear[y].push(e);
+            });
+            const eventYears = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+
+            const positions = []; // {event, x, showTitle, above}
+            const ticks     = []; // {x, year, isDecade}
+            let x = L_PAD;
+            let globalIdx = 0;
+
+            for (let i = 0; i < eventYears.length; i++) {
+                const year = eventYears[i];
+
+                // Gap before this year
+                if (i > 0) {
+                    const prevYear = eventYears[i - 1];
+                    const gapYears = year - prevYear;
+                    if (gapYears > 1) {
+                        const gapWidth = Math.max(GAP_MIN, gapYears * GAP_PX_PER_YEAR);
+                        // Decade ticks inside gap
+                        const firstDecade = Math.ceil((prevYear + 1) / 10) * 10;
+                        for (let d = firstDecade; d < year; d += 10) {
+                            const frac = (d - prevYear) / gapYears;
+                            ticks.push({ x: x + gapWidth * frac, year: d, isDecade: true });
+                        }
+                        x += gapWidth;
+                    }
+                }
+
+                // Event-year segment
+                const events = byYear[year];
+                const count  = events.length;
+                const yearWidth = YEAR_BASE + (count - 1) * EVENT_SPACING;
+                const yearCX    = x + yearWidth / 2;
+
+                // Year tick (only show if not already a decade tick near same spot)
+                const alreadyHasDecade = ticks.some(t => t.isDecade && Math.abs(t.x - yearCX) < 20);
+                if (!alreadyHasDecade) {
+                    ticks.push({ x: yearCX, year, isDecade: year % 10 === 0 });
+                }
+
+                events.forEach((e, j) => {
+                    const ex = count === 1
+                        ? yearCX
+                        : (x + YEAR_BASE / 2 + j * EVENT_SPACING);
+                    // Selective title: first in year cluster OR every 3rd globally
+                    const showTitle = j === 0 || globalIdx % 3 === 0;
+                    const above = globalIdx % 2 === 0;
+                    positions.push({ event: e, x: ex, showTitle, above });
+                    globalIdx++;
+                });
+
+                x += yearWidth;
+            }
+
+            return { positions, ticks, totalWidth: x + R_PAD };
+        }
+
+        // ── Render the timeline DOM ───────────────────────────────
+        function renderTimeline(events, zoom) {
+            const canvas  = document.getElementById('tl-canvas');
+            const tooltip = document.getElementById('tl-tooltip');
+            canvas.innerHTML = '';
+            closeDetail();
+
+            if (!events || events.length === 0) {
+                const msg = document.createElement('div');
+                msg.className = 'tl-empty';
+                msg.textContent = 'No timeline events yet.';
+                canvas.appendChild(msg);
+                canvas.style.width = '';
+                return;
+            }
+
+            const sorted = [...events].sort((a, b) =>
+                (a.dateSortKey || '').localeCompare(b.dateSortKey || '')
+            );
+
+            const { positions, ticks, totalWidth } = computeLayout(sorted, zoom);
+            canvas.style.width = totalWidth + 'px';
+
+            // Rail
+            const rail = document.createElement('div');
+            rail.className = 'tl-rail';
+            canvas.appendChild(rail);
+
+            // Ticks
+            ticks.forEach(({ x, year, isDecade }) => {
+                const tick = document.createElement('div');
+                tick.className = 'tl-tick ' + (isDecade ? 'decade' : 'minor');
+                tick.style.left = x + 'px';
+                canvas.appendChild(tick);
+
+                const label = document.createElement('div');
+                label.className = 'tl-tick-label' + (isDecade ? ' decade' : '');
+                label.style.left = x + 'px';
+                label.textContent = year;
+                canvas.appendChild(label);
+            });
+
+            // Events
+            positions.forEach(({ event, x, showTitle, above }) => {
+                // Dot
+                const dot = document.createElement('div');
+                dot.className = 'tl-dot';
+                dot.style.left = x + 'px';
+                dot.addEventListener('click', () => openDetail(event, dot));
+
+                dot.addEventListener('mouseenter', ev => {
+                    tooltip.style.display = 'block';
+                    document.getElementById('tl-tooltip-title').textContent = event.title || '';
+                    document.getElementById('tl-tooltip-date').textContent  = event.date || '';
+                });
+                dot.addEventListener('mousemove', ev => {
+                    tooltip.style.left = (ev.clientX + 14) + 'px';
+                    tooltip.style.top  = (ev.clientY - 36) + 'px';
+                });
+                dot.addEventListener('mouseleave', () => {
+                    tooltip.style.display = 'none';
+                });
+                canvas.appendChild(dot);
+
+                if (showTitle) {
+                    // Stem
+                    const stem = document.createElement('div');
+                    stem.className = 'tl-stem ' + (above ? 'above' : 'below');
+                    stem.style.left = x + 'px';
+                    canvas.appendChild(stem);
+
+                    // Callout
+                    const callout = document.createElement('div');
+                    callout.className = 'tl-callout ' + (above ? 'above' : 'below');
+                    callout.style.left = x + 'px';
+                    callout.innerHTML =
+                        '<div class="tl-callout-title">' + esc(event.title || '') + '</div>' +
+                        '<div class="tl-callout-date">'  + esc(event.date  || '') + '</div>';
+                    callout.addEventListener('click', () => openDetail(event, dot));
+                    callout.addEventListener('mouseenter', () => { tooltip.style.display = 'none'; });
+                    canvas.appendChild(callout);
+                }
+            });
+        }
+
+        // ── Detail panel ──────────────────────────────────────────
+        function openDetail(event, dotEl) {
+            document.querySelectorAll('.tl-dot.active').forEach(d => d.classList.remove('active'));
+            if (dotEl) dotEl.classList.add('active');
+
+            document.getElementById('tl-detail-title').textContent = event.title || 'Untitled';
+            document.getElementById('tl-detail-date').textContent  = event.date  || '';
+
+            const descEl = document.getElementById('tl-detail-desc');
+            if (event.description && event.description.trim()) {
+                descEl.textContent = event.description;
+                descEl.className = 'tl-detail-desc';
+            } else {
+                descEl.textContent = 'No description.';
+                descEl.className = 'tl-detail-no-desc';
+            }
+
+            const dtEl = document.getElementById('tl-detail-datetime');
+            if (event.dateTime && event.dateTime.trim()) {
+                dtEl.style.display = 'block';
+                dtEl.querySelector('span').textContent = event.dateTime;
+            } else {
+                dtEl.style.display = 'none';
+            }
+
+            document.getElementById('tl-detail').classList.add('open');
+        }
+
+        function esc(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+    </script>
+
+</body>
+</html>

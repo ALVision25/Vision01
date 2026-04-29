@@ -190,6 +190,7 @@
             <li><a href="north-country.html">North Country</a></li>
             <li><a href="members.html">Members</a></li>
             <li><a href="history.html">History</a></li>
+            <li><a href="timeline.html">Timeline</a></li>
         </ul>
     </nav>
     <div class="menu-overlay" id="menu-overlay"></div>
@@ -306,8 +307,9 @@
                     const badgeWrap = document.getElementById('member-badges');
                     if (isAdmin) {
                         [
-                            { label: 'Site Admin',    href: 'admin.html',         title: 'Open Site Admin panel' },
-                            { label: 'History Admin', href: 'history-admin.html', title: 'Open History Admin panel' }
+                            { label: 'Site Admin',     href: 'admin.html',          title: 'Open Site Admin panel' },
+                            { label: 'History Admin',  href: 'history-admin.html',  title: 'Open History Admin panel' },
+                            { label: 'Timeline Admin', href: 'timeline-admin.html', title: 'Manage Timeline events' }
                         ].forEach(({ label, href, title }) => {
                             const a = document.createElement('a');
                             a.textContent = label;
