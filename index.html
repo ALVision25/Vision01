@@ -163,21 +163,30 @@
         // Preload all other images so crossfade never waits on network
         slides.forEach((s, i) => { if (i !== current) { const img = new Image(); img.src = s; } });
 
-        function nextSlide() {
-            if (slides.length < 2 || animating) return;
-            animating = true;
+        // ── Transition engine ───────────────────────────────────
+        // Preload next image and display timer run in parallel.
+        // Crossfade only starts when BOTH are ready — so display time
+        // is always respected and images never pop in half-loaded.
+        let timer = null;
+
+        function scheduleNext() {
+            if (slides.length < 2) return;
+            clearTimeout(timer);
+
             const next    = (current + 1) % slides.length;
             const nextSrc = slides[next];
+            let preloadReady = false;
+            let timerReady   = false;
 
-            function doFade() {
-                // Image is confirmed decoded — safe to crossfade
+            function tryFade() {
+                if (!preloadReady || !timerReady || animating) return;
+                animating = true;
                 back.src = nextSrc;
                 requestAnimationFrame(() => {
                     front.style.opacity = '0';
                     back.style.opacity  = '1';
 
                     setTimeout(() => {
-                        // Atomic swap: front silently takes over, back resets behind it
                         front.style.transition = 'none';
                         front.src              = nextSrc;
                         front.style.opacity    = '1';
@@ -190,29 +199,32 @@
                             current   = next;
                             animating = false;
                             saveState(slides[current]);
+                            scheduleNext();   // chain the next cycle
                         }));
                     }, fadeTime + 100);
                 });
             }
 
-            // Preload next image first — crossfade only starts when fully decoded
-            const preloader   = new Image();
-            preloader.onload  = doFade;
-            preloader.onerror = () => { current = next; animating = false; };
-            preloader.src     = nextSrc;
+            // Start preload and display timer simultaneously
+            const preloader = new Image();
+            preloader.onload = preloader.onerror = () => { preloadReady = true; tryFade(); };
+            preloader.src = nextSrc;
+
+            timer = setTimeout(() => { timerReady = true; tryFade(); }, displayTime);
         }
 
-        // ── Visibility-aware timer — pauses when tab is hidden ──
-        let timer = null;
-        function startTimer() {
-            if (timer) clearInterval(timer);
-            if (slides.length > 1) timer = setInterval(nextSlide, displayTime);
-        }
+        // ── Pause when tab is hidden, resume when visible ───────
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden) { clearInterval(timer); timer = null; }
-            else { startTimer(); }
+            if (document.hidden) {
+                clearTimeout(timer);
+                timer     = null;
+                animating = false;
+            } else {
+                if (!animating) scheduleNext();
+            }
         });
-        startTimer();
+
+        scheduleNext();
 
         // Hamburger menu
         const toggle  = document.getElementById('menu-toggle');

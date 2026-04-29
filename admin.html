@@ -183,7 +183,7 @@
             width: 100%;
             height: auto;
             display: block;
-            transition: opacity 0.4s;
+            transition: opacity 0.4s ease-in-out;
         }
         .preview-counter {
             position: absolute;
@@ -902,10 +902,12 @@
             dispSlider.addEventListener('input', () => {
                 cfg.displayTime = parseInt(dispSlider.value) * 1000;
                 dispVal.textContent = dispSlider.value + 's';
+                startPreview();   // restart preview with new timing if active
             });
             fadeSlider.addEventListener('input', () => {
                 cfg.fadeTime = Math.round(parseFloat(fadeSlider.value) * 1000);
                 fadeVal.textContent = parseFloat(fadeSlider.value).toFixed(1) + 's';
+                startPreview();   // restart preview with new fade if active
             });
         }
 
@@ -1099,34 +1101,45 @@
 
         // ── Preview slideshow ──────────────────────────────────
         let previewTimer = null, previewIdx = 0;
+        let previewActive = false;
+
+        const previewImg = document.getElementById('preview-img');
+
+        function startPreview() {
+            if (!previewActive || cfg.active.length === 0) return;
+            clearInterval(previewTimer);
+            const fadeDur = Math.min((cfg.fadeTime / 1000).toFixed(2), 0.6);
+            previewImg.style.transition = 'opacity ' + fadeDur + 's ease-in-out';
+            previewTimer = setInterval(() => {
+                previewIdx = (previewIdx + 1) % cfg.active.length;
+                showPreviewSlide(previewIdx);
+            }, cfg.displayTime);
+        }
+
+        function showPreviewSlide(i) {
+            const img = document.getElementById('preview-img');
+            const ctr = document.getElementById('preview-counter');
+            img.style.opacity = 0;
+            setTimeout(() => {
+                img.src = cfg.active[i];
+                img.style.opacity = 1;
+                ctr.textContent = (i + 1) + ' / ' + cfg.active.length;
+            }, 300);
+        }
 
         document.getElementById('btn-preview').addEventListener('click', () => {
             if (cfg.active.length === 0) return;
+            previewActive = true;
+            previewIdx    = 0;
             clearInterval(previewTimer);
-            previewIdx = 0;
 
             const wrap = document.getElementById('preview-wrap');
-            const img  = document.getElementById('preview-img');
-            const ctr  = document.getElementById('preview-counter');
             const ph   = document.getElementById('preview-placeholder');
-
             wrap.classList.add('active');
             ph.style.display = 'none';
 
-            function showSlide(i) {
-                img.style.opacity = 0;
-                setTimeout(() => {
-                    img.src = cfg.active[i];
-                    img.style.opacity = 1;
-                    ctr.textContent = (i + 1) + ' / ' + cfg.active.length;
-                }, 200);
-            }
-
-            showSlide(0);
-            previewTimer = setInterval(() => {
-                previewIdx = (previewIdx + 1) % cfg.active.length;
-                showSlide(previewIdx);
-            }, cfg.displayTime);
+            showPreviewSlide(0);
+            startPreview();
         });
 
         // ── Commit to site ─────────────────────────────────────
