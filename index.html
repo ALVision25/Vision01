@@ -117,7 +117,29 @@
         const displayTime = cfg.displayTime || 5000;
         const fadeTime    = cfg.fadeTime    || 2250;
 
-        let current   = 0;
+        // ── Persistence: resume from last shown image ──────────
+        function getStartIndex(slides) {
+            try {
+                const saved     = JSON.parse(localStorage.getItem('slideshowState'));
+                if (!saved) return 0;
+                const ageMs     = Date.now() - (saved.savedAt || 0);
+                const sevenDays = 7 * 24 * 60 * 60 * 1000;
+                if (ageMs >= sevenDays) return Math.floor(Math.random() * slides.length);
+                const idx = slides.indexOf(saved.currentUrl);
+                return idx >= 0 ? idx : 0;
+            } catch(e) { return 0; }
+        }
+
+        function saveState(url) {
+            try {
+                localStorage.setItem('slideshowState', JSON.stringify({
+                    currentUrl: url,
+                    savedAt: Date.now()
+                }));
+            } catch(e) {}
+        }
+
+        let current   = getStartIndex(slides);
         let animating = false;
         const front = document.getElementById('slide-front');
         const back  = document.getElementById('slide-back');
@@ -127,27 +149,26 @@
         front.style.transition = 'opacity ' + fadeSec + 's ease-in-out';
         back.style.transition  = 'opacity ' + fadeSec + 's ease-in-out';
 
-        // Load first image then fade it in — never flash a cached/stale image
+        // Load from saved position then fade in — no flash of stale image
         if (slides.length > 0) {
             front.onload = () => {
                 front.onload = null;
                 front.style.opacity = '1';
             };
             front.onerror = () => { front.onerror = null; front.style.opacity = '1'; };
-            front.src = slides[0];
+            front.src = slides[current];
         }
 
-        // Preload remaining images so crossfade never waits on network
-        slides.slice(1).forEach(s => { const i = new Image(); i.src = s; });
+        // Preload all other images so crossfade never waits on network
+        slides.forEach((s, i) => { if (i !== current) { const img = new Image(); img.src = s; } });
 
         function nextSlide() {
-            if (slides.length < 2) return;   // nothing to cycle
+            if (slides.length < 2) return;
             if (animating) return;
             animating = true;
             const next = (current + 1) % slides.length;
 
             back.onerror = () => {
-                // Image failed to load — skip it silently
                 back.onerror = null;
                 current = next;
                 animating = false;
@@ -174,11 +195,22 @@
 
                     current = next;
                     animating = false;
+                    saveState(slides[current]);   // persist position after every transition
                 }, fadeTime + 100);
             });
         }
 
-        if (slides.length > 1) setInterval(nextSlide, displayTime);
+        // ── Visibility-aware timer — pauses when tab is hidden ──
+        let timer = null;
+        function startTimer() {
+            if (timer) clearInterval(timer);
+            if (slides.length > 1) timer = setInterval(nextSlide, displayTime);
+        }
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) { clearInterval(timer); timer = null; }
+            else { startTimer(); }
+        });
+        startTimer();
 
         // Hamburger menu
         const toggle  = document.getElementById('menu-toggle');
