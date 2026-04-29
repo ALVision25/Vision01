@@ -658,7 +658,7 @@
         ];
 
         async function loadConfig() {
-            const d = { active: [...DEFAULTS], uploaded: [], custom: [], displayTime: 5000, fadeTime: 2250 };
+            const d = { active: [...DEFAULTS], uploaded: [], custom: [], hidden: [], displayTime: 5000, fadeTime: 2250 };
             try {
                 const snap = await getDoc(doc(db, 'slideshow', 'config'));
                 if (snap.exists()) {
@@ -667,6 +667,7 @@
                         active:      Array.isArray(c.active)   ? c.active   : d.active,
                         uploaded:    Array.isArray(c.uploaded) ? c.uploaded : [],
                         custom:      Array.isArray(c.custom)   ? c.custom   : [],
+                        hidden:      Array.isArray(c.hidden)   ? c.hidden   : [],
                         displayTime: c.displayTime || 5000,
                         fadeTime:    c.fadeTime    || 2250
                     };
@@ -682,6 +683,7 @@
                         active:      Array.isArray(c.active)   ? c.active   : d.active,
                         uploaded:    Array.isArray(c.uploaded) ? c.uploaded : [],
                         custom:      Array.isArray(c.custom)   ? c.custom   : [],
+                        hidden:      Array.isArray(c.hidden)   ? c.hidden   : [],
                         displayTime: c.displayTime || 5000,
                         fadeTime:    c.fadeTime    || 2250
                     };
@@ -985,8 +987,9 @@
         function renderAvailable() {
             const section = document.getElementById('available-section');
             const grid    = document.getElementById('available-grid');
+            const hidden  = cfg.hidden || [];
             const all     = [...DEFAULTS, ...cfg.uploaded, ...cfg.custom];
-            const pool    = all.filter(s => !cfg.active.includes(s));
+            const pool    = all.filter(s => !cfg.active.includes(s) && !hidden.includes(s));
 
             if (pool.length === 0) { section.style.display = 'none'; return; }
             section.style.display = 'block';
@@ -1001,7 +1004,9 @@
                     <button class="btn-add" data-src="${src}">+ Add to Slideshow</button>
                     <div class="avail-item-footer">
                         <button class="btn-dl-img" data-src="${src}" data-name="${shortName(src)}" title="Download image">&#8595; Download</button>
-                        ${!isDefault ? `<button class="btn-del-img" data-src="${src}" title="Permanently delete">&#10005; Delete</button>` : ''}
+                        ${isDefault
+                            ? `<button class="btn-del-img" data-src="${src}" data-default="1" title="Remove from pool permanently">&#10005; Remove</button>`
+                            : `<button class="btn-del-img" data-src="${src}" title="Permanently delete from server">&#10005; Delete</button>`}
                     </div>
                 `;
                 grid.appendChild(div);
@@ -1016,13 +1021,19 @@
                 btn.addEventListener('click', () => downloadImage(btn.dataset.src, btn.dataset.name));
             });
             grid.querySelectorAll('.btn-del-img').forEach(btn => {
-                btn.addEventListener('click', () => deleteImage(btn.dataset.src));
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.default) {
+                        hideDefault(btn.dataset.src);
+                    } else {
+                        deleteImage(btn.dataset.src);
+                    }
+                });
             });
         }
 
-        // ── Delete image (permanent) ───────────────────────────
+        // ── Delete image (permanent — uploaded images only) ────
         async function deleteImage(src) {
-            if (!confirm('Permanently delete this image? This cannot be undone.')) return;
+            if (!confirm('Permanently delete this image from the server? This cannot be undone.')) return;
             cfg.active   = cfg.active.filter(s => s !== src);
             cfg.uploaded = cfg.uploaded.filter(s => s !== src);
             cfg.custom   = cfg.custom.filter(s => s !== src);
@@ -1034,6 +1045,17 @@
             }
             await saveConfig(cfg);
             renderActive();
+        }
+
+        // ── Hide default image (removes from pool, stored in Firestore) ─
+        async function hideDefault(src) {
+            if (!confirm('Remove this image from the available pool permanently? It will no longer appear in admin or the slideshow.')) return;
+            cfg.active = cfg.active.filter(s => s !== src);
+            if (!cfg.hidden) cfg.hidden = [];
+            if (!cfg.hidden.includes(src)) cfg.hidden.push(src);
+            await saveConfig(cfg);
+            renderActive();
+            renderAvailable();
         }
 
         // ── Download image ─────────────────────────────────────

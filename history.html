@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Historical Archive — The Antwerp Inn 1845</title>
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css?v=hist04" />
+    <link rel="stylesheet" href="style.css?v=hist05" />
     <style>
         .hist-wrap {
             max-width: 960px;
@@ -658,12 +658,16 @@
             document.getElementById('btn-list-view').classList.remove('active');
             document.getElementById('hist-list-view').style.display = 'none';
             document.getElementById('hist-map-view').style.display  = 'block';
-            if (!mapInited) {
-                initMap(); // load event will call addMapPins when ready
-            } else {
-                mapInstance.resize();
-                if (mapLoaded) addMapPins(filteredRecords());
-            }
+            // Double rAF: wait for browser to paint the container at full size
+            // before Mapbox reads its dimensions to create the WebGL canvas.
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                if (!mapInited) {
+                    initMap(); // load event will call addMapPins when ready
+                } else {
+                    mapInstance.resize();
+                    if (mapLoaded) addMapPins(filteredRecords());
+                }
+            }));
         });
 
         // ── Utility ────────────────────────────────────────────

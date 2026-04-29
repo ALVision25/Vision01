@@ -31,7 +31,24 @@
       "mcp__Claude_in_Chrome__find",
       "Bash(dir /a \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCODE\\\\Vision01\")",
       "Bash(findstr /i git)",
-      "Bash(dir /a \"C:/Users/Cowork26/Desktop/ClaudeCODE/Vision01\")"
+      "Bash(dir /a \"C:/Users/Cowork26/Desktop/ClaudeCODE/Vision01\")",
+      "mcp__Claude_in_Chrome__get_page_text",
+      "mcp__Claude_in_Chrome__tabs_create_mcp",
+      "Bash(git remote *)",
+      "Bash(grep -E \"\\\\.\\(css|js|jpg|png\\)$\")",
+      "Bash(firebase --version)",
+      "Bash(npm install *)",
+      "PowerShell(npm list -g firebase-tools)",
+      "PowerShell(Get-Command firebase -ErrorAction SilentlyContinue)",
+      "PowerShell($env:PATH)",
+      "PowerShell(Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force; $env:PATH = $env:PATH + \";C:\\\\Users\\\\Cowork26\\\\AppData\\\\Roaming\\\\npm\"; firebase --version)",
+      "PowerShell(Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force; $env:PATH = $env:PATH + \";C:\\\\Users\\\\Cowork26\\\\AppData\\\\Roaming\\\\npm\"; Set-Location \"C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCODE\\\\Vision01\"; Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"cd 'C:\\\\Users\\\\Cowork26\\\\Desktop\\\\ClaudeCODE\\\\Vision01'; `$env:PATH = `$env:PATH + ';C:\\\\Users\\\\Cowork26\\\\AppData\\\\Roaming\\\\npm'; firebase login\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(python -m http.server 8765)",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "mcp__Claude_in_Chrome__select_browser"
     ]
   }
 }

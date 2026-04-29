@@ -11,16 +11,16 @@
             overflow: hidden;
         }
 
-        /* Full-screen background images */
+        /* Full-screen background images — both start invisible, JS fades first one in */
         #slide-front, #slide-back {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             object-fit: cover;
             z-index: 0;
+            opacity: 0;
             transition: opacity 2.25s ease-in-out;
         }
-        #slide-back { opacity: 0; }
 
         /* Gradient so the title stays readable */
         .home-overlay {
@@ -55,14 +55,14 @@
 </head>
 <body class="home">
 
-    <!-- Full-screen background slideshow images -->
-    <img id="slide-front" src="slide1.jpg" alt="" />
-    <img id="slide-back" src="slide2.jpg" alt="" />
+    <!-- Full-screen background slideshow images — src set by JS after config loads -->
+    <img id="slide-front" alt="" />
+    <img id="slide-back" alt="" />
     <div class="home-overlay"></div>
 
     <header class="site-header-unwrapped">
         <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
-        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+        <h1 class="site-title-unwrapped">The Antwerp2 Inn 1845</h1>
     </header>
 
     <nav class="side-menu" id="side-menu" aria-hidden="true">
@@ -112,7 +112,8 @@
 
         const cfg = await loadConfig();
 
-        const slides      = (cfg.active && cfg.active.length) ? cfg.active : DEFAULTS;
+        const hidden      = Array.isArray(cfg.hidden) ? cfg.hidden : [];
+        const slides      = ((cfg.active && cfg.active.length) ? cfg.active : DEFAULTS).filter(s => !hidden.includes(s));
         const displayTime = cfg.displayTime || 5000;
         const fadeTime    = cfg.fadeTime    || 2250;
 
@@ -126,11 +127,18 @@
         front.style.transition = 'opacity ' + fadeSec + 's ease-in-out';
         back.style.transition  = 'opacity ' + fadeSec + 's ease-in-out';
 
-        // Seed front from the saved config so the first image matches the list
-        if (slides.length > 0) front.src = slides[0];
+        // Load first image then fade it in — never flash a cached/stale image
+        if (slides.length > 0) {
+            front.onload = () => {
+                front.onload = null;
+                front.style.opacity = '1';
+            };
+            front.onerror = () => { front.onerror = null; front.style.opacity = '1'; };
+            front.src = slides[0];
+        }
 
-        // Preload all images up front so crossfade never waits on network
-        slides.forEach(s => { const i = new Image(); i.src = s; });
+        // Preload remaining images so crossfade never waits on network
+        slides.slice(1).forEach(s => { const i = new Image(); i.src = s; });
 
         function nextSlide() {
             if (slides.length < 2) return;   // nothing to cycle
