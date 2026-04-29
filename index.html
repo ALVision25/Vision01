@@ -20,6 +20,7 @@
             z-index: 0;
             opacity: 0;
             transition: opacity 2.25s ease-in-out;
+            will-change: opacity;
         }
 
         /* Gradient so the title stays readable */
@@ -163,41 +164,42 @@
         slides.forEach((s, i) => { if (i !== current) { const img = new Image(); img.src = s; } });
 
         function nextSlide() {
-            if (slides.length < 2) return;
-            if (animating) return;
+            if (slides.length < 2 || animating) return;
             animating = true;
-            const next = (current + 1) % slides.length;
+            const next    = (current + 1) % slides.length;
+            const nextSrc = slides[next];
 
-            back.onerror = () => {
-                back.onerror = null;
-                current = next;
-                animating = false;
-            };
-            back.onload = null;
+            function doFade() {
+                // Image is confirmed decoded — safe to crossfade
+                back.src = nextSrc;
+                requestAnimationFrame(() => {
+                    front.style.opacity = '0';
+                    back.style.opacity  = '1';
 
-            back.src = slides[next];
-            requestAnimationFrame(() => {
-                front.style.opacity = '0';
-                back.style.opacity  = '1';
+                    setTimeout(() => {
+                        // Atomic swap: front silently takes over, back resets behind it
+                        front.style.transition = 'none';
+                        front.src              = nextSrc;
+                        front.style.opacity    = '1';
+                        back.style.transition  = 'none';
+                        back.style.opacity     = '0';
 
-                setTimeout(() => {
-                    back.onerror = null;
-                    front.style.transition = 'none';
-                    front.src = slides[next];
-                    front.style.opacity = '1';
-                    back.style.transition = 'none';
-                    back.style.opacity = '0';
+                        requestAnimationFrame(() => requestAnimationFrame(() => {
+                            front.style.transition = 'opacity ' + fadeSec + 's ease-in-out';
+                            back.style.transition  = 'opacity ' + fadeSec + 's ease-in-out';
+                            current   = next;
+                            animating = false;
+                            saveState(slides[current]);
+                        }));
+                    }, fadeTime + 100);
+                });
+            }
 
-                    requestAnimationFrame(() => requestAnimationFrame(() => {
-                        front.style.transition = 'opacity ' + fadeSec + 's ease-in-out';
-                        back.style.transition  = 'opacity ' + fadeSec + 's ease-in-out';
-                    }));
-
-                    current = next;
-                    animating = false;
-                    saveState(slides[current]);   // persist position after every transition
-                }, fadeTime + 100);
-            });
+            // Preload next image first — crossfade only starts when fully decoded
+            const preloader   = new Image();
+            preloader.onload  = doFade;
+            preloader.onerror = () => { current = next; animating = false; };
+            preloader.src     = nextSrc;
         }
 
         // ── Visibility-aware timer — pauses when tab is hidden ──
