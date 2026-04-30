@@ -38,7 +38,8 @@
     <script src="firebase-config.js"></script>
     <script type="module">
         import { initializeApp }    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider }
+        import { getAuth, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect,
+                 getRedirectResult, GoogleAuthProvider }
                                     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
         import { getFirestore, collection, doc, addDoc, setDoc, serverTimestamp }
                                     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
@@ -143,32 +144,41 @@
                 `Done — ${ok} added, ${fail} failed. You can close this page and delete this file.`;
         }
 
-        document.getElementById('btn-signin').addEventListener('click', async () => {
-            const email = document.getElementById('email').value.trim();
-            const pw    = document.getElementById('password').value;
-            document.getElementById('err').textContent = '';
-            try {
-                const cred = await signInWithEmailAndPassword(auth, email, pw);
-                await seed(cred.user);
-            } catch(e) {
-                document.getElementById('err').textContent = 'Sign-in failed: ' + e.message;
+        // Check if returning from a Google redirect sign-in
+        document.getElementById('login-ui').innerHTML = '<p style="color:#a07830;font-style:italic;">Checking sign-in state…</p>';
+        try {
+            const result = await getRedirectResult(auth);
+            if (result && result.user) {
+                await seed(result.user);
+            } else {
+                // No redirect result — show the sign-in UI
+                document.getElementById('login-ui').innerHTML = `
+                    <p style="color:#888;">Sign in as admin to seed the timeline database.</p>
+                    <input id="email" type="email" placeholder="Admin email (optional)" />
+                    <input id="password" type="password" placeholder="Password" />
+                    <div id="err" style="color:#e74c3c;font-size:0.85rem;min-height:1.2em;"></div>
+                    <button id="btn-signin">Sign In &amp; Seed</button>
+                    <div style="color:#555;font-size:0.8rem;margin:0.6em 0;">— or —</div>
+                    <button id="btn-google" style="background:#221810;color:#e7d8b1;border:1px solid #3a2a1a;width:100%;padding:0.6em;border-radius:6px;cursor:pointer;font-size:0.95rem;">Sign in with Google &amp; Seed</button>
+                `;
+                document.getElementById('btn-google').addEventListener('click', () => {
+                    signInWithRedirect(auth, new GoogleAuthProvider());
+                });
+                document.getElementById('btn-signin').addEventListener('click', async () => {
+                    const email = document.getElementById('email').value.trim();
+                    const pw    = document.getElementById('password').value;
+                    document.getElementById('err').textContent = '';
+                    try {
+                        const cred = await signInWithEmailAndPassword(auth, email, pw);
+                        await seed(cred.user);
+                    } catch(e) {
+                        document.getElementById('err').textContent = 'Sign-in failed: ' + e.message;
+                    }
+                });
             }
-        });
-
-        document.getElementById('password').addEventListener('keydown', e => {
-            if (e.key === 'Enter') document.getElementById('btn-signin').click();
-        });
-
-        document.getElementById('btn-google').addEventListener('click', async () => {
-            document.getElementById('err').textContent = '';
-            try {
-                const cred = await signInWithPopup(auth, new GoogleAuthProvider());
-                await seed(cred.user);
-            } catch(e) {
-                if (e.code !== 'auth/popup-closed-by-user')
-                    document.getElementById('err').textContent = 'Google sign-in failed: ' + e.message;
-            }
-        });
+        } catch(e) {
+            document.getElementById('login-ui').innerHTML = '<p style="color:#e74c3c;">Error: ' + e.message + '</p>';
+        }
     </script>
 </body>
 </html>
