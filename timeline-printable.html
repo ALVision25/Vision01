@@ -352,6 +352,50 @@
         }
         .doc-state a { color: var(--rust); }
 
+        /* ── Filter bar ── */
+        .doc-filter-bar {
+            max-width: 860px;
+            margin: 0 auto 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .doc-filter-bar .filter-label {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(196,170,122,0.55);
+            margin-right: 4px;
+        }
+        .doc-filter-btn {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(196,170,122,0.25);
+            background: rgba(196,170,122,0.05);
+            color: rgba(196,170,122,0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .doc-filter-btn.active {
+            border-color: var(--btn-color, #c8602a);
+            color: var(--btn-color, #c8602a);
+            background: rgba(0,0,0,0.25);
+            box-shadow: 0 0 8px color-mix(in srgb, var(--btn-color, #c8602a) 30%, transparent);
+        }
+        .doc-filter-btn[data-cat="all"].active {
+            border-color: rgba(196,170,122,0.7);
+            color: rgba(196,170,122,0.9);
+            background: rgba(196,170,122,0.1);
+            box-shadow: none;
+        }
+        .doc-filter-btn:hover { opacity: 0.85; }
+
         /* ── Print button ── */
         .print-bar {
             max-width: 860px;
@@ -393,6 +437,7 @@
             .subpage-subtitle-wrap,
             .side-menu,
             .menu-overlay,
+            .doc-filter-bar,
             .print-bar { display: none !important; }
             body.subpage { background: none !important; padding: 0 !important; }
             .tldoc-outer { padding: 0 !important; }
@@ -418,12 +463,20 @@
             <li><a href="members.html">Members</a></li>
             <li><a href="history.html">History</a></li>
             <li><a href="timeline.html">Timeline</a></li>
-            <li><a href="timeline-printable.html">Timeline Document</a></li>
         </ul>
     </nav>
     <div class="menu-overlay" id="menu-overlay"></div>
 
     <div class="tldoc-outer">
+        <div class="doc-filter-bar" id="filter-bar" style="display:none;">
+            <span class="filter-label">Filter:</span>
+            <button class="doc-filter-btn active" data-cat="all" style="--btn-color:#c4aa7a;">All</button>
+            <button class="doc-filter-btn" data-cat="antwerp"  style="--btn-color:#c8602a;">Antwerp</button>
+            <button class="doc-filter-btn" data-cat="adk"      style="--btn-color:#4a8c5c;">ADK</button>
+            <button class="doc-filter-btn" data-cat="transport"style="--btn-color:#3a6a9a;">Transport</button>
+            <button class="doc-filter-btn" data-cat="oxbow"    style="--btn-color:#8a5a9a;">Oxbow</button>
+            <button class="doc-filter-btn" data-cat="fortdrum" style="--btn-color:#6a8a3a;">Fort Drum</button>
+        </div>
         <div class="print-bar" id="print-bar" style="display:none;">
             <button class="btn-print" onclick="window.print()">&#128438; Print / Save as PDF</button>
         </div>
@@ -478,6 +531,96 @@
         const app  = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db   = getFirestore(app);
+
+        // ── Shared state key with timeline.html ───────────────────
+        const STATE_KEY = 'antwerp_tl_state';
+
+        const CATS = {
+            'Town and Village of Antwerp':            { key:'antwerp',  color:'#c8602a' },
+            'ADK North Country':                      { key:'adk',      color:'#4a8c5c' },
+            'Transportation':                         { key:'transport',color:'#3a6a9a' },
+            'Oxbow / Scotch Settlement':              { key:'oxbow',    color:'#8a5a9a' },
+            'Fort Drum Expansion / Displaced Hamlets':{ key:'fortdrum', color:'#6a8a3a' },
+        };
+
+        // All possible category keys
+        const ALL_KEYS = Object.values(CATS).map(c => c.key);
+
+        // ── Load active filters from localStorage ─────────────────
+        let activeFilters = new Set(ALL_KEYS); // default = all on
+
+        try {
+            const saved = JSON.parse(localStorage.getItem(STATE_KEY) || '{}');
+            if (Array.isArray(saved.filters) && saved.filters.length > 0) {
+                activeFilters = new Set(saved.filters);
+            }
+        } catch(_) {}
+
+        function saveFiltersToStorage() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STATE_KEY) || '{}');
+                saved.filters = [...activeFilters];
+                localStorage.setItem(STATE_KEY, JSON.stringify(saved));
+            } catch(_) {}
+        }
+
+        // Cached full record list so we can re-render on filter change
+        let allRecords = [];
+
+        function applyFilters() {
+            const allOn = activeFilters.size === ALL_KEYS.length;
+            return allRecords.filter(rec => {
+                if (allOn) return true;
+                const catVal = Object.entries(CATS).find(([k]) =>
+                    k.toLowerCase() === String(rec.category || '').toLowerCase().trim()
+                );
+                const key = catVal ? catVal[1].key : null;
+                return key ? activeFilters.has(key) : true; // uncategorised always shown
+            });
+        }
+
+        function syncFilterButtons() {
+            const allOn = activeFilters.size === ALL_KEYS.length;
+            document.querySelectorAll('.doc-filter-btn').forEach(btn => {
+                const cat = btn.dataset.cat;
+                if (cat === 'all') {
+                    btn.classList.toggle('active', allOn);
+                } else {
+                    btn.classList.toggle('active', activeFilters.has(cat));
+                }
+            });
+        }
+
+        function reRender() {
+            const filtered = applyFilters();
+            if (allRecords.length > 0) render(filtered);
+        }
+
+        // ── Wire filter buttons ───────────────────────────────────
+        document.querySelectorAll('.doc-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const cat = btn.dataset.cat;
+                if (cat === 'all') {
+                    // Toggle: if all are on, turn all off except none; if any off, turn all on
+                    if (activeFilters.size === ALL_KEYS.length) {
+                        // all on → keep all on (all = no filter, always show all)
+                        // clicking All when all are on does nothing meaningful
+                    } else {
+                        activeFilters = new Set(ALL_KEYS);
+                    }
+                } else {
+                    if (activeFilters.has(cat)) {
+                        activeFilters.delete(cat);
+                        if (activeFilters.size === 0) activeFilters = new Set(ALL_KEYS); // prevent empty
+                    } else {
+                        activeFilters.add(cat);
+                    }
+                }
+                syncFilterButtons();
+                saveFiltersToStorage();
+                reRender();
+            });
+        });
 
         // ── Era boundaries ────────────────────────────────────────
         function getEra(year) {
@@ -651,7 +794,10 @@
                     return;
                 }
                 state.remove();
-                render(records);
+                allRecords = records;
+                syncFilterButtons();
+                document.getElementById('filter-bar').style.display = '';
+                render(applyFilters());
             } catch(e) {
                 state.textContent = 'Error loading records: ' + e.message;
             }

@@ -4,13 +4,286 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Timeline — The Antwerp Inn 1845</title>
-    <link rel="stylesheet" href="style.css?v=tl01" />
+    <link rel="stylesheet" href="style.css?v=tl02" />
     <style>
-        /* Override subpage-main width constraint for the timeline */
-        body.subpage .tl-page {
-            max-width: 100%;
-            margin: 0;
-            padding: 0;
+        /* ── Page shell ─────────────────────────────────────────── */
+        body.subpage .tl-page { max-width:100%; margin:0; padding:0; }
+
+        /* ── Controls bar ───────────────────────────────────────── */
+        .tl-controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5em;
+            padding: 0.65em 1.2em;
+            background: #0f0a06;
+            border-bottom: 1px solid #2a1e14;
+        }
+        .tl-controls-title { font-family:'OldEnglishFive',serif; color:#a07830; font-size:0.9rem; }
+        .tl-controls-hint  { color:#444; font-size:0.75rem; }
+        .tl-zoom-btns      { display:flex; align-items:center; gap:0.4em; }
+        .tl-zoom-btn {
+            background:#1a120c; border:1px solid #2a1e14; color:#888;
+            width:28px; height:28px; border-radius:4px; cursor:pointer;
+            font-size:1rem; line-height:1; transition:all 0.15s;
+        }
+        .tl-zoom-btn:hover { background:#2a1e14; color:#e7d8b1; border-color:#554433; }
+        .tl-zoom-label { color:#666; font-size:0.8rem; min-width:3em; text-align:center; }
+
+        /* ── Filter bar ─────────────────────────────────────────── */
+        .tl-filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            flex-wrap: wrap;
+            padding: 0.55em 1.2em;
+            background: #0c0806;
+            border-bottom: 1px solid #1e1510;
+        }
+        .tl-filter-label { color:#444; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; margin-right:0.3em; white-space:nowrap; }
+        .tl-filter-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.35em;
+            padding: 0.3em 0.75em;
+            border-radius: 20px;
+            border: 1.5px solid transparent;
+            cursor: pointer;
+            font-size: 0.72rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            background: #1a120c;
+            color: #555;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .tl-filter-btn .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; opacity:0.4; transition:opacity 0.2s; }
+        .tl-filter-btn.active { color:#e7d8b1; }
+        .tl-filter-btn.active .dot { opacity:1; }
+        .tl-filter-btn.active { border-color: currentColor; }
+        .tl-filter-sep { width:1px; height:18px; background:#2a1e14; margin:0 0.2em; }
+        .tl-doc-btn {
+            margin-left:auto;
+            padding:0.3em 0.9em;
+            border-radius:20px;
+            border:1px solid #a07830;
+            background:none;
+            color:#a07830;
+            font-size:0.72rem;
+            letter-spacing:0.06em;
+            text-transform:uppercase;
+            cursor:pointer;
+            text-decoration:none;
+            transition:all 0.2s;
+        }
+        .tl-doc-btn:hover { background:#a07830; color:#0a0705; }
+
+        /* ── Scroll area ────────────────────────────────────────── */
+        .tl-scroll-outer {
+            overflow-x: auto;
+            overflow-y: hidden;
+            cursor: grab;
+            -webkit-overflow-scrolling: touch;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(80,40,10,0.18) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 50%, rgba(40,60,80,0.12) 0%, transparent 70%),
+                #0a0705;
+        }
+        .tl-scroll-outer:active { cursor:grabbing; }
+
+        .tl-canvas {
+            position: relative;
+            height: 420px;
+            min-width: 100%;
+        }
+
+        /* ── Era bands ──────────────────────────────────────────── */
+        .tl-era-band {
+            position: absolute;
+            top: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .tl-era-label-float {
+            position: absolute;
+            top: 14px;
+            font-family: 'OldEnglishFive', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            pointer-events: none;
+            white-space: nowrap;
+            padding: 2px 8px;
+            border-radius: 3px;
+            opacity: 0.6;
+        }
+        .tl-era-divider {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 1px;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.25;
+        }
+
+        /* ── Rail ───────────────────────────────────────────────── */
+        .tl-rail {
+            position: absolute;
+            top: 209px;
+            left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #a07830 3%, #a07830 97%, transparent);
+            box-shadow: 0 0 8px rgba(160,120,48,0.3);
+            z-index: 2;
+        }
+
+        /* ── Ticks ──────────────────────────────────────────────── */
+        .tl-tick {
+            position: absolute;
+            top: 204px;
+            transform: translateX(-50%);
+            z-index: 3;
+        }
+        .tl-tick.decade   { width:1px; height:12px; background:#a07830; }
+        .tl-tick.minor    { width:1px; height:7px;  background:#554433; }
+        .tl-tick.era-mark { width:2px; height:20px; top:200px; }
+
+        .tl-tick-label {
+            position: absolute;
+            top: 218px;
+            transform: translateX(-50%);
+            font-size: 0.62rem;
+            color: #555;
+            white-space: nowrap;
+            z-index: 3;
+            letter-spacing: 0.04em;
+        }
+        .tl-tick-label.decade {
+            font-size: 0.72rem;
+            color: #a07830;
+            font-family: 'OldEnglishFive', serif;
+        }
+
+        /* ── Dots ───────────────────────────────────────────────── */
+        .tl-dot {
+            position: absolute;
+            top: 203px;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.15);
+            z-index: 5;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .tl-dot:hover, .tl-dot.active {
+            transform: translateX(-50%) scale(1.5);
+            z-index: 10;
+        }
+        .tl-dot.hidden-cat { opacity:0.08; pointer-events:none; }
+
+        /* ── Stems ──────────────────────────────────────────────── */
+        .tl-stem {
+            position: absolute;
+            width: 1px;
+            transform: translateX(-50%);
+            opacity: 0.4;
+            z-index: 4;
+            transition: opacity 0.2s;
+        }
+        .tl-stem.above { bottom: 211px; }
+        .tl-stem.below { top: 211px; }
+        .tl-stem.hidden-cat { opacity:0.03; }
+
+        /* ── Callouts ───────────────────────────────────────────── */
+        .tl-callout {
+            position: absolute;
+            transform: translateX(-50%);
+            background: #130e08;
+            border: 1px solid #2a1e14;
+            border-radius: 5px;
+            padding: 0.38em 0.65em;
+            max-width: 160px;
+            cursor: pointer;
+            z-index: 6;
+            transition: box-shadow 0.2s, border-color 0.2s, opacity 0.25s;
+            border-left-width: 3px;
+        }
+        .tl-callout.above { bottom: 232px; }
+        .tl-callout.below { top: 232px; }
+        .tl-callout:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index:9; }
+        .tl-callout.hidden-cat { opacity:0.06; pointer-events:none; }
+        .tl-callout-title {
+            font-family: 'OldEnglishFive', serif;
+            font-size: 0.72rem;
+            color: #e7d8b1;
+            line-height: 1.3;
+        }
+        .tl-callout-date {
+            font-size: 0.62rem;
+            color: #666;
+            margin-top: 1px;
+        }
+        .tl-callout-cat {
+            font-size: 0.58rem;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            margin-top: 2px;
+            opacity: 0.7;
+        }
+
+        /* Zoom-level label visibility */
+        .tl-callout.zoom-hidden { display:none; }
+
+        /* ── Detail panel ───────────────────────────────────────── */
+        .tl-detail {
+            position: fixed;
+            right: -420px;
+            top: 0; bottom: 0;
+            width: 380px;
+            background: #130e08;
+            border-left: 1px solid #2a1e14;
+            padding: 2em 1.8em;
+            z-index: 100;
+            overflow-y: auto;
+            transition: right 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .tl-detail.open { right: 0; }
+        .tl-detail-close {
+            position: absolute; top:1em; right:1em;
+            background:none; border:none; color:#555; font-size:1.2rem; cursor:pointer;
+        }
+        .tl-detail-close:hover { color:#e7d8b1; }
+        .tl-detail-eyebrow { font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:#554433; margin:0 0 0.6em; }
+        .tl-detail-title { font-family:'OldEnglishFive',serif; color:#e7d8b1; font-size:1.15rem; font-weight:normal; margin:0 0 0.4em; line-height:1.4; }
+        .tl-detail-date  { color:#a07830; font-size:0.85rem; margin:0 0 1em; }
+        .tl-detail-desc  { color:#888; font-size:0.88rem; line-height:1.65; margin:0 0 1em; }
+        .tl-detail-no-desc { color:#444; font-style:italic; font-size:0.85rem; }
+        .tl-detail-cat   { font-size:0.72rem; letter-spacing:0.07em; text-transform:uppercase; margin:0.8em 0 0.2em; padding:0.25em 0.7em; border-radius:3px; display:inline-block; }
+        .tl-detail-source{ color:#444; font-size:0.75rem; margin-top:0.8em; font-style:italic; }
+        .tl-detail-link  { display:block; margin-top:0.6em; color:#a07830; font-size:0.8rem; word-break:break-all; }
+
+        /* ── Tooltip ────────────────────────────────────────────── */
+        .tl-tooltip {
+            position:fixed; display:none; pointer-events:none;
+            background:#1a120c; border:1px solid #3a2e1e;
+            border-radius:5px; padding:0.4em 0.7em;
+            z-index:200; max-width:220px;
+        }
+        #tl-tooltip-title { color:#e7d8b1; font-size:0.78rem; font-family:'OldEnglishFive',serif; }
+        .tl-tooltip-date  { color:#666; font-size:0.7rem; margin-top:2px; }
+
+        /* ── Auth gate / empty ──────────────────────────────────── */
+        .tl-auth-gate, .tl-loading-msg {
+            text-align:center; padding:4em 2em; color:#555; font-style:italic;
+        }
+        .tl-auth-gate a { color:#a07830; }
+        .tl-empty { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#444; }
+
+        @media (max-width:640px) {
+            .tl-detail { right:0; top:auto; bottom:-100%; width:100%; height:70vh; border-left:none; border-top:1px solid #2a1e14; transition:bottom 0.3s; }
+            .tl-detail.open { bottom:0; right:0; }
         }
     </style>
 </head>
@@ -36,118 +309,142 @@
             <li><a href="members.html">Members</a></li>
             <li><a href="history.html">History</a></li>
             <li><a href="timeline.html">Timeline</a></li>
-            <li><a href="timeline-printable.html">Timeline Document</a></li>
         </ul>
     </nav>
     <div class="menu-overlay" id="menu-overlay"></div>
 
     <!-- Auth gate -->
-    <div id="tl-auth-gate" class="tl-auth-gate" style="display:none; margin:4em auto;">
+    <div id="tl-auth-gate" class="tl-auth-gate" style="display:none;">
         <p>This timeline is available to members.<br><a href="members.html">Sign in to view</a></p>
     </div>
 
-    <!-- Loading state -->
+    <!-- Loading -->
     <div id="tl-loading" class="tl-loading-msg">Loading&hellip;</div>
 
     <!-- Timeline UI -->
     <div id="tl-page" class="tl-page" style="display:none;">
 
+        <!-- Controls bar -->
         <div class="tl-controls-bar">
             <div>
                 <span class="tl-controls-title">&#x2767; Historical Record</span>
-                <span class="tl-controls-hint">&nbsp;&nbsp;scroll to explore &middot; click any event for details</span>
+                <span class="tl-controls-hint">&nbsp;&nbsp;drag to scroll &middot; click any event &middot; ctrl+scroll to zoom</span>
             </div>
             <div class="tl-zoom-btns">
                 <button class="tl-zoom-btn" id="tl-zoom-out" title="Zoom out">&#8722;</button>
                 <span class="tl-zoom-label" id="tl-zoom-label">100%</span>
-                <button class="tl-zoom-btn" id="tl-zoom-in" title="Zoom in">&#43;</button>
+                <button class="tl-zoom-btn" id="tl-zoom-in"  title="Zoom in">&#43;</button>
             </div>
         </div>
 
+        <!-- Filter bar -->
+        <div class="tl-filter-bar" id="tl-filter-bar">
+            <span class="tl-filter-label">Show:</span>
+            <button class="tl-filter-btn active" id="filter-all" data-key="all">
+                <span class="dot" style="background:#e7d8b1;"></span>All
+            </button>
+            <div class="tl-filter-sep"></div>
+            <!-- Category buttons injected by JS -->
+            <div id="tl-cat-btns" style="display:contents;"></div>
+            <a class="tl-doc-btn" id="tl-doc-link" href="timeline-printable.html" target="_blank">&#128441; Document View</a>
+        </div>
+
+        <!-- Scroll area -->
         <div class="tl-scroll-outer" id="tl-scroll">
             <div class="tl-canvas" id="tl-canvas"></div>
         </div>
 
-    </div><!-- end tl-page -->
+    </div>
 
     <!-- Detail panel -->
     <div class="tl-detail" id="tl-detail">
         <button class="tl-detail-close" id="tl-detail-close">&#10005;</button>
-        <p class="tl-detail-eyebrow">Timeline Event</p>
+        <p class="tl-detail-eyebrow" id="tl-detail-eyebrow">Timeline Event</p>
         <h2 class="tl-detail-title" id="tl-detail-title"></h2>
-        <p class="tl-detail-date" id="tl-detail-date"></p>
-        <p class="tl-detail-desc" id="tl-detail-desc"></p>
-        <p class="tl-detail-datetime" id="tl-detail-datetime" style="display:none;">
-            &#128336;&nbsp;<span></span>
-        </p>
+        <p class="tl-detail-date"  id="tl-detail-date"></p>
+        <p class="tl-detail-desc"  id="tl-detail-desc"></p>
+        <span class="tl-detail-cat" id="tl-detail-cat"></span>
+        <p class="tl-detail-source" id="tl-detail-source"></p>
+        <a class="tl-detail-link" id="tl-detail-link" href="#" target="_blank" style="display:none;"></a>
     </div>
 
-    <!-- Hover tooltip -->
+    <!-- Tooltip -->
     <div class="tl-tooltip" id="tl-tooltip">
         <div id="tl-tooltip-title"></div>
         <div class="tl-tooltip-date" id="tl-tooltip-date"></div>
     </div>
 
     <script>
-        // Menu toggle
+        // ── Menu ─────────────────────────────────────────────────
         const toggle  = document.getElementById('menu-toggle');
         const menu    = document.getElementById('side-menu');
         const overlay = document.getElementById('menu-overlay');
-        const close   = document.getElementById('menu-close');
+        const closeBtn= document.getElementById('menu-close');
         toggle.addEventListener('click',  () => { menu.classList.add('open');    overlay.classList.add('open'); });
-        close.addEventListener('click',   () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+        closeBtn.addEventListener('click',() => { menu.classList.remove('open'); overlay.classList.remove('open'); });
         overlay.addEventListener('click', () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
 
-        // Detail panel close
+        // ── Detail panel close ────────────────────────────────────
         document.getElementById('tl-detail-close').addEventListener('click', closeDetail);
         function closeDetail() {
             document.getElementById('tl-detail').classList.remove('open');
             document.querySelectorAll('.tl-dot.active').forEach(d => d.classList.remove('active'));
         }
 
-        // Zoom
-        let zoomLevel = 1.0;
-        const ZOOM_STEP = 0.25;
-        const ZOOM_MIN  = 0.4;
-        const ZOOM_MAX  = 3.0;
+        // ── State (persisted to localStorage) ────────────────────
+        const STATE_KEY = 'antwerp_tl_state';
+        let zoomLevel   = 1.0;
+        let activeFilters = new Set(['antwerp','adk','transport','oxbow','fortdrum']);
+
+        function loadState() {
+            try {
+                const s = JSON.parse(localStorage.getItem(STATE_KEY) || '{}');
+                if (Array.isArray(s.filters)) activeFilters = new Set(s.filters);
+                if (typeof s.zoom === 'number') zoomLevel = Math.min(3.0, Math.max(0.4, s.zoom));
+            } catch(e) {}
+        }
+        function saveState() {
+            localStorage.setItem(STATE_KEY, JSON.stringify({
+                filters: [...activeFilters],
+                zoom: zoomLevel
+            }));
+        }
+        loadState();
+
+        // ── Zoom ─────────────────────────────────────────────────
+        const ZOOM_STEP = 0.25, ZOOM_MIN = 0.4, ZOOM_MAX = 3.0;
 
         document.getElementById('tl-zoom-in').addEventListener('click', () => {
-            if (zoomLevel < ZOOM_MAX) { zoomLevel = Math.round((zoomLevel + ZOOM_STEP) * 100) / 100; rerender(); }
+            if (zoomLevel < ZOOM_MAX) { zoomLevel = round2(zoomLevel + ZOOM_STEP); rerender(); saveState(); }
         });
         document.getElementById('tl-zoom-out').addEventListener('click', () => {
-            if (zoomLevel > ZOOM_MIN) { zoomLevel = Math.round((zoomLevel - ZOOM_STEP) * 100) / 100; rerender(); }
+            if (zoomLevel > ZOOM_MIN) { zoomLevel = round2(zoomLevel - ZOOM_STEP); rerender(); saveState(); }
         });
         document.addEventListener('wheel', e => {
             const scroll = document.getElementById('tl-scroll');
-            if (!scroll || !scroll.contains(e.target)) return;
-            if (!e.ctrlKey) return; // only on ctrl+scroll
+            if (!scroll || !scroll.contains(e.target) || !e.ctrlKey) return;
             e.preventDefault();
-            if (e.deltaY < 0 && zoomLevel < ZOOM_MAX) {
-                zoomLevel = Math.round((zoomLevel + ZOOM_STEP) * 100) / 100;
-            } else if (e.deltaY > 0 && zoomLevel > ZOOM_MIN) {
-                zoomLevel = Math.round((zoomLevel - ZOOM_STEP) * 100) / 100;
-            }
-            rerender();
+            if (e.deltaY < 0 && zoomLevel < ZOOM_MAX) zoomLevel = round2(zoomLevel + ZOOM_STEP);
+            else if (e.deltaY > 0 && zoomLevel > ZOOM_MIN) zoomLevel = round2(zoomLevel - ZOOM_STEP);
+            rerender(); saveState();
         }, { passive: false });
 
-        // Drag-scroll
+        function round2(n) { return Math.round(n * 100) / 100; }
+
+        // ── Drag-scroll ───────────────────────────────────────────
         (function() {
             const el = document.getElementById('tl-scroll');
             if (!el) return;
-            let isDragging = false, startX = 0, scrollLeft = 0;
+            let drag=false, sx=0, sl=0;
             el.addEventListener('mousedown', e => {
-                if (e.button !== 0) return;
-                isDragging = true;
-                startX = e.pageX - el.offsetLeft;
-                scrollLeft = el.scrollLeft;
-                el.style.cursor = 'grabbing';
+                if (e.button) return;
+                drag=true; sx=e.pageX-el.offsetLeft; sl=el.scrollLeft; el.style.cursor='grabbing';
             });
-            document.addEventListener('mouseup', () => { isDragging = false; if(el) el.style.cursor = 'grab'; });
+            document.addEventListener('mouseup', () => { drag=false; if(el) el.style.cursor='grab'; });
             el.addEventListener('mousemove', e => {
-                if (!isDragging) return;
+                if (!drag) return;
                 e.preventDefault();
-                const x = e.pageX - el.offsetLeft;
-                el.scrollLeft = scrollLeft - (x - startX);
+                el.scrollLeft = sl - (e.pageX - el.offsetLeft - sx);
             });
         })();
 
@@ -164,8 +461,84 @@
         const app  = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db   = getFirestore(app);
-
         let allEvents = [];
+
+        // ── Category definitions ──────────────────────────────────
+        const CATS = {
+            'Town and Village of Antwerp':            { key:'antwerp',  color:'#c8602a', label:'Antwerp'   },
+            'ADK North Country':                      { key:'adk',      color:'#4a8c5c', label:'ADK'       },
+            'Transportation':                         { key:'transport',color:'#3a6a9a', label:'Transport'  },
+            'Oxbow / Scotch Settlement':              { key:'oxbow',    color:'#8a5a9a', label:'Oxbow'     },
+            'Fort Drum Expansion / Displaced Hamlets':{ key:'fortdrum', color:'#6a8a3a', label:'Fort Drum' },
+        };
+        const DEFAULT_COLOR = '#a07830';
+
+        function getCat(event) {
+            return CATS[event.category] || { key:'antwerp', color: DEFAULT_COLOR, label: event.category || '—' };
+        }
+
+        // ── Era definitions ───────────────────────────────────────
+        const ERAS = [
+            { name:'Founders & Settlement',      minYear:0,    maxYear:1826, color:'rgba(200,140,60,0.07)',  textColor:'#b8902a' },
+            { name:'Antebellum & Growth',         minYear:1826, maxYear:1866, color:'rgba(160,100,40,0.07)',  textColor:'#a07830' },
+            { name:'Reconstruction & Renovation', minYear:1866, maxYear:1940, color:'rgba(60,80,100,0.07)',   textColor:'#507090' },
+            { name:'Modern Era',                  minYear:1940, maxYear:9999, color:'rgba(60,90,60,0.07)',    textColor:'#508050' },
+        ];
+
+        function getEra(year) {
+            return ERAS.find(e => year >= e.minYear && year < e.maxYear) || ERAS[3];
+        }
+
+        // ── Build category filter buttons ─────────────────────────
+        function buildFilterButtons() {
+            const container = document.getElementById('tl-cat-btns');
+            container.innerHTML = '';
+            Object.values(CATS).forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'tl-filter-btn' + (activeFilters.has(cat.key) ? ' active' : '');
+                btn.dataset.key = cat.key;
+                btn.style.color = cat.color;
+                btn.innerHTML = `<span class="dot" style="background:${cat.color};"></span>${cat.label}`;
+                btn.addEventListener('click', () => toggleFilter(cat.key, btn));
+                container.appendChild(btn);
+            });
+            updateAllBtn();
+        }
+
+        function toggleFilter(key, btn) {
+            if (activeFilters.has(key)) {
+                activeFilters.delete(key);
+                btn.classList.remove('active');
+            } else {
+                activeFilters.add(key);
+                btn.classList.add('active');
+            }
+            updateAllBtn();
+            rerender();
+            saveState();
+        }
+
+        document.getElementById('filter-all').addEventListener('click', () => {
+            const allKeys = Object.values(CATS).map(c => c.key);
+            if (activeFilters.size === allKeys.length) {
+                activeFilters.clear();
+            } else {
+                allKeys.forEach(k => activeFilters.add(k));
+            }
+            document.querySelectorAll('.tl-filter-btn[data-key]').forEach(btn => {
+                if (btn.dataset.key !== 'all') {
+                    btn.classList.toggle('active', activeFilters.has(btn.dataset.key));
+                }
+            });
+            updateAllBtn();
+            rerender();
+            saveState();
+        });
+
+        function updateAllBtn() {
+            const all = Object.values(CATS).every(c => activeFilters.has(c.key));
+            document.getElementById('filter-all').classList.toggle('active', all);
+        }
 
         // ── Auth guard ────────────────────────────────────────────
         onAuthStateChanged(auth, async user => {
@@ -176,14 +549,16 @@
                 return;
             }
             try {
-                const userSnap = await getDoc(doc(db, 'users', user.uid));
                 const adminSnap = await getDoc(doc(db, 'admins', user.uid)).catch(() => null);
-                const isAdmin = adminSnap && adminSnap.exists();
-                const status = isAdmin ? 'active' : (userSnap.data()?.status || 'pending');
-                if (status !== 'active') {
-                    loading.style.display = 'none';
-                    document.getElementById('tl-auth-gate').style.display = 'block';
-                    return;
+                const isAdmin   = adminSnap && adminSnap.exists();
+                if (!isAdmin) {
+                    const userSnap = await getDoc(doc(db, 'users', user.uid));
+                    const status   = userSnap.exists() ? userSnap.data().status : 'pending';
+                    if (status !== 'active') {
+                        loading.style.display = 'none';
+                        document.getElementById('tl-auth-gate').style.display = 'block';
+                        return;
+                    }
                 }
             } catch(e) {
                 loading.style.display = 'none';
@@ -192,6 +567,7 @@
             }
             loading.style.display = 'none';
             document.getElementById('tl-page').style.display = 'block';
+            buildFilterButtons();
             startListening();
         });
 
@@ -204,92 +580,76 @@
             });
         }
 
-        // ── Expose rerender globally (zoom buttons call it) ───────
         window.rerender = rerender;
-
         function rerender() {
             const label = document.getElementById('tl-zoom-label');
             if (label) label.textContent = Math.round(zoomLevel * 100) + '%';
             renderTimeline(allEvents, zoomLevel);
         }
 
-        // ── Timeline layout ───────────────────────────────────────
+        // ── Year helper ───────────────────────────────────────────
         function getYear(event) {
-            const key = event.dateSortKey || '1900-00-00';
-            return parseInt(key.substring(0, 4)) || 1900;
+            return parseInt((event.dateSortKey || '1900').substring(0, 4)) || 1900;
         }
 
+        // ── Layout ───────────────────────────────────────────────
         function computeLayout(sorted, zoom) {
-            const GAP_PX_PER_YEAR = 5 * zoom;
-            const GAP_MIN         = 45 * zoom;
-            const YEAR_BASE       = 65 * zoom;
-            const EVENT_SPACING   = 70 * zoom;
-            const L_PAD           = 70;
-            const R_PAD           = 70;
+            const GAP_PX  = 5 * zoom;
+            const GAP_MIN = 40 * zoom;
+            const YR_BASE = 60 * zoom;
+            const EV_SPC  = 65 * zoom;
+            const L_PAD   = 80, R_PAD = 80;
 
-            // Group by year
             const byYear = {};
             sorted.forEach(e => {
                 const y = getYear(e);
-                if (!byYear[y]) byYear[y] = [];
-                byYear[y].push(e);
+                (byYear[y] = byYear[y] || []).push(e);
             });
-            const eventYears = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+            const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
 
-            const positions = []; // {event, x, showTitle, above}
-            const ticks     = []; // {x, year, isDecade}
-            let x = L_PAD;
-            let globalIdx = 0;
+            const positions = [];
+            const ticks     = [];
+            let x = L_PAD, gIdx = 0;
 
-            for (let i = 0; i < eventYears.length; i++) {
-                const year = eventYears[i];
-
-                // Gap before this year
+            for (let i = 0; i < years.length; i++) {
+                const year = years[i];
                 if (i > 0) {
-                    const prevYear = eventYears[i - 1];
-                    const gapYears = year - prevYear;
-                    if (gapYears > 1) {
-                        const gapWidth = Math.max(GAP_MIN, gapYears * GAP_PX_PER_YEAR);
-                        // Decade ticks inside gap
-                        const firstDecade = Math.ceil((prevYear + 1) / 10) * 10;
-                        for (let d = firstDecade; d < year; d += 10) {
-                            const frac = (d - prevYear) / gapYears;
-                            ticks.push({ x: x + gapWidth * frac, year: d, isDecade: true });
+                    const prev  = years[i - 1];
+                    const gap   = year - prev;
+                    if (gap > 1) {
+                        const gw = Math.max(GAP_MIN, gap * GAP_PX);
+                        for (let d = Math.ceil((prev+1)/10)*10; d < year; d += 10) {
+                            ticks.push({ x: x + gw * (d-prev)/gap, year: d, isDecade: true });
                         }
-                        x += gapWidth;
+                        x += gw;
                     }
                 }
+                const evts = byYear[year];
+                const yw   = YR_BASE + (evts.length - 1) * EV_SPC;
+                const cx   = x + yw / 2;
+                const alreadyDec = ticks.some(t => t.isDecade && Math.abs(t.x - cx) < 20);
+                if (!alreadyDec) ticks.push({ x: cx, year, isDecade: year % 10 === 0 });
 
-                // Event-year segment
-                const events = byYear[year];
-                const count  = events.length;
-                const yearWidth = YEAR_BASE + (count - 1) * EVENT_SPACING;
-                const yearCX    = x + yearWidth / 2;
-
-                // Year tick (only show if not already a decade tick near same spot)
-                const alreadyHasDecade = ticks.some(t => t.isDecade && Math.abs(t.x - yearCX) < 20);
-                if (!alreadyHasDecade) {
-                    ticks.push({ x: yearCX, year, isDecade: year % 10 === 0 });
-                }
-
-                events.forEach((e, j) => {
-                    const ex = count === 1
-                        ? yearCX
-                        : (x + YEAR_BASE / 2 + j * EVENT_SPACING);
-                    // Selective title: first in year cluster OR every 3rd globally
-                    const showTitle = j === 0 || globalIdx % 3 === 0;
-                    const above = globalIdx % 2 === 0;
-                    positions.push({ event: e, x: ex, showTitle, above });
-                    globalIdx++;
+                evts.forEach((e, j) => {
+                    const ex = evts.length === 1 ? cx : x + YR_BASE/2 + j * EV_SPC;
+                    positions.push({ event: e, x: ex, above: gIdx % 2 === 0 });
+                    gIdx++;
                 });
-
-                x += yearWidth;
+                x += yw;
             }
-
             return { positions, ticks, totalWidth: x + R_PAD };
         }
 
-        // ── Render the timeline DOM ───────────────────────────────
+        // ── Zoom level → label visibility ─────────────────────────
+        // < 0.7: no callouts; 0.7-1.2: sparse; > 1.2: dense
+        function shouldShowCallout(globalIdx, zoom) {
+            if (zoom < 0.7) return false;
+            if (zoom < 1.2) return globalIdx % 5 === 0;
+            if (zoom < 1.8) return globalIdx % 2 === 0;
+            return true;
+        }
+
+        // ── Render ────────────────────────────────────────────────
         function renderTimeline(events, zoom) {
             const canvas  = document.getElementById('tl-canvas');
             const tooltip = document.getElementById('tl-tooltip');
@@ -297,11 +657,7 @@
             closeDetail();
 
             if (!events || events.length === 0) {
-                const msg = document.createElement('div');
-                msg.className = 'tl-empty';
-                msg.textContent = 'No timeline events yet.';
-                canvas.appendChild(msg);
-                canvas.style.width = '';
+                canvas.innerHTML = '<div class="tl-empty">No events yet.</div>';
                 return;
             }
 
@@ -312,62 +668,114 @@
             const { positions, ticks, totalWidth } = computeLayout(sorted, zoom);
             canvas.style.width = totalWidth + 'px';
 
-            // Rail
+            // ── Era bands ─────────────────────────────────────────
+            let prevEra = null, prevX = 0;
+            const eraSegments = [];
+            positions.forEach((pos, i) => {
+                const era = getEra(getYear(pos.event));
+                if (era !== prevEra) {
+                    if (prevEra) eraSegments.push({ era: prevEra, x1: prevX, x2: pos.x - 1 });
+                    prevX = pos.x - 1; prevEra = era;
+                }
+                if (i === positions.length - 1) {
+                    eraSegments.push({ era, x1: prevX, x2: totalWidth });
+                }
+            });
+
+            eraSegments.forEach((seg, i) => {
+                const band = document.createElement('div');
+                band.className = 'tl-era-band';
+                band.style.left   = seg.x1 + 'px';
+                band.style.width  = (seg.x2 - seg.x1) + 'px';
+                band.style.background = seg.era.color;
+                canvas.appendChild(band);
+
+                if (i > 0) {
+                    const div = document.createElement('div');
+                    div.className = 'tl-era-divider';
+                    div.style.left = seg.x1 + 'px';
+                    div.style.background = seg.era.textColor;
+                    canvas.appendChild(div);
+                }
+
+                const fl = document.createElement('div');
+                fl.className = 'tl-era-label-float';
+                fl.style.left  = (seg.x1 + 12) + 'px';
+                fl.style.color = seg.era.textColor;
+                fl.style.background = seg.era.color.replace('0.07', '0.5');
+                fl.textContent = seg.era.name;
+                canvas.appendChild(fl);
+            });
+
+            // ── Rail ──────────────────────────────────────────────
             const rail = document.createElement('div');
             rail.className = 'tl-rail';
             canvas.appendChild(rail);
 
-            // Ticks
+            // ── Ticks ─────────────────────────────────────────────
             ticks.forEach(({ x, year, isDecade }) => {
                 const tick = document.createElement('div');
                 tick.className = 'tl-tick ' + (isDecade ? 'decade' : 'minor');
                 tick.style.left = x + 'px';
                 canvas.appendChild(tick);
 
-                const label = document.createElement('div');
-                label.className = 'tl-tick-label' + (isDecade ? ' decade' : '');
-                label.style.left = x + 'px';
-                label.textContent = year;
-                canvas.appendChild(label);
+                const lbl = document.createElement('div');
+                lbl.className = 'tl-tick-label' + (isDecade ? ' decade' : '');
+                lbl.style.left = x + 'px';
+                lbl.textContent = year;
+                canvas.appendChild(lbl);
             });
 
-            // Events
-            positions.forEach(({ event, x, showTitle, above }) => {
+            // ── Events ────────────────────────────────────────────
+            positions.forEach(({ event, x, above }, gIdx) => {
+                const cat      = getCat(event);
+                const isActive = activeFilters.has(cat.key);
+                const hideCls  = isActive ? '' : ' hidden-cat';
+                const showLbl  = shouldShowCallout(gIdx, zoom);
+
                 // Dot
                 const dot = document.createElement('div');
-                dot.className = 'tl-dot';
-                dot.style.left = x + 'px';
-                dot.addEventListener('click', () => openDetail(event, dot));
+                dot.className = 'tl-dot' + hideCls;
+                dot.style.left       = x + 'px';
+                dot.style.background = cat.color;
+                dot.style.boxShadow  = isActive ? `0 0 8px ${cat.color}88, 0 0 2px ${cat.color}` : 'none';
 
+                dot.addEventListener('click', () => { if (isActive) openDetail(event, dot, cat); });
                 dot.addEventListener('mouseenter', ev => {
+                    if (!isActive) return;
                     tooltip.style.display = 'block';
                     document.getElementById('tl-tooltip-title').textContent = event.title || '';
-                    document.getElementById('tl-tooltip-date').textContent  = event.date || '';
+                    document.getElementById('tl-tooltip-date').textContent  = event.date  || '';
                 });
                 dot.addEventListener('mousemove', ev => {
                     tooltip.style.left = (ev.clientX + 14) + 'px';
                     tooltip.style.top  = (ev.clientY - 36) + 'px';
                 });
-                dot.addEventListener('mouseleave', () => {
-                    tooltip.style.display = 'none';
-                });
+                dot.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
                 canvas.appendChild(dot);
 
-                if (showTitle) {
+                if (showLbl && isActive) {
                     // Stem
                     const stem = document.createElement('div');
-                    stem.className = 'tl-stem ' + (above ? 'above' : 'below');
-                    stem.style.left = x + 'px';
+                    stem.className = 'tl-stem ' + (above ? 'above' : 'below') + hideCls;
+                    stem.style.left       = x + 'px';
+                    stem.style.height     = (above ? 20 : 20) + 'px';
+                    stem.style.background = cat.color;
+                    stem.style.opacity    = '0.35';
                     canvas.appendChild(stem);
 
                     // Callout
                     const callout = document.createElement('div');
-                    callout.className = 'tl-callout ' + (above ? 'above' : 'below');
-                    callout.style.left = x + 'px';
+                    callout.className = 'tl-callout ' + (above ? 'above' : 'below') + hideCls;
+                    callout.style.left        = x + 'px';
+                    callout.style.borderLeftColor = cat.color;
+                    callout.style.borderColor = `${cat.color}55`;
+                    callout.style.borderLeftColor = cat.color;
                     callout.innerHTML =
-                        '<div class="tl-callout-title">' + esc(event.title || '') + '</div>' +
-                        '<div class="tl-callout-date">'  + esc(event.date  || '') + '</div>';
-                    callout.addEventListener('click', () => openDetail(event, dot));
+                        `<div class="tl-callout-title">${esc(event.title || '')}</div>` +
+                        `<div class="tl-callout-date">${esc(event.date || '')}</div>` +
+                        (zoom >= 1.4 ? `<div class="tl-callout-cat" style="color:${cat.color}">${esc(cat.label)}</div>` : '');
+                    callout.addEventListener('click', () => openDetail(event, dot, cat));
                     callout.addEventListener('mouseenter', () => { tooltip.style.display = 'none'; });
                     canvas.appendChild(callout);
                 }
@@ -375,28 +783,38 @@
         }
 
         // ── Detail panel ──────────────────────────────────────────
-        function openDetail(event, dotEl) {
+        function openDetail(event, dotEl, cat) {
             document.querySelectorAll('.tl-dot.active').forEach(d => d.classList.remove('active'));
             if (dotEl) dotEl.classList.add('active');
 
+            cat = cat || getCat(event);
+
+            document.getElementById('tl-detail-eyebrow').textContent = cat.label;
+            document.getElementById('tl-detail-eyebrow').style.color = cat.color;
             document.getElementById('tl-detail-title').textContent = event.title || 'Untitled';
             document.getElementById('tl-detail-date').textContent  = event.date  || '';
 
             const descEl = document.getElementById('tl-detail-desc');
-            if (event.description && event.description.trim()) {
-                descEl.textContent = event.description;
-                descEl.className = 'tl-detail-desc';
-            } else {
-                descEl.textContent = 'No description.';
-                descEl.className = 'tl-detail-no-desc';
-            }
+            descEl.textContent = (event.description && event.description.trim()) ? event.description : 'No description.';
+            descEl.className   = (event.description && event.description.trim()) ? 'tl-detail-desc' : 'tl-detail-no-desc';
 
-            const dtEl = document.getElementById('tl-detail-datetime');
-            if (event.dateTime && event.dateTime.trim()) {
-                dtEl.style.display = 'block';
-                dtEl.querySelector('span').textContent = event.dateTime;
+            const catEl = document.getElementById('tl-detail-cat');
+            catEl.textContent       = event.category || '';
+            catEl.style.background  = cat.color + '22';
+            catEl.style.color       = cat.color;
+            catEl.style.display     = event.category ? 'inline-block' : 'none';
+
+            const srcEl = document.getElementById('tl-detail-source');
+            srcEl.textContent = event.source ? 'Source: ' + event.source : '';
+            srcEl.style.display = event.source ? 'block' : 'none';
+
+            const linkEl = document.getElementById('tl-detail-link');
+            if (event.website && event.website.startsWith('http')) {
+                linkEl.href = event.website;
+                linkEl.textContent = event.website;
+                linkEl.style.display = 'block';
             } else {
-                dtEl.style.display = 'none';
+                linkEl.style.display = 'none';
             }
 
             document.getElementById('tl-detail').classList.add('open');
@@ -404,13 +822,10 @@
 
         function esc(str) {
             return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
     </script>
-
 </body>
 </html>
