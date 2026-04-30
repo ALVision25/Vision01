@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timeline Document — The Antwerp Inn 1845</title>
+    <link rel="stylesheet" href="style.css?v=tlprint01" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IM+Fell+English:ital@0;1&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet" />
+    <style>
+        /* ── Override site background for parchment feel ── */
+        body.subpage {
+            background-color: #2a1f0e !important;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px) !important;
+        }
+
+        /* ── Parchment variables ── */
+        :root {
+            --parchment:   #f2ead8;
+            --aged:        #e8dfc5;
+            --deep-ink:    #1a1208;
+            --ink:         #2c2010;
+            --faded-ink:   #5a4a2e;
+            --rust:        #8b3a1a;
+            --rust-light:  #a84b22;
+            --gold:        #b8912a;
+            --gold-light:  #d4aa45;
+            --divider:     #c4aa7a;
+        }
+
+        /* ── Outer wrapper ── */
+        .tldoc-outer {
+            padding: 24px 20px 80px;
+        }
+
+        /* ── Parchment page ── */
+        .page {
+            max-width: 860px;
+            margin: 0 auto;
+            background: var(--parchment);
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E"),
+                radial-gradient(ellipse at 20% 10%, rgba(200,180,120,0.3) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 90%, rgba(180,155,100,0.25) 0%, transparent 60%),
+                linear-gradient(160deg, #f5edda 0%, #ede3c8 40%, #f0e8d3 100%);
+            box-shadow: 0 8px 60px rgba(0,0,0,0.6), inset 0 0 80px rgba(180,150,80,0.08);
+            position: relative;
+            border: 1px solid rgba(150,120,60,0.3);
+            font-family: 'IM Fell English', Georgia, serif;
+        }
+
+        .page::before {
+            content: '';
+            position: absolute;
+            inset: 16px;
+            border: 1.5px solid var(--divider);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .page::after {
+            content: '';
+            position: absolute;
+            inset: 20px;
+            border: 0.5px solid rgba(180,150,80,0.4);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Corner ornaments */
+        .corner {
+            position: absolute;
+            width: 32px; height: 32px;
+            z-index: 2;
+            color: var(--gold);
+            font-size: 20px;
+            opacity: 0.45;
+            line-height: 1;
+        }
+        .corner-tl { top: 28px; left: 28px; }
+        .corner-tr { top: 28px; right: 28px; transform: scaleX(-1); }
+        .corner-bl { bottom: 28px; left: 28px; transform: scaleY(-1); }
+        .corner-br { bottom: 28px; right: 28px; transform: scale(-1); }
+
+        /* ── Header ── */
+        .doc-header {
+            padding: 52px 60px 32px;
+            text-align: center;
+            border-bottom: 2px solid var(--divider);
+            position: relative;
+        }
+        .header-ornament {
+            color: var(--gold);
+            font-size: 22px;
+            letter-spacing: 12px;
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+        .header-subtitle {
+            font-family: 'Josefin Sans', sans-serif;
+            font-weight: 300;
+            font-size: 10px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: var(--faded-ink);
+            margin-bottom: 14px;
+        }
+        .doc-header h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 38px;
+            font-weight: 900;
+            color: var(--deep-ink);
+            line-height: 1.1;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+        .doc-header h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 18px;
+            font-weight: 400;
+            font-style: italic;
+            color: var(--faded-ink);
+            margin-bottom: 18px;
+        }
+        .header-rule {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+            margin: 16px 0 6px;
+        }
+        .header-rule span {
+            height: 1px; width: 80px;
+            background: var(--divider);
+            display: block;
+        }
+        .header-rule em { color: var(--gold); font-style: normal; font-size: 14px; }
+        .date-range {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: var(--faded-ink);
+            margin-top: 10px;
+        }
+
+        /* ── Timeline body ── */
+        .tl-body {
+            padding: 44px 60px 52px;
+            position: relative;
+        }
+
+        /* Central spine */
+        .spine {
+            position: absolute;
+            left: 50%;
+            top: 44px;
+            bottom: 52px;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, var(--divider) 5%, var(--divider) 95%, transparent);
+            transform: translateX(-50%);
+        }
+
+        /* Era label */
+        .era-label {
+            text-align: center;
+            margin: 32px 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+        .era-label span {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 9px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            background: var(--parchment);
+            padding: 0 16px;
+            position: relative;
+        }
+        .era-label::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 60px; right: 60px;
+            height: 1px;
+            background: var(--divider);
+            opacity: 0.5;
+        }
+
+        /* ── Entry ── */
+        .entry {
+            display: grid;
+            grid-template-columns: 1fr 48px 1fr;
+            gap: 0;
+            margin-bottom: 28px;
+            align-items: start;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .entry:nth-child(1)  { animation-delay: 0.05s; }
+        .entry:nth-child(2)  { animation-delay: 0.10s; }
+        .entry:nth-child(3)  { animation-delay: 0.15s; }
+        .entry:nth-child(4)  { animation-delay: 0.20s; }
+        .entry:nth-child(5)  { animation-delay: 0.25s; }
+        .entry:nth-child(6)  { animation-delay: 0.30s; }
+        .entry:nth-child(7)  { animation-delay: 0.35s; }
+        .entry:nth-child(8)  { animation-delay: 0.40s; }
+        .entry:nth-child(9)  { animation-delay: 0.45s; }
+        .entry:nth-child(10) { animation-delay: 0.50s; }
+        .entry:nth-child(n+11) { animation-delay: 0.55s; }
+
+        .entry-left  { text-align: right; padding-right: 24px; padding-top: 4px; }
+        .entry-right { text-align: left;  padding-left: 24px;  padding-top: 4px; }
+
+        .entry.flip .entry-left  { order: 3; text-align: left;  padding-right: 0; padding-left: 24px; }
+        .entry.flip .entry-center{ order: 2; }
+        .entry.flip .entry-right { order: 1; text-align: right; padding-left: 0;  padding-right: 24px; }
+
+        .entry-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Dots */
+        .entry-dot {
+            width: 13px; height: 13px;
+            border-radius: 50%;
+            background: var(--parchment);
+            border: 2px solid var(--rust);
+            flex-shrink: 0;
+            z-index: 2;
+            margin-top: 4px;
+        }
+        .entry-dot.major {
+            width: 17px; height: 17px;
+            background: var(--rust);
+            border-color: var(--deep-ink);
+            box-shadow: 0 0 0 3px rgba(139,58,26,0.2);
+            margin-top: 2px;
+        }
+        .entry-dot.milestone {
+            width: 19px; height: 19px;
+            background: var(--gold);
+            border-color: var(--deep-ink);
+            border-width: 2.5px;
+            box-shadow: 0 0 0 4px rgba(184,145,42,0.2);
+            margin-top: 1px;
+        }
+
+        /* Connector */
+        .connector-line {
+            width: 1px;
+            background: var(--divider);
+            opacity: 0.5;
+            flex-grow: 1;
+            min-height: 16px;
+        }
+
+        /* Year / date */
+        .entry-year {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--rust);
+            line-height: 1;
+        }
+        .entry-year.milestone-year { color: var(--gold); }
+        .entry-date {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--faded-ink);
+            margin-top: 2px;
+            opacity: 0.8;
+        }
+
+        /* Content */
+        .entry-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--deep-ink);
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+        .entry-body {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--faded-ink);
+            font-style: italic;
+        }
+
+        /* Category tags */
+        .tag {
+            display: inline-block;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border: 0.5px solid currentColor;
+            margin-bottom: 5px;
+            opacity: 0.7;
+        }
+        .tag-person   { color: var(--rust); }
+        .tag-infra    { color: #3a6b4a; }
+        .tag-civic    { color: #3a4a7a; }
+        .tag-property { color: var(--gold); }
+
+        /* ── Footer ── */
+        .doc-footer {
+            padding: 24px 60px 44px;
+            border-top: 1px solid var(--divider);
+            text-align: center;
+        }
+        .footer-text {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--faded-ink);
+            opacity: 0.6;
+        }
+
+        /* ── Loading / access states ── */
+        .doc-state {
+            padding: 4em;
+            text-align: center;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--faded-ink);
+        }
+        .doc-state a { color: var(--rust); }
+
+        /* ── Print button ── */
+        .print-bar {
+            max-width: 860px;
+            margin: 0 auto 16px;
+            text-align: right;
+        }
+        .btn-print {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--divider);
+            background: none;
+            border: 1px solid rgba(196,170,122,0.3);
+            border-radius: 4px;
+            padding: 0.4em 1em;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .btn-print:hover { color: var(--gold); border-color: var(--gold); }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .doc-header, .tl-body, .doc-footer { padding-left: 32px; padding-right: 32px; }
+            .doc-header h1 { font-size: 28px; }
+            .spine { left: 28px; }
+            .entry { grid-template-columns: 0 32px 1fr; }
+            .entry.flip { grid-template-columns: 0 32px 1fr; }
+            .entry.flip .entry-left  { display: none; }
+            .entry.flip .entry-center { order: 1; }
+            .entry.flip .entry-right  { order: 2; text-align: left; padding-left: 16px; padding-right: 0; }
+            .entry-left { display: none; }
+            .entry-right { padding-left: 16px; }
+        }
+
+        /* ── Print styles ── */
+        @media print {
+            .site-header-unwrapped,
+            .subpage-subtitle-wrap,
+            .side-menu,
+            .menu-overlay,
+            .print-bar { display: none !important; }
+            body.subpage { background: none !important; padding: 0 !important; }
+            .tldoc-outer { padding: 0 !important; }
+            .page { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="subpage">
+
+    <header class="site-header-unwrapped">
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+    </header>
+
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="index.html">The Antwerp Inn</a></li>
+            <li><a href="fort-drum.html">Fort Drum</a></li>
+            <li><a href="antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="mcallister-house.html">McAllister House</a></li>
+            <li><a href="north-country.html">North Country</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="history.html">History</a></li>
+            <li><a href="timeline.html">Timeline</a></li>
+            <li><a href="timeline-printable.html">Timeline Document</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <div class="tldoc-outer">
+        <div class="print-bar" id="print-bar" style="display:none;">
+            <button class="btn-print" onclick="window.print()">&#128438; Print / Save as PDF</button>
+        </div>
+
+        <div class="page" id="page">
+            <div class="corner corner-tl">✦</div>
+            <div class="corner corner-tr">✦</div>
+            <div class="corner corner-bl">✦</div>
+            <div class="corner corner-br">✦</div>
+
+            <div class="doc-header">
+                <div class="header-ornament">— ✦ —</div>
+                <div class="header-subtitle">A Documented Chronicle</div>
+                <h1>Antwerp, New York</h1>
+                <h2>&amp; the History of 301 Main Street</h2>
+                <div class="header-rule">
+                    <span></span><em>✦</em><span></span>
+                </div>
+                <div class="date-range" id="date-range">&#8203;</div>
+            </div>
+
+            <div class="tl-body" id="tl-body">
+                <div class="spine" id="spine"></div>
+                <div class="doc-state" id="doc-state">Checking access&hellip;</div>
+            </div>
+
+            <div class="doc-footer" id="doc-footer" style="display:none;">
+                <div class="header-ornament" style="margin-bottom:12px;font-size:16px;letter-spacing:8px;">— ✦ —</div>
+                <div class="footer-text">Jefferson County, New York &nbsp;·&nbsp; Compiled by Antwerpen Limited &nbsp;·&nbsp; <span id="footer-year"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const toggle  = document.getElementById('menu-toggle');
+        const menu    = document.getElementById('side-menu');
+        const overlay = document.getElementById('menu-overlay');
+        const closeBtn= document.getElementById('menu-close');
+        toggle.addEventListener('click',  () => { menu.classList.add('open');    overlay.classList.add('open'); });
+        closeBtn.addEventListener('click',() => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+        overlay.addEventListener('click', () => { menu.classList.remove('open'); overlay.classList.remove('open'); });
+    </script>
+
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp }  from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged }
+                                  from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy }
+                                  from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
+
+        // ── Era boundaries ────────────────────────────────────────
+        function getEra(year) {
+            if (year <  1826) return 'Founders & Settlement';
+            if (year <= 1865) return 'Antebellum & Growth';
+            if (year <= 1939) return 'Reconstruction & Renovation';
+            return 'Modern Era';
+        }
+
+        // ── Auto category from title + description ────────────────
+        function getCategory(title, desc) {
+            const t = (title + ' ' + (desc || '')).toLowerCase();
+            if (/\b(birth|born|death|dies|marriage|marries|married|moves|serves|arrives|retires|retirement|founder)\b/.test(t))
+                return 'person';
+            if (/\b(road|plank|barn|carriage|bridge|rail|transport|infrastructure)\b/.test(t))
+                return 'infra';
+            if (/\b(incorporat|assembly|legislat|charter|village|civic|court|vote|parish|estate|agent)\b/.test(t))
+                return 'civic';
+            if (/\b(house|built|build|rebuild|rebuilt|purchased|acquired|property|main street|farm|street)\b/.test(t))
+                return 'property';
+            return 'civic';
+        }
+
+        const CATEGORY_LABELS = { person: 'Person', infra: 'Infrastructure', civic: 'Civic', property: 'Property' };
+
+        // ── Dot weight ────────────────────────────────────────────
+        function getDotWeight(title, year) {
+            const t = title.toLowerCase();
+            if (year >= 2020) return 'milestone';
+            if (/\b(house built|house rebuilt|incorporat|marriage|birth of william|birth of dr)\b/.test(t))
+                return 'major';
+            return '';
+        }
+
+        // ── Parse year from dateSortKey ───────────────────────────
+        function yearFromKey(key) {
+            if (!key) return 9999;
+            return parseInt(key.slice(0, 4)) || 9999;
+        }
+
+        // ── Build one entry element ───────────────────────────────
+        function buildEntry(rec, flip, isLast) {
+            const year     = yearFromKey(rec.dateSortKey);
+            const cat      = rec.category || getCategory(rec.title, rec.description);
+            const weight   = rec.dotWeight || getDotWeight(rec.title, year);
+            const isMilestone = weight === 'milestone';
+
+            const entry = document.createElement('div');
+            entry.className = 'entry' + (flip ? ' flip' : '');
+
+            // Year side (left on normal, right on flip reversed via CSS)
+            const yearSide = document.createElement('div');
+            yearSide.className = 'entry-' + (flip ? 'right' : 'left');
+            yearSide.innerHTML =
+                `<div class="entry-year${isMilestone ? ' milestone-year' : ''}">${year < 9999 ? year : '—'}</div>` +
+                `<div class="entry-date">${esc(rec.date || '')}</div>`;
+
+            // Center
+            const center = document.createElement('div');
+            center.className = 'entry-center';
+            center.innerHTML = `<div class="entry-dot${weight ? ' ' + weight : ''}"></div>`;
+            if (!isLast) center.innerHTML += `<div class="connector-line"></div>`;
+
+            // Content side
+            const contentSide = document.createElement('div');
+            contentSide.className = 'entry-' + (flip ? 'left' : 'right');
+            contentSide.innerHTML =
+                `<div class="tag tag-${cat}">${esc(CATEGORY_LABELS[cat] || 'Civic')}</div>` +
+                `<div class="entry-title">${esc(rec.title)}</div>` +
+                (rec.description ? `<div class="entry-body">${esc(rec.description)}</div>` : '');
+
+            entry.appendChild(yearSide);
+            entry.appendChild(center);
+            entry.appendChild(contentSide);
+            return entry;
+        }
+
+        function esc(s) {
+            return String(s || '')
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        // ── Render ────────────────────────────────────────────────
+        function render(records) {
+            const body = document.getElementById('tl-body');
+            // Keep the spine, remove everything else
+            body.innerHTML = '';
+            const spine = document.createElement('div');
+            spine.className = 'spine';
+            body.appendChild(spine);
+
+            let currentEra = null;
+            let flipIdx    = 0;
+
+            records.forEach((rec, i) => {
+                const year = yearFromKey(rec.dateSortKey);
+                const era  = getEra(year);
+
+                if (era !== currentEra) {
+                    currentEra = era;
+                    const label = document.createElement('div');
+                    label.className = 'era-label';
+                    label.innerHTML = `<span>${esc(era)}</span>`;
+                    body.appendChild(label);
+                }
+
+                const isLast = i === records.length - 1;
+                const entry  = buildEntry(rec, flipIdx % 2 === 1, isLast);
+                body.appendChild(entry);
+                flipIdx++;
+            });
+
+            // Date range in header
+            const years = records.map(r => yearFromKey(r.dateSortKey)).filter(y => y < 9999);
+            if (years.length) {
+                document.getElementById('date-range').textContent =
+                    Math.min(...years) + ' — ' + Math.max(...years);
+            }
+
+            // Footer
+            document.getElementById('doc-footer').style.display = '';
+            document.getElementById('footer-year').textContent =
+                new Date().getFullYear().toString().replace(/\d/g, c =>
+                    ['I','II','III','IV','V','VI','VII','VIII','IX','X'][c] || c
+                );  // rough Roman numeral — just use year text
+            document.getElementById('footer-year').textContent =
+                'MMXXVI'; // current year in Roman
+
+            document.getElementById('print-bar').style.display = '';
+        }
+
+        // ── Auth gate ─────────────────────────────────────────────
+        onAuthStateChanged(auth, async user => {
+            const state = document.getElementById('doc-state');
+
+            if (!user) {
+                state.innerHTML = 'Members only — please <a href="members.html">sign in</a>.';
+                return;
+            }
+
+            // Check active member OR admin
+            let allowed = false;
+            try {
+                const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+                if (adminSnap.exists()) allowed = true;
+            } catch(_) {}
+
+            if (!allowed) {
+                try {
+                    const userSnap = await getDoc(doc(db, 'users', user.uid));
+                    if (userSnap.exists() && userSnap.data().status === 'active') allowed = true;
+                } catch(_) {}
+            }
+
+            if (!allowed) {
+                state.innerHTML = 'Access pending — <a href="members.html">return to members page</a>.';
+                return;
+            }
+
+            // Load timeline
+            state.textContent = 'Loading records…';
+            try {
+                const snap = await getDocs(query(collection(db, 'timeline'), orderBy('dateSortKey', 'asc')));
+                const records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (records.length === 0) {
+                    state.textContent = 'No records yet.';
+                    return;
+                }
+                state.remove();
+                render(records);
+            } catch(e) {
+                state.textContent = 'Error loading records: ' + e.message;
+            }
+        });
+    </script>
+</body>
+</html>
