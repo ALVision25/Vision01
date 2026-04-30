@@ -436,15 +436,14 @@
 </head>
 <body class="subpage">
 
-    <!-- Login Overlay — starts in loading state; login form only shown if no session -->
+    <!-- Access overlay (single sign-on — handled via members.html) -->
     <div id="login-overlay" style="position:fixed;inset:0;background:#0a0705;display:flex;align-items:center;justify-content:center;z-index:1000;">
-        <div id="login-loading" style="color:#555;font-family:'OldEnglishFive',serif;font-size:1rem;">Checking access&hellip;</div>
-        <div id="login-form" style="display:none;background:#1a120c;border:1px solid #2a1e14;border-radius:12px;padding:2.5em 2em;width:320px;text-align:center;">
-            <h2 style="font-family:'OldEnglishFive',serif;color:#e7d8b1;margin-bottom:1em;">Admin Login</h2>
-            <input id="login-email" type="email" placeholder="Email" style="width:100%;padding:0.6em;margin-bottom:0.8em;background:#0a0705;border:1px solid #3a2e1e;color:#e7d8b1;border-radius:4px;box-sizing:border-box;" />
-            <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:0.6em;margin-bottom:0.8em;background:#0a0705;border:1px solid #3a2e1e;color:#e7d8b1;border-radius:4px;box-sizing:border-box;" />
-            <div id="login-error" style="color:#e74c3c;font-size:0.85em;margin-bottom:0.8em;min-height:1.2em;"></div>
-            <button id="login-btn" style="width:100%;background:#e7d8b1;color:#0a0705;font-family:'OldEnglishFive',serif;padding:0.7em;border:none;border-radius:6px;cursor:pointer;font-size:1rem;">Sign In</button>
+        <div style="text-align:center;font-family:'OldEnglishFive',serif;">
+            <div id="login-loading" style="color:#555;font-size:1rem;">Checking access&hellip;</div>
+            <div id="login-form" style="display:none;background:#1a120c;border:1px solid #2a1e14;border-radius:12px;padding:2.5em 2em;width:320px;">
+                <p id="login-msg" style="color:#e7d8b1;font-size:0.95rem;margin:0 0 1.2em;line-height:1.6;font-family:sans-serif;"></p>
+                <a href="members.html" style="display:block;background:#e7d8b1;color:#0a0705;padding:0.7em;border-radius:6px;text-decoration:none;font-size:0.95rem;">Go to Members &rarr;</a>
+            </div>
         </div>
     </div>
 
@@ -595,7 +594,7 @@
     <script src="firebase-config.js"></script>
     <script type="module">
         import { initializeApp }          from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut }
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
         import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, updateDoc, addDoc }
                                           from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
@@ -606,22 +605,6 @@
         const auth    = getAuth(app);
         const db      = getFirestore(app);
         const storage = getStorage(app);
-
-        // ── Auth UI ────────────────────────────────────────────
-        document.getElementById('login-btn').addEventListener('click', async () => {
-            const email = document.getElementById('login-email').value;
-            const pw    = document.getElementById('login-password').value;
-            document.getElementById('login-error').textContent = '';
-            try {
-                await signInWithEmailAndPassword(auth, email, pw);
-            } catch(e) {
-                document.getElementById('login-error').textContent = 'Invalid email or password.';
-            }
-        });
-
-        document.getElementById('login-password').addEventListener('keydown', e => {
-            if (e.key === 'Enter') document.getElementById('login-btn').click();
-        });
 
         document.getElementById('btn-signout').addEventListener('click', () => {
             signOut(auth).catch(() => {}); // fire — don't wait
@@ -647,6 +630,7 @@
             } else {
                 isMasterAdmin = false;
                 document.getElementById('login-loading').style.display = 'none';
+                document.getElementById('login-msg').textContent = 'Please sign in at the Members page to access this area.';
                 document.getElementById('login-form').style.display    = 'block';
             }
         });

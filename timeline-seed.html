@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Timeline Seeder — One-Time Use</title>
+    <style>
+        body { background: #0a0705; color: #eee; font-family: sans-serif; padding: 2em; max-width: 700px; margin: 0 auto; }
+        h2 { font-family: serif; color: #e7d8b1; }
+        .log { background: #130e08; border: 1px solid #2a1e14; border-radius: 6px; padding: 1em; margin-top: 1em; font-size: 0.85rem; line-height: 1.9; }
+        .ok  { color: #4ecc91; }
+        .err { color: #e74c3c; }
+        .pending { color: #888; }
+        button { background: #e7d8b1; color: #0a0705; border: none; padding: 0.6em 2em; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-top: 1em; }
+        input  { background: #1a120c; border: 1px solid #3a2e1e; color: #e7d8b1; padding: 0.5em; border-radius: 4px; width: 100%; box-sizing: border-box; margin-bottom: 0.5em; }
+        .note  { color: #666; font-size: 0.82rem; margin-top: 2em; border-top: 1px solid #1e1510; padding-top: 1em; }
+    </style>
+</head>
+<body>
+    <h2>Timeline Seeder — One-Time Use</h2>
+
+    <div id="login-ui">
+        <p style="color:#888;">Sign in as admin to seed the timeline database.</p>
+        <input id="email" type="email" placeholder="Admin email" />
+        <input id="password" type="password" placeholder="Password" />
+        <div id="err" style="color:#e74c3c;font-size:0.85rem;min-height:1.2em;"></div>
+        <button id="btn-signin">Sign In &amp; Seed</button>
+        <div style="color:#555;font-size:0.8rem;margin:0.6em 0;">— or —</div>
+        <button id="btn-google" style="background:#221810;color:#e7d8b1;border:1px solid #3a2a1a;width:100%;padding:0.6em;border-radius:6px;cursor:pointer;font-size:0.95rem;">Sign in with Google &amp; Seed</button>
+    </div>
+
+    <div id="seed-ui" style="display:none;">
+        <p style="color:#4ecc91;" id="status-msg">Signed in. Seeding records…</p>
+        <div class="log" id="log"></div>
+    </div>
+
+    <p class="note">Delete this file (timeline-seed.html) after use.</p>
+
+    <script src="firebase-config.js"></script>
+    <script type="module">
+        import { initializeApp }    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider }
+                                    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, collection, doc, addDoc, setDoc, serverTimestamp }
+                                    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
+
+        const EVENTS = [
+            { date: '1786',              title: 'Birth of Dr. Abner Benton',                                       description: 'Dr. Abner Benton is born.' },
+            { date: 'March 6, 1792',     title: 'Birth of William McAllister',                                     description: 'William McAllister is born.' },
+            { date: '1805–1806',         title: 'Opening of early roads connecting Antwerp and Oxbow',             description: 'Early roads are opened connecting Antwerp and Oxbow, supporting settlement and regional movement.' },
+            { date: '1806',              title: 'William McAllister moves to Ogdensburg, New York',                description: 'William McAllister moves to Ogdensburg, New York.' },
+            { date: '1807',              title: 'William McAllister moves to Antwerp area',                        description: 'William McAllister moves with his family to the Antwerp area.' },
+            { date: '1816',              title: 'David Parish departs the United States',                          description: 'David Parish departs the United States.' },
+            { date: '1816–1817',         title: 'Arrival of Joseph Bonaparte in North Country',                    description: 'Joseph Bonaparte arrives in the North Country region of New York.' },
+            { date: '1826',              title: 'Death of David Parish',                                           description: 'David Parish dies.' },
+            { date: 'July 31, 1839',     title: 'Marriage of Zebulon Howell Benton and Caroline Charlotte Bonaparte', description: 'Zebulon Howell Benton marries Caroline Charlotte Bonaparte.' },
+            { date: '1841',              title: 'William McAllister serves in the New York State Assembly',        description: 'William McAllister serves in the New York State Assembly.' },
+            { date: '1844',              title: 'New York plank road enabling legislation enacted',                description: 'New York State enacts plank road enabling legislation.' },
+            { date: 'February 6, 1845', title: 'Death of Dr. Abner Benton',                                       description: 'Dr. Abner Benton dies.' },
+            { date: '1845',              title: 'McAllister House built',                                          description: 'William McAllister builds a Greek Revival house as a three-bay main gable with south and east wings, a two-story residence with a classical revival facade.' },
+            { date: '1848',              title: 'Charter of Antwerp–Sterlingville–Great Bend Plank Road',         description: 'Antwerp–Sterlingville–Great Bend Plank Road is chartered.' },
+            { date: '1848',              title: 'Related Carthage–Antwerp plank road activity',                   description: 'Carthage–Antwerp plank road activity occurs as part of the regional transportation network.' },
+            { date: '1851',              title: 'Village of Antwerp incorporated by court order',                  description: 'The Village of Antwerp is incorporated by court order.' },
+            { date: 'July 30, 1853',     title: 'Village of Antwerp incorporation ratified by vote',              description: 'The Village of Antwerp incorporation is ratified by vote.' },
+            { date: '1859',              title: 'Retirement of Joseph Rosseel',                                    description: 'Joseph Rosseel retires as Parish estate agent.' },
+            { date: 'May 5, 1870',       title: 'Death of William McAllister',                                    description: 'William McAllister dies.' },
+            { date: '1874',              title: 'McAllister House rebuilt',                                        description: 'George D. McAllister renovated the house in the Italianate style with a mansard roof.' },
+            { date: '1929',              title: 'Barn converted into carriage house',                              description: '19th century L-shaped barn rebuilt in gambrel form; part of McAllister Farm.' },
+            { date: 'July 4, 2024',      title: '301 Main Street purchased by Antwerpen Limited',                 description: '301 Main Street is purchased by Antwerpen Limited.' }
+        ];
+
+        function parseSortKey(d) {
+            if (!d) return '0000-00-00';
+            const months = { january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',
+                             july:'07',august:'08',september:'09',october:'10',november:'11',december:'12',
+                             jan:'01',feb:'02',mar:'03',apr:'04',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12' };
+            const ym  = d.match(/\b(\d{4})\b/);
+            const lc  = d.toLowerCase();
+            let mon = null;
+            for (const [k, v] of Object.entries(months)) { if (lc.includes(k)) { mon = v; break; } }
+            if (ym && mon) return ym[1] + '-' + mon + '-00';
+            if (ym)        return ym[1] + '-00-00';
+            return '0000-00-00';
+        }
+
+        async function seed(user) {
+            document.getElementById('login-ui').style.display = 'none';
+            document.getElementById('seed-ui').style.display  = 'block';
+            const log = document.getElementById('log');
+            let ok = 0, fail = 0;
+
+            // ── Bootstrap admin access ─────────────────────────
+            const adminLine = document.createElement('div');
+            adminLine.className = 'pending';
+            adminLine.textContent = '⏳ Granting admin access to ' + user.email + '…';
+            log.appendChild(adminLine);
+            try {
+                await setDoc(doc(db, 'admins', user.uid), {
+                    email: user.email,
+                    grantedAt: serverTimestamp()
+                });
+                adminLine.className = 'ok';
+                adminLine.textContent = '✓ Admin access granted — all admin pages now unlocked.';
+            } catch(e) {
+                adminLine.className = 'err';
+                adminLine.textContent = '✗ Could not set admin (' + e.message + '). Your UID: ' + user.uid;
+            }
+
+            const spacer = document.createElement('div');
+            spacer.style.marginTop = '0.8em';
+            log.appendChild(spacer);
+
+            for (const e of EVENTS) {
+                const line = document.createElement('div');
+                line.className = 'pending';
+                line.textContent = '⏳ ' + e.date + ' — ' + e.title;
+                log.appendChild(line);
+
+                try {
+                    await addDoc(collection(db, 'timeline'), {
+                        date:        e.date,
+                        dateSortKey: parseSortKey(e.date),
+                        title:       e.title,
+                        description: e.description,
+                        dateTime:    '',
+                        createdAt:   serverTimestamp(),
+                        updatedAt:   serverTimestamp()
+                    });
+                    line.className = 'ok';
+                    line.textContent = '✓ ' + e.date + ' — ' + e.title;
+                    ok++;
+                } catch(err) {
+                    line.className = 'err';
+                    line.textContent = '✗ ' + e.date + ' — ' + e.title + '  (' + err.message + ')';
+                    fail++;
+                }
+            }
+
+            document.getElementById('status-msg').textContent =
+                `Done — ${ok} added, ${fail} failed. You can close this page and delete this file.`;
+        }
+
+        document.getElementById('btn-signin').addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
+            const pw    = document.getElementById('password').value;
+            document.getElementById('err').textContent = '';
+            try {
+                const cred = await signInWithEmailAndPassword(auth, email, pw);
+                await seed(cred.user);
+            } catch(e) {
+                document.getElementById('err').textContent = 'Sign-in failed: ' + e.message;
+            }
+        });
+
+        document.getElementById('password').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('btn-signin').click();
+        });
+
+        document.getElementById('btn-google').addEventListener('click', async () => {
+            document.getElementById('err').textContent = '';
+            try {
+                const cred = await signInWithPopup(auth, new GoogleAuthProvider());
+                await seed(cred.user);
+            } catch(e) {
+                if (e.code !== 'auth/popup-closed-by-user')
+                    document.getElementById('err').textContent = 'Google sign-in failed: ' + e.message;
+            }
+        });
+    </script>
+</body>
+</html>

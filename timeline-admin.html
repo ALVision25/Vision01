@@ -168,7 +168,9 @@
 
         <!-- Auth gate (shown if not admin) -->
         <div id="tladmin-gate" class="tladmin-gate" style="display:none;">
-            Admin access required. <a href="members.html">Sign in</a>
+            <p style="margin:0 0 1em;">Admin access required.</p>
+            <button id="tladmin-google-btn" style="background:#221810;color:#e7d8b1;border:1px solid #3a2a1a;padding:0.65em 1.8em;border-radius:6px;cursor:pointer;font-size:0.95rem;">Sign in with Google</button>
+            <p id="tladmin-gate-err" style="color:#e74c3c;font-size:0.82rem;margin:0.6em 0 0;min-height:1em;"></p>
         </div>
 
         <!-- Admin UI (shown if admin) -->
@@ -241,7 +243,7 @@
     <script src="firebase-config.js"></script>
     <script type="module">
         import { initializeApp }    from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged, signOut }
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut }
                                     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
         import { getFirestore, doc, getDoc, collection, addDoc, updateDoc, deleteDoc,
                  onSnapshot, query, orderBy, serverTimestamp }
@@ -290,6 +292,16 @@
             }
             document.getElementById('tladmin-ui').style.display = 'block';
             initAdminUI();
+        });
+
+        document.getElementById('tladmin-google-btn').addEventListener('click', async () => {
+            document.getElementById('tladmin-gate-err').textContent = '';
+            try {
+                await signInWithPopup(auth, new GoogleAuthProvider());
+            } catch(e) {
+                if (e.code !== 'auth/popup-closed-by-user')
+                    document.getElementById('tladmin-gate-err').textContent = 'Google sign-in failed.';
+            }
         });
 
         document.getElementById('btn-signout').addEventListener('click', () => {
