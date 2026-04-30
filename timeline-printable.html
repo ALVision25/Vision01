@@ -308,10 +308,22 @@
             margin-bottom: 5px;
             opacity: 0.7;
         }
-        .tag-person   { color: var(--rust); }
-        .tag-infra    { color: #3a6b4a; }
-        .tag-civic    { color: #3a4a7a; }
-        .tag-property { color: var(--gold); }
+        .tag-antwerp  { color: var(--rust); }
+        .tag-adk      { color: #4a7a5a; }
+        .tag-transport{ color: #3a4a7a; }
+        .tag-oxbow    { color: #7a4a6b; }
+        .tag-fortdrum { color: #5a6b3a; }
+        .tag-default  { color: var(--faded-ink); }
+
+        /* Source note */
+        .entry-source {
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 8px;
+            letter-spacing: 1px;
+            color: var(--divider);
+            margin-top: 5px;
+            opacity: 0.7;
+        }
 
         /* ── Footer ── */
         .doc-footer {
@@ -475,21 +487,20 @@
             return 'Modern Era';
         }
 
-        // ── Auto category from title + description ────────────────
-        function getCategory(title, desc) {
-            const t = (title + ' ' + (desc || '')).toLowerCase();
-            if (/\b(birth|born|death|dies|marriage|marries|married|moves|serves|arrives|retires|retirement|founder)\b/.test(t))
-                return 'person';
-            if (/\b(road|plank|barn|carriage|bridge|rail|transport|infrastructure)\b/.test(t))
-                return 'infra';
-            if (/\b(incorporat|assembly|legislat|charter|village|civic|court|vote|parish|estate|agent)\b/.test(t))
-                return 'civic';
-            if (/\b(house|built|build|rebuild|rebuilt|purchased|acquired|property|main street|farm|street)\b/.test(t))
-                return 'property';
-            return 'civic';
-        }
+        // ── Category mapping (from Firestore category field) ─────
+        const CAT_MAP = {
+            'town and village of antwerp':            { cls: 'antwerp',  label: 'Antwerp'   },
+            'adk north country':                      { cls: 'adk',      label: 'ADK'       },
+            'transportation':                         { cls: 'transport',label: 'Transport'  },
+            'oxbow / scotch settlement':              { cls: 'oxbow',    label: 'Oxbow'     },
+            'fort drum expansion / displaced hamlets':{ cls: 'fortdrum', label: 'Fort Drum' },
+        };
 
-        const CATEGORY_LABELS = { person: 'Person', infra: 'Infrastructure', civic: 'Civic', property: 'Property' };
+        function getCatInfo(cat) {
+            if (!cat) return { cls: 'default', label: '—' };
+            return CAT_MAP[String(cat).toLowerCase().trim()] ||
+                   { cls: 'default', label: String(cat).slice(0, 12) };
+        }
 
         // ── Dot weight ────────────────────────────────────────────
         function getDotWeight(title, year) {
@@ -508,38 +519,42 @@
 
         // ── Build one entry element ───────────────────────────────
         function buildEntry(rec, flip, isLast) {
-            const year     = yearFromKey(rec.dateSortKey);
-            const cat      = rec.category || getCategory(rec.title, rec.description);
-            const weight   = rec.dotWeight || getDotWeight(rec.title, year);
+            const year        = yearFromKey(rec.dateSortKey);
+            const catInfo     = getCatInfo(rec.category);
+            const weight      = getDotWeight(rec.title, year);
             const isMilestone = weight === 'milestone';
 
             const entry = document.createElement('div');
             entry.className = 'entry' + (flip ? ' flip' : '');
 
-            // Year side (left on normal, right on flip reversed via CSS)
-            const yearSide = document.createElement('div');
-            yearSide.className = 'entry-' + (flip ? 'right' : 'left');
-            yearSide.innerHTML =
+            const yearHTML =
                 `<div class="entry-year${isMilestone ? ' milestone-year' : ''}">${year < 9999 ? year : '—'}</div>` +
                 `<div class="entry-date">${esc(rec.date || '')}</div>`;
 
-            // Center
+            const contentHTML =
+                `<div class="tag tag-${catInfo.cls}">${esc(catInfo.label)}</div>` +
+                `<div class="entry-title">${esc(rec.title)}</div>` +
+                (rec.description ? `<div class="entry-body">${esc(rec.description)}</div>` : '') +
+                (rec.source      ? `<div class="entry-source">${esc(rec.source)}</div>` : '');
+
+            // Non-flip: entry-left = content, entry-right = year
+            // Flip:     entry-left = year,    entry-right = content  (CSS reorders visually)
+            const leftDiv = document.createElement('div');
+            leftDiv.className = 'entry-left';
+            leftDiv.innerHTML = flip ? yearHTML : contentHTML;
+
             const center = document.createElement('div');
             center.className = 'entry-center';
             center.innerHTML = `<div class="entry-dot${weight ? ' ' + weight : ''}"></div>`;
             if (!isLast) center.innerHTML += `<div class="connector-line"></div>`;
 
-            // Content side
-            const contentSide = document.createElement('div');
-            contentSide.className = 'entry-' + (flip ? 'left' : 'right');
-            contentSide.innerHTML =
-                `<div class="tag tag-${cat}">${esc(CATEGORY_LABELS[cat] || 'Civic')}</div>` +
-                `<div class="entry-title">${esc(rec.title)}</div>` +
-                (rec.description ? `<div class="entry-body">${esc(rec.description)}</div>` : '');
+            const rightDiv = document.createElement('div');
+            rightDiv.className = 'entry-right';
+            rightDiv.innerHTML = flip ? contentHTML : yearHTML;
 
-            entry.appendChild(yearSide);
+            entry.appendChild(leftDiv);
             entry.appendChild(center);
-            entry.appendChild(contentSide);
+            entry.appendChild(rightDiv);
             return entry;
         }
 

@@ -68,6 +68,7 @@
         .btn-qadd-submit:hover { background: #fff; }
         .qadd-msg { color: #7ab87a; font-size: 0.82rem; margin-top: 0.5em; display: none; }
         .qadd-err { color: #e74c3c; font-size: 0.82rem; margin-top: 0.5em; min-height: 1.1em; }
+        select { background: #1a120c; border: 1px solid #3a2e1e; color: #e7d8b1; padding: 0.4em 0.6em; border-radius: 4px; width: 100%; font-size: 0.9rem; }
 
         /* Record cards */
         .trec-list { margin-top: 0.5em; }
@@ -200,13 +201,30 @@
                             <input id="qadd-title" type="text" placeholder="Event title" />
                         </div>
                     </div>
+                    <div class="hf-row">
+                        <div class="hf-group">
+                            <label>Category</label>
+                            <select id="qadd-category">
+                                <option value="">— select —</option>
+                                <option value="Town and Village of Antwerp">Town and Village of Antwerp</option>
+                                <option value="ADK North Country">ADK North Country</option>
+                                <option value="Transportation">Transportation</option>
+                                <option value="Oxbow / Scotch Settlement">Oxbow / Scotch Settlement</option>
+                                <option value="Fort Drum Expansion / Displaced Hamlets">Fort Drum Expansion / Displaced Hamlets</option>
+                            </select>
+                        </div>
+                        <div class="hf-group">
+                            <label>Source Note</label>
+                            <input id="qadd-source" type="text" placeholder="e.g. Doc B, McAllister Research" />
+                        </div>
+                    </div>
                     <div class="hf-group">
                         <label>Description</label>
                         <textarea id="qadd-desc" placeholder="Optional narrative or detail…"></textarea>
                     </div>
                     <div class="hf-group">
-                        <label>Date / Time (optional precision)</label>
-                        <input id="qadd-datetime" type="text" placeholder="e.g. June 15, 1892 at 2pm — or leave blank" />
+                        <label>Website (optional URL)</label>
+                        <input id="qadd-website" type="url" placeholder="https://…" />
                     </div>
                     <button class="btn-qadd-submit" id="btn-qadd-submit">Add Event</button>
                     <p class="qadd-err" id="qadd-err"></p>
@@ -376,13 +394,26 @@
                         <input class="rec-title" type="text" value="${esc(rec.title || '')}" placeholder="Event title" />
                     </div>
                 </div>
+                <div class="hf-row">
+                    <div class="hf-group">
+                        <label>Category</label>
+                        <select class="rec-category">
+                            <option value="">— select —</option>
+                            ${['Town and Village of Antwerp','ADK North Country','Transportation','Oxbow / Scotch Settlement','Fort Drum Expansion / Displaced Hamlets'].map(c=>`<option value="${c}"${rec.category===c?' selected':''}>${c}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="hf-group">
+                        <label>Source Note</label>
+                        <input class="rec-source" type="text" value="${esc(rec.source || '')}" placeholder="e.g. Doc B" />
+                    </div>
+                </div>
                 <div class="hf-group">
                     <label>Description</label>
                     <textarea class="rec-desc" placeholder="Optional narrative…">${esc(rec.description || '')}</textarea>
                 </div>
                 <div class="hf-group">
-                    <label>Date / Time (optional)</label>
-                    <input class="rec-datetime" type="text" value="${esc(rec.dateTime || '')}" placeholder="e.g. June 15, 1892 at 2pm" />
+                    <label>Website (optional URL)</label>
+                    <input class="rec-website" type="url" value="${esc(rec.website || '')}" placeholder="https://…" />
                 </div>
                 <div class="trec-actions">
                     <button class="btn-hist-save rec-btn-save">Save</button>
@@ -400,8 +431,10 @@
         async function addRecord() {
             const dateVal  = document.getElementById('qadd-date').value.trim();
             const titleVal = document.getElementById('qadd-title').value.trim();
+            const catVal   = document.getElementById('qadd-category').value;
+            const srcVal   = document.getElementById('qadd-source').value.trim();
             const descVal  = document.getElementById('qadd-desc').value.trim();
-            const dtVal    = document.getElementById('qadd-datetime').value.trim();
+            const webVal   = document.getElementById('qadd-website').value.trim();
             const errEl    = document.getElementById('qadd-err');
             const msgEl    = document.getElementById('qadd-msg');
 
@@ -413,18 +446,18 @@
 
             try {
                 await addDoc(collection(db, 'timeline'), {
-                    date: dateVal,
+                    date:        dateVal,
                     dateSortKey: parseDateSortKey(dateVal),
-                    title: titleVal,
+                    title:       titleVal,
+                    category:    catVal,
+                    source:      srcVal,
                     description: descVal,
-                    dateTime: dtVal,
-                    createdAt: serverTimestamp(),
-                    updatedAt: serverTimestamp()
+                    website:     webVal,
+                    createdAt:   serverTimestamp(),
+                    updatedAt:   serverTimestamp()
                 });
-                document.getElementById('qadd-date').value     = '';
-                document.getElementById('qadd-title').value    = '';
-                document.getElementById('qadd-desc').value     = '';
-                document.getElementById('qadd-datetime').value = '';
+                ['qadd-date','qadd-title','qadd-category','qadd-source','qadd-desc','qadd-website']
+                    .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
                 msgEl.style.display = 'block';
                 setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
             } catch(e) {
@@ -435,8 +468,10 @@
         async function saveRecord(id, body, card) {
             const dateVal  = body.querySelector('.rec-date').value.trim();
             const titleVal = body.querySelector('.rec-title').value.trim();
+            const catVal   = body.querySelector('.rec-category').value;
+            const srcVal   = body.querySelector('.rec-source').value.trim();
             const descVal  = body.querySelector('.rec-desc').value.trim();
-            const dtVal    = body.querySelector('.rec-datetime').value.trim();
+            const webVal   = body.querySelector('.rec-website').value.trim();
             const msgEl    = body.querySelector('.trec-save-msg');
 
             if (!dateVal || !titleVal) {
@@ -449,12 +484,14 @@
 
             try {
                 await updateDoc(doc(db, 'timeline', id), {
-                    date: dateVal,
+                    date:        dateVal,
                     dateSortKey: parseDateSortKey(dateVal),
-                    title: titleVal,
+                    title:       titleVal,
+                    category:    catVal,
+                    source:      srcVal,
                     description: descVal,
-                    dateTime: dtVal,
-                    updatedAt: serverTimestamp()
+                    website:     webVal,
+                    updatedAt:   serverTimestamp()
                 });
                 msgEl.style.color = '#7ab87a';
                 msgEl.textContent = 'Saved.';
