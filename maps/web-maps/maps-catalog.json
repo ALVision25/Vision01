@@ -1,0 +1,1190 @@
+{
+  "generated": "2026-05-02",
+  "totalMaps": 33,
+  "center": {
+    "lng": -75.625,
+    "lat": 44.125
+  },
+  "defaultZoom": 10,
+  "groups": {
+    "Antwerp": {
+      "label": "Antwerp Quad",
+      "color": "#2563eb",
+      "exclusive": true,
+      "layerable": true
+    },
+    "LakeBonaparte": {
+      "label": "Lake Bonaparte Quad",
+      "color": "#16a34a",
+      "exclusive": true,
+      "layerable": true
+    },
+    "Ogdensburg": {
+      "label": "Ogdensburg Regional",
+      "color": "#dc2626",
+      "exclusive": true,
+      "layerable": true
+    }
+  },
+  "layeringRules": {
+    "withinGroup": "exclusive \u2014 only one map per group visible at a time",
+    "acrossGroups": "simultaneous \u2014 any combination of one map from each group can be overlaid"
+  },
+  "maps": [
+    {
+      "id": "antwerp_1911",
+      "label": "Antwerp 1911",
+      "group": "Antwerp",
+      "file": "antwerp_1911.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.75,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1911",
+        "enddate": "1911",
+        "title": "USGS 1:62500-scale Quadrangle for Antwerp, NY 1911"
+      },
+      "mapboxCoords": [
+        [
+          -75.75,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.0
+        ],
+        [
+          -75.75,
+          44.0
+        ]
+      ],
+      "kb": 1630
+    },
+    {
+      "id": "antwerp_1922",
+      "label": "Antwerp 1922",
+      "group": "Antwerp",
+      "file": "antwerp_1922.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.75,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1911",
+        "enddate": "1922",
+        "title": "USGS 1:62500-scale Quadrangle for Antwerp, NY 1911"
+      },
+      "mapboxCoords": [
+        [
+          -75.75,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.0
+        ],
+        [
+          -75.75,
+          44.0
+        ]
+      ],
+      "kb": 1585
+    },
+    {
+      "id": "antwerp_1932",
+      "label": "Antwerp 1932",
+      "group": "Antwerp",
+      "file": "antwerp_1932.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.75,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1911",
+        "enddate": "1932",
+        "title": "USGS 1:62500-scale Quadrangle for Antwerp, NY 1911"
+      },
+      "mapboxCoords": [
+        [
+          -75.75,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.0
+        ],
+        [
+          -75.75,
+          44.0
+        ]
+      ],
+      "kb": 1616
+    },
+    {
+      "id": "antwerp_1935",
+      "label": "Antwerp 1935",
+      "group": "Antwerp",
+      "file": "antwerp_1935.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.75,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1911",
+        "enddate": "1935",
+        "title": "USGS 1:62500-scale Quadrangle for Antwerp, NY 1911"
+      },
+      "mapboxCoords": [
+        [
+          -75.75,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.0
+        ],
+        [
+          -75.75,
+          44.0
+        ]
+      ],
+      "kb": 1573
+    },
+    {
+      "id": "antwerp_1942",
+      "label": "Antwerp 1942",
+      "group": "Antwerp",
+      "file": "antwerp_1942.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.75,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1911",
+        "enddate": "1942",
+        "title": "USGS 1:62500-scale Quadrangle for Antwerp, NY 1911"
+      },
+      "mapboxCoords": [
+        [
+          -75.75,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.0
+        ],
+        [
+          -75.75,
+          44.0
+        ]
+      ],
+      "kb": 1626
+    },
+    {
+      "id": "antwerp_1947",
+      "label": "Antwerp 1947",
+      "group": "Antwerp",
+      "file": "antwerp_1947.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.75,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1911",
+        "enddate": "1947",
+        "title": "USGS 1:62500-scale Quadrangle for Antwerp, NY 1911"
+      },
+      "mapboxCoords": [
+        [
+          -75.75,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.0
+        ],
+        [
+          -75.75,
+          44.0
+        ]
+      ],
+      "kb": 1498
+    },
+    {
+      "id": "antwerp_1951",
+      "label": "Antwerp 1951",
+      "group": "Antwerp",
+      "file": "antwerp_1951.jpg",
+      "scale": 24000,
+      "bounds": {
+        "west": -75.625,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "1951",
+        "enddate": "1951",
+        "title": "USGS 1:24000-scale Quadrangle for Antwerp, NY 1951"
+      },
+      "mapboxCoords": [
+        [
+          -75.625,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.125
+        ],
+        [
+          -75.625,
+          44.125
+        ]
+      ],
+      "kb": 1450
+    },
+    {
+      "id": "antwerp_2008",
+      "label": "Antwerp 2008",
+      "group": "Antwerp",
+      "file": "antwerp_2008.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.625,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "20100513",
+        "enddate": "20080922",
+        "title": "US Topo 7.5-minute map for Antwerp, NY"
+      },
+      "mapboxCoords": [
+        [
+          -75.625,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.125
+        ],
+        [
+          -75.625,
+          44.125
+        ]
+      ],
+      "kb": 1096
+    },
+    {
+      "id": "antwerp_2013",
+      "label": "Antwerp 2013",
+      "group": "Antwerp",
+      "file": "antwerp_2013.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.625,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "20130228",
+        "enddate": "2013",
+        "title": "US Topo 7.5-minute map for Antwerp, NY"
+      },
+      "mapboxCoords": [
+        [
+          -75.625,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.125
+        ],
+        [
+          -75.625,
+          44.125
+        ]
+      ],
+      "kb": 1118
+    },
+    {
+      "id": "antwerp_2016",
+      "label": "Antwerp 2016",
+      "group": "Antwerp",
+      "file": "antwerp_2016.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.625,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "20160818",
+        "enddate": "2016",
+        "title": "US Topo 7.5-minute map for Antwerp, NY"
+      },
+      "mapboxCoords": [
+        [
+          -75.625,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.125
+        ],
+        [
+          -75.625,
+          44.125
+        ]
+      ],
+      "kb": 1151
+    },
+    {
+      "id": "antwerp_2019",
+      "label": "Antwerp 2019",
+      "group": "Antwerp",
+      "file": "antwerp_2019.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.625,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "20190913",
+        "enddate": "20190513",
+        "title": "US Topo 7.5-minute map for Antwerp, NY"
+      },
+      "mapboxCoords": [
+        [
+          -75.625,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.125
+        ],
+        [
+          -75.625,
+          44.125
+        ]
+      ],
+      "kb": 1159
+    },
+    {
+      "id": "antwerp_2023",
+      "label": "Antwerp 2023",
+      "group": "Antwerp",
+      "file": "antwerp_2023.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.625,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "20230502",
+        "enddate": "20230324",
+        "title": "US Topo 7.5-minute map for Antwerp, NY"
+      },
+      "mapboxCoords": [
+        [
+          -75.625,
+          44.25
+        ],
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.5,
+          44.125
+        ],
+        [
+          -75.625,
+          44.125
+        ]
+      ],
+      "kb": 1143
+    },
+    {
+      "id": "bonaparte_1916",
+      "label": "Bonaparte 1916",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_1916.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.25,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1916",
+        "enddate": "1916",
+        "title": "USGS 1:62500-scale Quadrangle for Lake Bonaparte, NY 1916"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.25,
+          44.25
+        ],
+        [
+          -75.25,
+          44.0
+        ],
+        [
+          -75.5,
+          44.0
+        ]
+      ],
+      "kb": 1806
+    },
+    {
+      "id": "bonaparte_1925",
+      "label": "Bonaparte 1925",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_1925.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.25,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1916",
+        "enddate": "1925",
+        "title": "USGS 1:62500-scale Quadrangle for Lake Bonaparte, NY 1916"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.25,
+          44.25
+        ],
+        [
+          -75.25,
+          44.0
+        ],
+        [
+          -75.5,
+          44.0
+        ]
+      ],
+      "kb": 1734
+    },
+    {
+      "id": "bonaparte_1935",
+      "label": "Bonaparte 1935",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_1935.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.25,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1916",
+        "enddate": "1935",
+        "title": "USGS 1:62500-scale Quadrangle for Lake Bonaparte, NY 1916"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.25,
+          44.25
+        ],
+        [
+          -75.25,
+          44.0
+        ],
+        [
+          -75.5,
+          44.0
+        ]
+      ],
+      "kb": 1734
+    },
+    {
+      "id": "bonaparte_1939",
+      "label": "Bonaparte 1939",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_1939.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.25,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1916",
+        "enddate": "1939",
+        "title": "USGS 1:62500-scale Quadrangle for Lake Bonaparte, NY 1916"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.25,
+          44.25
+        ],
+        [
+          -75.25,
+          44.0
+        ],
+        [
+          -75.5,
+          44.0
+        ]
+      ],
+      "kb": 1734
+    },
+    {
+      "id": "bonaparte_1944",
+      "label": "Bonaparte 1944",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_1944.jpg",
+      "scale": 62500,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.25,
+        "north": 44.25,
+        "south": 44.0,
+        "pubdate": "1916",
+        "enddate": "1944",
+        "title": "USGS 1:62500-scale Quadrangle for Lake Bonaparte, NY 1916"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.25,
+          44.25
+        ],
+        [
+          -75.25,
+          44.0
+        ],
+        [
+          -75.5,
+          44.0
+        ]
+      ],
+      "kb": 1734
+    },
+    {
+      "id": "bonaparte_1952",
+      "label": "Bonaparte 1952",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_1952.jpg",
+      "scale": 24000,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.375,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "1951",
+        "enddate": "1952",
+        "title": "USGS 1:24000-scale Quadrangle for Lake Bonaparte, NY 1951"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.375,
+          44.25
+        ],
+        [
+          -75.375,
+          44.125
+        ],
+        [
+          -75.5,
+          44.125
+        ]
+      ],
+      "kb": 1160
+    },
+    {
+      "id": "bonaparte_1965",
+      "label": "Bonaparte 1965",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_1965.jpg",
+      "scale": 24000,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.375,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "1951",
+        "enddate": "1965",
+        "title": "USGS 1:24000-scale Quadrangle for Lake Bonaparte, NY 1951"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.375,
+          44.25
+        ],
+        [
+          -75.375,
+          44.125
+        ],
+        [
+          -75.5,
+          44.125
+        ]
+      ],
+      "kb": 1734
+    },
+    {
+      "id": "bonaparte_1974",
+      "label": "Bonaparte 1974",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_1974.jpg",
+      "scale": 24000,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.375,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "1951",
+        "enddate": "1974",
+        "title": "USGS 1:24000-scale Quadrangle for Lake Bonaparte, NY 1951"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.375,
+          44.25
+        ],
+        [
+          -75.375,
+          44.125
+        ],
+        [
+          -75.5,
+          44.125
+        ]
+      ],
+      "kb": 1734
+    },
+    {
+      "id": "bonaparte_1988",
+      "label": "Bonaparte 1988",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_1988.jpg",
+      "scale": 24000,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.375,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "1951",
+        "enddate": "1988",
+        "title": "USGS 1:24000-scale Quadrangle for Lake Bonaparte, NY 1951"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.375,
+          44.25
+        ],
+        [
+          -75.375,
+          44.125
+        ],
+        [
+          -75.5,
+          44.125
+        ]
+      ],
+      "kb": 1734
+    },
+    {
+      "id": "bonaparte_1991",
+      "label": "Bonaparte 1991",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_1991.jpg",
+      "scale": 24000,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.375,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "1951",
+        "enddate": "1991",
+        "title": "USGS 1:24000-scale Quadrangle for Lake Bonaparte, NY 1951"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.375,
+          44.25
+        ],
+        [
+          -75.375,
+          44.125
+        ],
+        [
+          -75.5,
+          44.125
+        ]
+      ],
+      "kb": 1734
+    },
+    {
+      "id": "bonaparte_2008",
+      "label": "Bonaparte 2008",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_2008.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.375,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "20100513",
+        "enddate": "20080922",
+        "title": "US Topo 7.5-minute map for Lake Bonaparte, NY"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.375,
+          44.25
+        ],
+        [
+          -75.375,
+          44.125
+        ],
+        [
+          -75.5,
+          44.125
+        ]
+      ],
+      "kb": 1099
+    },
+    {
+      "id": "bonaparte_2013",
+      "label": "Bonaparte 2013",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_2013.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.375,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "20130307",
+        "enddate": "2013",
+        "title": "US Topo 7.5-minute map for Lake Bonaparte, NY"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.375,
+          44.25
+        ],
+        [
+          -75.375,
+          44.125
+        ],
+        [
+          -75.5,
+          44.125
+        ]
+      ],
+      "kb": 1176
+    },
+    {
+      "id": "bonaparte_2016",
+      "label": "Bonaparte 2016",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_2016.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.375,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "20160818",
+        "enddate": "2016",
+        "title": "US Topo 7.5-minute map for Lake Bonaparte, NY"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.375,
+          44.25
+        ],
+        [
+          -75.375,
+          44.125
+        ],
+        [
+          -75.5,
+          44.125
+        ]
+      ],
+      "kb": 1163
+    },
+    {
+      "id": "bonaparte_2019",
+      "label": "Bonaparte 2019",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_2019.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.375,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "20190913",
+        "enddate": "20190514",
+        "title": "US Topo 7.5-minute map for Lake Bonaparte, NY"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.375,
+          44.25
+        ],
+        [
+          -75.375,
+          44.125
+        ],
+        [
+          -75.5,
+          44.125
+        ]
+      ],
+      "kb": 1199
+    },
+    {
+      "id": "bonaparte_2023",
+      "label": "Bonaparte 2023",
+      "group": "LakeBonaparte",
+      "file": "bonaparte_2023.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.5,
+        "east": -75.375,
+        "north": 44.25,
+        "south": 44.125,
+        "pubdate": "20230517",
+        "enddate": "20230419",
+        "title": "US Topo 7.5-minute map for Lake Bonaparte, NY"
+      },
+      "mapboxCoords": [
+        [
+          -75.5,
+          44.25
+        ],
+        [
+          -75.375,
+          44.25
+        ],
+        [
+          -75.375,
+          44.125
+        ],
+        [
+          -75.5,
+          44.125
+        ]
+      ],
+      "kb": 1188
+    },
+    {
+      "id": "ogdensburg_1948a",
+      "label": "Ogdensburg 1948a",
+      "group": "Ogdensburg",
+      "file": "ogdensburg_1948a.jpg",
+      "scale": 250000,
+      "bounds": {
+        "west": -76.0,
+        "east": -74.0,
+        "north": 45.0,
+        "south": 44.0,
+        "pubdate": "1948",
+        "enddate": "1973",
+        "title": "USGS 1:250000-scale Quadrangle for Ogdensburg, NY 1948"
+      },
+      "mapboxCoords": [
+        [
+          -76.0,
+          45.0
+        ],
+        [
+          -74.0,
+          45.0
+        ],
+        [
+          -74.0,
+          44.0
+        ],
+        [
+          -76.0,
+          44.0
+        ]
+      ],
+      "kb": 1954
+    },
+    {
+      "id": "ogdensburg_1948b",
+      "label": "Ogdensburg 1948b",
+      "group": "Ogdensburg",
+      "file": "ogdensburg_1948b.jpg",
+      "scale": 250000,
+      "bounds": {
+        "west": -76.0,
+        "east": -74.0,
+        "north": 45.0,
+        "south": 44.0,
+        "pubdate": "1948",
+        "enddate": "1973",
+        "title": "USGS 1:250000-scale Quadrangle for Ogdensburg, NY 1948"
+      },
+      "mapboxCoords": [
+        [
+          -76.0,
+          45.0
+        ],
+        [
+          -74.0,
+          45.0
+        ],
+        [
+          -74.0,
+          44.0
+        ],
+        [
+          -76.0,
+          44.0
+        ]
+      ],
+      "kb": 2038
+    },
+    {
+      "id": "ogdensburg_1953",
+      "label": "Ogdensburg 1953",
+      "group": "Ogdensburg",
+      "file": "ogdensburg_1953.jpg",
+      "scale": 250000,
+      "bounds": {
+        "west": -76.0,
+        "east": -74.0,
+        "north": 45.0,
+        "south": 44.0,
+        "pubdate": "1953",
+        "enddate": "1953",
+        "title": "USGS 1:250000-scale Quadrangle for Ogdensburg, NY 1953"
+      },
+      "mapboxCoords": [
+        [
+          -76.0,
+          45.0
+        ],
+        [
+          -74.0,
+          45.0
+        ],
+        [
+          -74.0,
+          44.0
+        ],
+        [
+          -76.0,
+          44.0
+        ]
+      ],
+      "kb": 1814
+    },
+    {
+      "id": "ogdensburg_1961",
+      "label": "Ogdensburg 1961",
+      "group": "Ogdensburg",
+      "file": "ogdensburg_1961.jpg",
+      "scale": 250000,
+      "bounds": {
+        "west": -76.0,
+        "east": -74.0,
+        "north": 45.0,
+        "south": 44.0,
+        "pubdate": "1961",
+        "enddate": "1961",
+        "title": "USGS 1:250000-scale Quadrangle for Ogdensburg, NY 1961"
+      },
+      "mapboxCoords": [
+        [
+          -76.0,
+          45.0
+        ],
+        [
+          -74.0,
+          45.0
+        ],
+        [
+          -74.0,
+          44.0
+        ],
+        [
+          -76.0,
+          44.0
+        ]
+      ],
+      "kb": 1892
+    },
+    {
+      "id": "ogdensburg_1985a",
+      "label": "Ogdensburg 1985a",
+      "group": "Ogdensburg",
+      "file": "ogdensburg_1985a.jpg",
+      "scale": 100000,
+      "bounds": {
+        "west": -76.0,
+        "east": -75.0,
+        "north": 45.0,
+        "south": 44.5,
+        "pubdate": "1985",
+        "enddate": "1986",
+        "title": "USGS 1:100000-scale Quadrangle for Ogdensburg, NY 1985"
+      },
+      "mapboxCoords": [
+        [
+          -76.0,
+          45.0
+        ],
+        [
+          -75.0,
+          45.0
+        ],
+        [
+          -75.0,
+          44.5
+        ],
+        [
+          -76.0,
+          44.5
+        ]
+      ],
+      "kb": 620
+    },
+    {
+      "id": "ogdensburg_1985b",
+      "label": "Ogdensburg 1985b",
+      "group": "Ogdensburg",
+      "file": "ogdensburg_1985b.jpg",
+      "scale": 100000,
+      "bounds": {
+        "west": -76.0,
+        "east": -75.0,
+        "north": 45.0,
+        "south": 44.5,
+        "pubdate": "1985",
+        "enddate": "1993",
+        "title": "USGS 1:100000-scale Quadrangle for Ogdensburg, NY 1985"
+      },
+      "mapboxCoords": [
+        [
+          -76.0,
+          45.0
+        ],
+        [
+          -75.0,
+          45.0
+        ],
+        [
+          -75.0,
+          44.5
+        ],
+        [
+          -76.0,
+          44.5
+        ]
+      ],
+      "kb": 1373
+    }
+  ]
+}

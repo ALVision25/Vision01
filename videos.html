@@ -74,6 +74,7 @@
             <li><a href="history.html">History</a></li>
             <li><a href="timeline.html">Timeline</a></li>
             <li><a href="videos.html">Videos</a></li>
+            <li id="nav-maps-link" style="display:none"><a href="maps/index.html">Maps</a></li>
         </ul>
     </nav>
     <div class="menu-overlay" id="menu-overlay"></div>
@@ -134,6 +135,7 @@
                 return;
             }
 
+            document.getElementById('nav-maps-link').style.display = '';
             // Load published videos
             try {
                 const snap   = await getDocs(collection(db, 'videos'));

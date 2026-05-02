@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maps — The Antwerp Inn 1845</title>
+
+    <!-- Site-wide styles (parent directory) -->
+    <link rel="stylesheet" href="../style.css" />
+
+    <!-- Mapbox GL JS v2.15.0 -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+    <style>
+        /* ── Full-screen layout ──────────────────────────────────── */
+        /* The map-shell fills all remaining height below the site header */
+        body.maps-page {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #map-shell {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Mapbox canvas fills the shell */
+        #map {
+            position: absolute;
+            inset: 0;
+        }
+
+        /* ── Auth gate ───────────────────────────────────────────── */
+        #map-auth-gate {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0705;
+            z-index: 200;
+            text-align: center;
+        }
+
+        .auth-gate-card {
+            background: #1a120c;
+            border: 1px solid #2a1e14;
+            border-radius: 12px;
+            padding: 2.5em 2em;
+            max-width: 360px;
+        }
+
+        .auth-gate-card h2 {
+            font-family: 'OldEnglishFive', serif;
+            color: #e7d8b1;
+            font-size: 1.4rem;
+            font-weight: normal;
+            margin: 0 0 0.6em;
+        }
+
+        .auth-gate-card p {
+            color: #888;
+            margin: 0 0 0.8em;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .auth-gate-card a {
+            color: #a07830;
+            text-decoration: none;
+        }
+
+        .auth-gate-card a:hover { color: #e7d8b1; }
+
+        /* ── Initial loading cover ───────────────────────────────── */
+        #map-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0705;
+            color: #a07830;
+            font-style: italic;
+            font-size: 1rem;
+            z-index: 200;
+        }
+
+        /* ── Floating control panel ──────────────────────────────── */
+        #ctrl-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 220px;
+            max-height: calc(100% - 20px);
+            overflow-y: auto;
+            background: rgba(16, 10, 5, 0.93);
+            border: 1px solid #2a1e14;
+            border-radius: 8px;
+            z-index: 100;
+            transition: transform 0.25s ease;
+            scrollbar-width: thin;
+            scrollbar-color: #3a2e1e #0a0705;
+        }
+
+        #ctrl-panel.collapsed {
+            transform: translateX(-230px);
+        }
+
+        /* Panel collapse/expand tab — sits at panel's right edge */
+        #ctrl-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px; /* updated by CSS rule below when panel is open */
+            z-index: 101;
+            background: rgba(16, 10, 5, 0.93);
+            border: 1px solid #2a1e14;
+            border-left: none;
+            border-radius: 0 6px 6px 0;
+            color: #a07830;
+            font-size: 0.85rem;
+            width: 20px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: left 0.25s ease, background 0.15s;
+            padding: 0;
+        }
+
+        #ctrl-toggle:hover {
+            background: rgba(36, 22, 10, 0.98);
+            color: #e7d8b1;
+        }
+
+        /* When panel is NOT collapsed, push toggle to panel's right edge */
+        #ctrl-panel:not(.collapsed) ~ #ctrl-toggle {
+            left: 230px;
+        }
+
+        /* ── Panel content styles ────────────────────────────────── */
+        .ctrl-header {
+            padding: 0.7em 0.9em 0.55em;
+            border-bottom: 1px solid #2a1e14;
+            font-family: 'OldEnglishFive', serif;
+            color: #a07830;
+            font-size: 0.82rem;
+            letter-spacing: 0.05em;
+        }
+
+        .ctrl-group {
+            padding: 0.55em 0.9em 0.65em;
+            border-bottom: 1px solid #1a1008;
+        }
+
+        .ctrl-group-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4em;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: #a07830;
+            margin-bottom: 0.35em;
+        }
+
+        .ctrl-group-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Per-group loading indicator (shows "Loading…" while image fetches) */
+        .ctrl-group-loading {
+            font-size: 0.7rem;
+            color: #666;
+            font-style: italic;
+            min-height: 0.9em;
+            margin-bottom: 0.15em;
+        }
+
+        .ctrl-radio-item {
+            display: flex;
+            align-items: center;
+            gap: 0.45em;
+            padding: 0.15em 0;
+            cursor: pointer;
+        }
+
+        .ctrl-radio-item input[type="radio"] {
+            accent-color: #a07830;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin: 0;
+        }
+
+        .ctrl-radio-label {
+            font-size: 0.78rem;
+            color: #b8a880;
+            cursor: pointer;
+            user-select: none;
+            line-height: 1.3;
+        }
+
+        .ctrl-radio-item:hover .ctrl-radio-label { color: #e7d8b1; }
+
+        /* ── Opacity section ─────────────────────────────────────── */
+        .ctrl-opacity {
+            padding: 0.65em 0.9em 0.8em;
+        }
+
+        .ctrl-opacity-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: #a07830;
+            margin-bottom: 0.5em;
+        }
+
+        #opacity-value {
+            color: #e7d8b1;
+            font-family: monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0;
+        }
+
+        #opacity-slider {
+            width: 100%;
+            accent-color: #a07830;
+            cursor: pointer;
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="subpage maps-page">
+
+    <!-- ── Site header (matches all subpages) ───────────────────── -->
+    <header class="site-header-unwrapped">
+        <button class="menu-toggle" aria-label="Menu" id="menu-toggle">&#9776;</button>
+        <h1 class="site-title-unwrapped">The Antwerp Inn 1845</h1>
+    </header>
+
+    <!-- ── Slide-out nav menu ────────────────────────────────────── -->
+    <nav class="side-menu" id="side-menu" aria-hidden="true">
+        <button class="menu-close" id="menu-close" aria-label="Close">&#10005;</button>
+        <ul>
+            <li><a href="../index.html">The Antwerp Inn</a></li>
+            <li><a href="../fort-drum.html">Fort Drum</a></li>
+            <li><a href="../antwerp-village.html">Antwerp Village</a></li>
+            <li><a href="../mcallister-house.html">McAllister House</a></li>
+            <li><a href="../north-country.html">North Country</a></li>
+            <li><a href="../members.html">Members</a></li>
+            <li><a href="../history.html">History</a></li>
+            <li><a href="../timeline.html">Timeline</a></li>
+            <li><a href="index.html">Maps</a></li>
+        </ul>
+    </nav>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <!-- ── Map shell — fills viewport below header ───────────────── -->
+    <div id="map-shell">
+
+        <!-- Auth gate (shown when not signed in or not an active member) -->
+        <div id="map-auth-gate" style="display:none;">
+            <div class="auth-gate-card">
+                <h2>&#x2767; Maps</h2>
+                <p>Historical topographic maps are available to Antwerp Inn members.</p>
+                <p><a href="../members.html">Sign in to view</a></p>
+            </div>
+        </div>
+
+        <!-- Covers the map while auth + catalog are loading -->
+        <div id="map-loading">Loading&hellip;</div>
+
+        <!-- Mapbox renders into this div -->
+        <div id="map"></div>
+
+        <!-- ── Floating control panel (built from catalog after auth) ── -->
+        <div id="ctrl-panel" style="display:none;">
+            <div class="ctrl-header">&#x2767; Historical Maps</div>
+            <!-- Group sections are injected here by buildControls() -->
+            <div id="ctrl-groups"></div>
+            <!-- Opacity -->
+            <div class="ctrl-opacity">
+                <div class="ctrl-opacity-header">
+                    <span>Opacity</span>
+                    <span id="opacity-value">80%</span>
+                </div>
+                <input type="range" id="opacity-slider" min="0" max="100" value="80" />
+            </div>
+        </div>
+
+        <!-- Panel collapse/expand tab -->
+        <button id="ctrl-toggle" style="display:none;" title="Toggle controls" aria-label="Toggle map controls">&#9664;</button>
+
+    </div><!-- /map-shell -->
+
+
+    <!-- ── Hamburger menu (non-module, runs immediately) ─────────── -->
+    <script>
+        (function () {
+            const toggle   = document.getElementById('menu-toggle');
+            const menu     = document.getElementById('side-menu');
+            const overlay  = document.getElementById('menu-overlay');
+            const closeBtn = document.getElementById('menu-close');
+
+            function openMenu()  { menu.classList.add('open');    overlay.classList.add('open');    menu.setAttribute('aria-hidden', 'false'); }
+            function closeMenu() { menu.classList.remove('open'); overlay.classList.remove('open'); menu.setAttribute('aria-hidden', 'true');  }
+
+            toggle.addEventListener('click',   openMenu);
+            closeBtn.addEventListener('click', closeMenu);
+            overlay.addEventListener('click',  closeMenu);
+        })();
+    </script>
+
+    <!-- ── Mapbox access token ───────────────────────────────────── -->
+    <!-- Replace the value below with your real Mapbox public token  -->
+    <script>
+        var MAPBOX_TOKEN = 'pk.eyJ1IjoiYW50d2VycGVubGltaXRlZCIsImEiOiJjbW8zNmdwMGcxMWdhMnJwdXp3c2lqZWxlIn0.vt2UWAnkW9n4LsvE3uWsnw';
+    </script>
+
+    <!-- ── Firebase config (project root) ───────────────────────── -->
+    <script src="../firebase-config.js"></script>
+
+    <!-- ── Main map logic ────────────────────────────────────────── -->
+    <script type="module">
+        import { initializeApp }                     from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged }        from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc }          from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+        // ── Firebase ──────────────────────────────────────────────
+        const app  = initializeApp(window.firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
+
+        // ── Mapbox init ───────────────────────────────────────────
+        mapboxgl.accessToken = window.MAPBOX_TOKEN;
+
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style:     'mapbox://styles/mapbox/outdoors-v12',
+            center:    [-75.625, 44.125],
+            zoom:      10
+        });
+
+        map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        map.addControl(new mapboxgl.ScaleControl(),      'bottom-left');
+
+        // ── Runtime state ─────────────────────────────────────────
+        let currentOpacity = 0.8;
+
+        // Active map ID per group (null = Off)
+        const activeByGroup = { Antwerp: null, LakeBonaparte: null, Ogdensburg: null };
+
+        // IDs already added as Mapbox sources (lazy cache)
+        const loadedSources = new Set();
+
+        // map.id → catalog entry (populated after catalog loads)
+        const catalogById = {};
+
+        // ── Z-order anchor layers ─────────────────────────────────
+        // Pre-add three invisible layers on map load so that all real overlay
+        // layers can be inserted *before* the next group's anchor, giving us
+        // a stable z-order regardless of which group loads first.
+        //
+        // Order bottom → top: Ogdensburg → Antwerp → LakeBonaparte
+        const ANCHOR = {
+            Ogdensburg:    'anchor-ogdensburg',
+            Antwerp:       'anchor-antwerp',
+            LakeBonaparte: 'anchor-bonaparte',
+        };
+
+        // 1×1 transparent PNG — harmless placeholder image for anchor sources
+        const BLANK_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQAABjE+ibYAAAAASUVORK5CYII=';
+
+        function addAnchorLayers() {
+            // Far-off-screen coordinates — these layers never show pixels
+            const offscreen = [[-180,89],[-179,89],[-179,88],[-180,88]];
+            Object.values(ANCHOR).forEach(id => {
+                map.addSource(id, { type: 'image', url: BLANK_PNG, coordinates: offscreen });
+                map.addLayer({ id: id + '-layer', type: 'raster', source: id,
+                               paint: { 'raster-opacity': 0 } });
+            });
+        }
+
+        // Returns the Mapbox layer ID that a new overlay should be inserted *before*,
+        // so that the z-order Ogdensburg < Antwerp < LakeBonaparte is maintained.
+        function getBeforeId(group) {
+            if (group === 'Ogdensburg')    return ANCHOR.Antwerp       + '-layer';
+            if (group === 'Antwerp')       return ANCHOR.LakeBonaparte + '-layer';
+            return undefined; // LakeBonaparte goes on top — no beforeId needed
+        }
+
+        // ── Auth guard ────────────────────────────────────────────
+        onAuthStateChanged(auth, async user => {
+            if (!user) { showAuthGate(); return; }
+
+            // Admins always have access
+            const adminSnap = await getDoc(doc(db, 'admins', user.uid)).catch(() => null);
+            if (adminSnap && adminSnap.exists()) { await startMaps(); return; }
+
+            // Regular members need status === 'active'
+            const userSnap = await getDoc(doc(db, 'users', user.uid));
+            const status   = userSnap.exists() ? userSnap.data().status : 'pending';
+            if (status !== 'active') { showAuthGate(); return; }
+
+            await startMaps();
+        });
+
+        function showAuthGate() {
+            document.getElementById('map-loading').style.display   = 'none';
+            document.getElementById('map-auth-gate').style.display = 'flex';
+        }
+
+        // ── Map startup (called once auth confirms active member) ──
+        async function startMaps() {
+            // Fetch the map catalog
+            const resp    = await fetch('web-maps/maps-catalog.json');
+            const catalog = await resp.json();
+            catalog.maps.forEach(m => { catalogById[m.id] = m; });
+
+            // Build the control panel UI from the catalog data
+            buildControls(catalog);
+
+            // Show the control panel and toggle button
+            document.getElementById('ctrl-panel').style.display  = 'block';
+            document.getElementById('ctrl-toggle').style.display = 'flex';
+
+            // Hide the loading cover
+            document.getElementById('map-loading').style.display = 'none';
+
+            // Add z-order anchor layers once the Mapbox style is ready
+            if (map.isStyleLoaded()) {
+                addAnchorLayers();
+            } else {
+                map.once('load', addAnchorLayers);
+            }
+        }
+
+        // ── Build control panel from catalog ──────────────────────
+        function buildControls(catalog) {
+            const container = document.getElementById('ctrl-groups');
+
+            // Group maps by their group key
+            const byGroup = {};
+            catalog.maps.forEach(m => {
+                if (!byGroup[m.group]) byGroup[m.group] = [];
+                byGroup[m.group].push(m);
+            });
+
+            // Render groups in this fixed order (bottom of stack first)
+            ['Ogdensburg', 'Antwerp', 'LakeBonaparte'].forEach(groupKey => {
+                const maps      = byGroup[groupKey] || [];
+                const groupMeta = catalog.groups[groupKey];
+                if (!groupMeta) return;
+
+                const section = document.createElement('div');
+                section.className = 'ctrl-group';
+
+                // Colored label
+                const label = document.createElement('div');
+                label.className = 'ctrl-group-label';
+                label.innerHTML = `<span class="ctrl-group-dot" style="background:${groupMeta.color}"></span>${groupMeta.label}`;
+                section.appendChild(label);
+
+                // Per-group loading text (shown while a new image is fetching)
+                const loadingEl = document.createElement('div');
+                loadingEl.className = 'ctrl-group-loading';
+                loadingEl.id = `loading-${groupKey}`;
+                section.appendChild(loadingEl);
+
+                // "Off" radio (checked by default)
+                const offItem = makeRadioItem(groupKey, '', 'Off');
+                offItem.querySelector('input').checked = true;
+                section.appendChild(offItem);
+
+                // One radio per map in this group
+                maps.forEach(m => section.appendChild(makeRadioItem(groupKey, m.id, m.label)));
+
+                container.appendChild(section);
+            });
+
+            // Opacity slider
+            document.getElementById('opacity-slider').addEventListener('input', e => {
+                setOpacity(parseInt(e.target.value, 10));
+            });
+        }
+
+        function makeRadioItem(group, mapId, labelText) {
+            const item = document.createElement('label');
+            item.className = 'ctrl-radio-item';
+
+            const input = document.createElement('input');
+            input.type  = 'radio';
+            input.name  = `grp-${group}`;  // same name = exclusive within group
+            input.value = mapId;
+            input.addEventListener('change', () => {
+                if (input.checked) selectMap(mapId || null, group);
+            });
+
+            const span = document.createElement('span');
+            span.className   = 'ctrl-radio-label';
+            span.textContent = labelText;
+
+            item.appendChild(input);
+            item.appendChild(span);
+            return item;
+        }
+
+        // ── Overlay layer management ──────────────────────────────
+        function selectMap(mapId, group) {
+            // Hide the previously active map in this group
+            if (activeByGroup[group]) hideMap(activeByGroup[group]);
+
+            activeByGroup[group] = mapId;
+            if (!mapId) return; // "Off" selected — nothing more to do
+
+            if (!loadedSources.has(mapId)) {
+                // First time: add source + layer; Mapbox fetches the JPEG on demand
+                const entry    = catalogById[mapId];
+                const beforeId = getBeforeId(group);
+
+                setGroupLoading(group, 'Loading…');
+
+                const layerDef = {
+                    id:     `${mapId}-layer`,
+                    type:   'raster',
+                    source: mapId,
+                    paint:  { 'raster-opacity': currentOpacity }
+                };
+
+                map.addSource(mapId, {
+                    type:        'image',
+                    url:         `web-maps/${mapId}.jpg`,
+                    coordinates: entry.mapboxCoords
+                });
+
+                if (beforeId) {
+                    map.addLayer(layerDef, beforeId);
+                } else {
+                    map.addLayer(layerDef);
+                }
+
+                loadedSources.add(mapId);
+
+                // Clear the loading indicator once the map finishes rendering
+                map.once('idle', () => {
+                    // Only clear if this map is still the active one for its group
+                    if (activeByGroup[group] === mapId) setGroupLoading(group, '');
+                });
+
+            } else {
+                // Already cached — just un-hide it
+                map.setLayoutProperty(`${mapId}-layer`, 'visibility', 'visible');
+            }
+        }
+
+        function hideMap(mapId) {
+            if (loadedSources.has(mapId)) {
+                map.setLayoutProperty(`${mapId}-layer`, 'visibility', 'none');
+            }
+        }
+
+        // ── Global opacity ────────────────────────────────────────
+        function setOpacity(value) {
+            currentOpacity = value / 100;
+            document.getElementById('opacity-value').textContent = value + '%';
+            // Update all loaded overlay layers simultaneously
+            loadedSources.forEach(id => {
+                if (map.getLayer(`${id}-layer`)) {
+                    map.setPaintProperty(`${id}-layer`, 'raster-opacity', currentOpacity);
+                }
+            });
+        }
+
+        // ── Per-group loading text ────────────────────────────────
+        function setGroupLoading(group, text) {
+            const el = document.getElementById(`loading-${group}`);
+            if (el) el.textContent = text;
+        }
+
+        // ── Control panel collapse / expand ───────────────────────
+        const ctrlPanel  = document.getElementById('ctrl-panel');
+        const ctrlToggle = document.getElementById('ctrl-toggle');
+
+        ctrlToggle.addEventListener('click', () => {
+            const nowCollapsed = ctrlPanel.classList.toggle('collapsed');
+            ctrlToggle.textContent = nowCollapsed ? '▶' : '◄'; // ▶ / ◀
+        });
+
+    </script>
+
+</body>
+</html>

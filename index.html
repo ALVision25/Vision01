@@ -77,17 +77,20 @@
             <li><a href="members.html">Members</a></li>
             <li><a href="history.html">History</a></li>
             <li><a href="timeline.html">Timeline</a></li>
+            <li id="nav-maps-link" style="display:none"><a href="maps/index.html">Maps</a></li>
         </ul>
     </nav>
     <div class="menu-overlay" id="menu-overlay"></div>
 
     <script src="firebase-config.js"></script>
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+        import { initializeApp }               from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc }   from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
-        const app = initializeApp(firebaseConfig);
-        const db  = getFirestore(app);
+        const app  = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
 
         const DEFAULTS = [
             'slide1.jpg','slide2.jpg','slide3.jpg','slide4.jpg',
@@ -239,6 +242,15 @@
         toggle.addEventListener('click', openMenu);
         close.addEventListener('click', closeMenu);
         overlay.addEventListener('click', closeMenu);
+
+        onAuthStateChanged(auth, async user => {
+            if (!user) return;
+            const adminSnap = await getDoc(doc(db, 'admins', user.uid)).catch(() => null);
+            if (adminSnap && adminSnap.exists()) { document.getElementById('nav-maps-link').style.display = ''; return; }
+            const userSnap = await getDoc(doc(db, 'users', user.uid)).catch(() => null);
+            if (userSnap && userSnap.exists() && userSnap.data().status === 'active')
+                document.getElementById('nav-maps-link').style.display = '';
+        });
     </script>
 
 </body>
