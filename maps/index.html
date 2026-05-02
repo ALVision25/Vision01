@@ -81,14 +81,53 @@
             position: absolute;
             inset: 0;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             background: #0a0705;
-            color: #a07830;
-            font-style: italic;
-            font-size: 1rem;
             z-index: 200;
+            gap: 1.4em;
         }
+
+        #map-loading h3 {
+            font-family: 'OldEnglishFive', serif;
+            color: #a07830;
+            font-size: 1rem;
+            font-weight: normal;
+            margin: 0;
+            letter-spacing: 0.06em;
+        }
+
+        #load-bar-wrap {
+            width: 220px;
+            height: 3px;
+            background: #1a120c;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        #load-bar {
+            height: 100%;
+            width: 0%;
+            background: #a07830;
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        #load-status {
+            font-size: 0.78rem;
+            color: #555;
+            font-style: italic;
+            min-height: 1.1em;
+            text-align: center;
+        }
+
+        /* Pulse animation while waiting */
+        @keyframes pulse-amber {
+            0%, 100% { opacity: 0.5; }
+            50%       { opacity: 1; }
+        }
+        #load-status.waiting { animation: pulse-amber 1.6s ease-in-out infinite; }
 
         /* ── Floating control panel ──────────────────────────────── */
         #ctrl-panel {
@@ -279,7 +318,11 @@
         </div>
 
         <!-- Covers the map while auth + catalog are loading -->
-        <div id="map-loading">Loading&hellip;</div>
+        <div id="map-loading">
+            <h3>&#x2767; Historical Maps</h3>
+            <div id="load-bar-wrap"><div id="load-bar"></div></div>
+            <div id="load-status" class="waiting">Connecting&hellip;</div>
+        </div>
 
         <!-- Mapbox renders into this div -->
         <div id="map"></div>
@@ -337,8 +380,18 @@
         import { getAuth, onAuthStateChanged }        from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
         import { getFirestore, doc, getDoc }          from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
+        // ── Loading progress helpers ──────────────────────────────
+        function setProgress(pct, msg) {
+            document.getElementById('load-bar').style.width = pct + '%';
+            const s = document.getElementById('load-status');
+            s.textContent = msg;
+            s.className = pct < 100 ? 'waiting' : '';
+        }
+
         // ── Firebase ──────────────────────────────────────────────
-        const app  = initializeApp(window.firebaseConfig);
+        // Note: firebaseConfig is a const in firebase-config.js — access directly,
+        // not via window (const does not attach to the window object).
+        const app  = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db   = getFirestore(app);
 
@@ -401,16 +454,20 @@
         }
 
         // ── Auth guard ────────────────────────────────────────────
+        setProgress(15, 'Checking membership…');
+
         onAuthStateChanged(auth, async user => {
             if (!user) { showAuthGate(); return; }
+
+            setProgress(30, 'Verifying access…');
 
             // Admins always have access
             const adminSnap = await getDoc(doc(db, 'admins', user.uid)).catch(() => null);
             if (adminSnap && adminSnap.exists()) { await startMaps(); return; }
 
             // Regular members need status === 'active'
-            const userSnap = await getDoc(doc(db, 'users', user.uid));
-            const status   = userSnap.exists() ? userSnap.data().status : 'pending';
+            const userSnap = await getDoc(doc(db, 'users', user.uid)).catch(() => null);
+            const status   = userSnap && userSnap.exists() ? userSnap.data().status : 'pending';
             if (status !== 'active') { showAuthGate(); return; }
 
             await startMaps();
@@ -423,10 +480,14 @@
 
         // ── Map startup (called once auth confirms active member) ──
         async function startMaps() {
+            setProgress(50, 'Loading map catalog…');
+
             // Fetch the map catalog
             const resp    = await fetch('web-maps/maps-catalog.json');
             const catalog = await resp.json();
             catalog.maps.forEach(m => { catalogById[m.id] = m; });
+
+            setProgress(70, 'Building controls…');
 
             // Build the control panel UI from the catalog data
             buildControls(catalog);
@@ -435,14 +496,22 @@
             document.getElementById('ctrl-panel').style.display  = 'block';
             document.getElementById('ctrl-toggle').style.display = 'flex';
 
-            // Hide the loading cover
-            document.getElementById('map-loading').style.display = 'none';
+            setProgress(90, 'Initializing map…');
 
-            // Add z-order anchor layers once the Mapbox style is ready
-            if (map.isStyleLoaded()) {
+            // Add z-order anchor layers once the Mapbox style is ready,
+            // then finish and remove the loading cover
+            const finish = () => {
                 addAnchorLayers();
+                setProgress(100, 'Ready');
+                setTimeout(() => {
+                    document.getElementById('map-loading').style.display = 'none';
+                }, 300);
+            };
+
+            if (map.isStyleLoaded()) {
+                finish();
             } else {
-                map.once('load', addAnchorLayers);
+                map.once('load', finish);
             }
         }
 
