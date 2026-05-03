@@ -24,6 +24,10 @@
       "color": "#dc2626",
       "exclusive": true,
       "layerable": true
+    },
+    "AntwerpVillage": {
+      "label": "Antwerp Village",
+      "color": "#8B5E3C"
     }
   },
   "layeringRules": {
@@ -1269,6 +1273,50 @@
         ]
       ],
       "kb": 1373
+    },
+    {
+      "id": "antwerp_1864_village",
+      "label": "Antwerp Village 1864",
+      "group": "AntwerpVillage",
+      "file": "antwerp_1864_village.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -75.63,
+        "east": -75.596,
+        "north": 44.082,
+        "south": 44.061,
+        "pubdate": "1864",
+        "enddate": "1864",
+        "title": "Antwerp Village \u2014 Beers Atlas of Jefferson County NY, 1864"
+      },
+      "mapboxCoords": [
+        [
+          -75.63,
+          44.082
+        ],
+        [
+          -75.596,
+          44.082
+        ],
+        [
+          -75.596,
+          44.061
+        ],
+        [
+          -75.63,
+          44.061
+        ]
+      ],
+      "_neatline": {
+        "west": -75.63,
+        "east": -75.596,
+        "north": 44.082,
+        "south": 44.061
+      },
+      "_note": "Track B (plain JPG, no geo data). TPS rubber-sheet warp using 14 manual GCPs from known landmarks: Indian River, village center, Cemetery, Corporation Line, road exits. Source: Beers & Beers, 1864, David Rumsey Map Collection #3882012.",
+      "_source_format": "JPG",
+      "_gcp_count": 14,
+      "kb": 539
     }
   ]
 }
