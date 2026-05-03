@@ -125,20 +125,20 @@
       },
       "mapboxCoords": [
         [
-          -75.784309,
+          -75.784311,
           44.263863
         ],
         [
-          -75.455139,
+          -75.455134,
           44.263863
         ],
         [
-          -75.455139,
-          43.978611
+          -75.455134,
+          43.978609
         ],
         [
-          -75.784309,
-          43.978611
+          -75.784311,
+          43.978609
         ]
       ],
       "_neatline": {
@@ -147,8 +147,8 @@
         "north": 44.25,
         "south": 44.0
       },
-      "_note": "DEV: Rubber-sheet (TPS) warp from GeoTIFF. Dense control point grid. Best available alignment.",
-      "kb": 1645
+      "_note": "DEV: Numpy TPS rubber-sheet warp via MAP-PIPELINE. 49 projection-based GCPs. Mapbox feature matching pending (requires Windows runtime).",
+      "kb": 1455
     },
     {
       "id": "antwerp_1922",
