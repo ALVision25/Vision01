@@ -38,40 +38,33 @@
       "file": "antwerp_1911.jpg",
       "scale": 62500,
       "bounds": {
-        "west": -75.784309,
-        "east": -75.455139,
-        "north": 44.263863,
-        "south": 43.978611,
+        "west": -75.75,
+        "east": -75.5,
+        "north": 44.25,
+        "south": 44.0,
         "pubdate": "1911",
         "enddate": "1911",
         "title": "USGS 1:62500-scale Quadrangle for Antwerp, NY 1911"
       },
       "mapboxCoords": [
         [
-          -75.784309,
-          44.263863
+          -75.75,
+          44.25
         ],
         [
-          -75.455139,
-          44.263863
+          -75.5,
+          44.25
         ],
         [
-          -75.455139,
-          43.978611
+          -75.5,
+          44.0
         ],
         [
-          -75.784309,
-          43.978611
+          -75.75,
+          44.0
         ]
       ],
-      "kb": 1630,
-      "_neatline": {
-        "west": -75.75,
-        "east": -75.5,
-        "north": 44.25,
-        "south": 44.0
-      },
-      "_note": "Bounds include collar. Neatline geo stored in _neatline. Perspective-corrected."
+      "kb": 1630
     },
     {
       "id": "antwerp_1911b",
