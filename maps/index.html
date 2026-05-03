@@ -136,12 +136,20 @@
             left: 10px;
             width: 220px;
             max-height: calc(100% - 20px);
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
             background: rgba(16, 10, 5, 0.93);
             border: 1px solid #2a1e14;
             border-radius: 8px;
             z-index: 100;
             transition: transform 0.25s ease;
+        }
+
+        /* Groups list scrolls independently below the pinned opacity bar */
+        #ctrl-groups {
+            overflow-y: auto;
+            flex: 1;
             scrollbar-width: thin;
             scrollbar-color: #3a2e1e #0a0705;
         }
@@ -206,6 +214,35 @@
             letter-spacing: 0.09em;
             color: #a07830;
             margin-bottom: 0.35em;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Flex spacer so triangle sits at far right */
+        .ctrl-group-label-text { flex: 1; }
+
+        .ctrl-group-triangle {
+            background: none;
+            border: none;
+            color: #a07830;
+            font-size: 0.6rem;
+            padding: 0;
+            cursor: pointer;
+            line-height: 1;
+            transition: transform 0.2s ease;
+        }
+
+        /* Collapsible radio list with smooth animation */
+        .ctrl-radio-list {
+            overflow: hidden;
+            max-height: 600px;
+            transition: max-height 0.25s ease;
+        }
+        .ctrl-radio-list.group-collapsed {
+            max-height: 0;
+        }
+        .ctrl-group-triangle.group-collapsed {
+            transform: rotate(-90deg);
         }
 
         .ctrl-group-dot {
@@ -249,9 +286,11 @@
 
         .ctrl-radio-item:hover .ctrl-radio-label { color: #e7d8b1; }
 
-        /* ── Opacity section ─────────────────────────────────────── */
+        /* ── Opacity section — pinned at top, never scrolls ────────── */
         .ctrl-opacity {
             padding: 0.65em 0.9em 0.8em;
+            flex-shrink: 0;
+            border-bottom: 1px solid #2a1e14;
         }
 
         .ctrl-opacity-header {
@@ -330,9 +369,7 @@
         <!-- ── Floating control panel (built from catalog after auth) ── -->
         <div id="ctrl-panel" style="display:none;">
             <div class="ctrl-header">&#x2767; Historical Maps</div>
-            <!-- Group sections are injected here by buildControls() -->
-            <div id="ctrl-groups"></div>
-            <!-- Opacity -->
+            <!-- Opacity pinned at top — always visible, never scrolls away -->
             <div class="ctrl-opacity">
                 <div class="ctrl-opacity-header">
                     <span>Opacity</span>
@@ -340,6 +377,8 @@
                 </div>
                 <input type="range" id="opacity-slider" min="0" max="100" value="80" />
             </div>
+            <!-- Group sections scroll below the opacity bar -->
+            <div id="ctrl-groups"></div>
         </div>
 
         <!-- Panel collapse/expand tab -->
@@ -492,6 +531,11 @@
             // Build the control panel UI from the catalog data
             buildControls(catalog);
 
+            // Wire opacity slider (outside buildControls so it only fires once)
+            document.getElementById('opacity-slider').addEventListener('input', e => {
+                setOpacity(parseInt(e.target.value, 10));
+            });
+
             // Show the control panel and toggle button
             document.getElementById('ctrl-panel').style.display  = 'block';
             document.getElementById('ctrl-toggle').style.display = 'flex';
@@ -535,33 +579,62 @@
                 const section = document.createElement('div');
                 section.className = 'ctrl-group';
 
-                // Colored label
+                // Group header row with collapse triangle on the right
                 const label = document.createElement('div');
                 label.className = 'ctrl-group-label';
-                label.innerHTML = `<span class="ctrl-group-dot" style="background:${groupMeta.color}"></span>${groupMeta.label}`;
+
+                const dot = document.createElement('span');
+                dot.className = 'ctrl-group-dot';
+                dot.style.background = groupMeta.color;
+
+                const labelText = document.createElement('span');
+                labelText.className = 'ctrl-group-label-text';
+                labelText.textContent = groupMeta.label;
+
+                const triangle = document.createElement('button');
+                triangle.className = 'ctrl-group-triangle';
+                triangle.innerHTML = '&#9660;'; // ▼
+                triangle.setAttribute('aria-label', 'Toggle group');
+                triangle.setAttribute('type', 'button');
+
+                label.appendChild(dot);
+                label.appendChild(labelText);
+                label.appendChild(triangle);
                 section.appendChild(label);
+
+                // Collapsible container for loading indicator + radios
+                const radioList = document.createElement('div');
+                radioList.className = 'ctrl-radio-list';
 
                 // Per-group loading text (shown while a new image is fetching)
                 const loadingEl = document.createElement('div');
                 loadingEl.className = 'ctrl-group-loading';
                 loadingEl.id = `loading-${groupKey}`;
-                section.appendChild(loadingEl);
+                radioList.appendChild(loadingEl);
 
                 // "Off" radio (checked by default)
                 const offItem = makeRadioItem(groupKey, '', 'Off');
                 offItem.querySelector('input').checked = true;
-                section.appendChild(offItem);
+                radioList.appendChild(offItem);
 
                 // One radio per map in this group
-                maps.forEach(m => section.appendChild(makeRadioItem(groupKey, m.id, m.label)));
+                maps.forEach(m => radioList.appendChild(makeRadioItem(groupKey, m.id, m.label)));
+
+                section.appendChild(radioList);
+
+                // Triangle click toggles the radio list
+                triangle.addEventListener('click', () => {
+                    const collapsed = radioList.classList.toggle('group-collapsed');
+                    triangle.classList.toggle('group-collapsed', collapsed);
+                });
+                // Also clicking the label row (not just triangle) collapses
+                label.addEventListener('click', e => {
+                    if (e.target !== triangle) triangle.click();
+                });
 
                 container.appendChild(section);
             });
 
-            // Opacity slider
-            document.getElementById('opacity-slider').addEventListener('input', e => {
-                setOpacity(parseInt(e.target.value, 10));
-            });
         }
 
         function makeRadioItem(group, mapId, labelText) {
@@ -609,7 +682,7 @@
 
                 map.addSource(mapId, {
                     type:        'image',
-                    url:         `web-maps/${mapId}.jpg`,
+                    url:         `web-maps/${entry.file}`,
                     coordinates: entry.mapboxCoords
                 });
 
