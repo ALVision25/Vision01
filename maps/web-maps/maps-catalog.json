@@ -28,6 +28,10 @@
     "AntwerpVillage": {
       "label": "Antwerp Village",
       "color": "#8B5E3C"
+    },
+    "ColonialMaps": {
+      "label": "Colonial Maps",
+      "color": "#6B4C8A"
     }
   },
   "layeringRules": {
@@ -1317,6 +1321,22 @@
       "_source_format": "JPG",
       "_gcp_count": 14,
       "kb": 539
+    },
+    {
+      "id": "ny_state_1788",
+      "label": "1788 NY State (Colonial)",
+      "year": 1788,
+      "group": "ColonialMaps",
+      "file": "ny_state_1788.jpg",
+      "coords": [[-80.0,45.5],[-72.0,45.5],[-72.0,40.5],[-80.0,40.5]],
+      "mapboxCoords": [
+        [-80.0, 45.5],
+        [-72.0, 45.5],
+        [-72.0, 40.5],
+        [-80.0, 40.5]
+      ],
+      "source": "NY State Archives",
+      "notes": "Map of the State of New York with its Counties as it existed by Statute March 7th, 1788. TPS warp, Jefferson/St Lawrence County focus."
     }
   ]
 }
