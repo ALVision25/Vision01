@@ -451,7 +451,7 @@
         let currentOpacity = 0.8;
 
         // Active map ID per group (null = Off)
-        const activeByGroup = { Antwerp: null, LakeBonaparte: null, Ogdensburg: null };
+        const activeByGroup = { ColonialMaps: null, Antwerp: null, LakeBonaparte: null, Ogdensburg: null };
 
         // IDs already added as Mapbox sources (lazy cache)
         const loadedSources = new Set();
@@ -464,8 +464,9 @@
         // layers can be inserted *before* the next group's anchor, giving us
         // a stable z-order regardless of which group loads first.
         //
-        // Order bottom → top: Ogdensburg → Antwerp → LakeBonaparte
+        // Order bottom → top: ColonialMaps → Ogdensburg → Antwerp → LakeBonaparte
         const ANCHOR = {
+            ColonialMaps:  'anchor-colonial',
             Ogdensburg:    'anchor-ogdensburg',
             Antwerp:       'anchor-antwerp',
             LakeBonaparte: 'anchor-bonaparte',
@@ -487,6 +488,7 @@
         // Returns the Mapbox layer ID that a new overlay should be inserted *before*,
         // so that the z-order Ogdensburg < Antwerp < LakeBonaparte is maintained.
         function getBeforeId(group) {
+            if (group === 'ColonialMaps')  return ANCHOR.Ogdensburg    + '-layer';
             if (group === 'Ogdensburg')    return ANCHOR.Antwerp       + '-layer';
             if (group === 'Antwerp')       return ANCHOR.LakeBonaparte + '-layer';
             return undefined; // LakeBonaparte goes on top — no beforeId needed
@@ -571,7 +573,7 @@
             });
 
             // Render groups in this fixed order (bottom of stack first)
-            ['Ogdensburg', 'Antwerp', 'LakeBonaparte'].forEach(groupKey => {
+            ['ColonialMaps', 'Ogdensburg', 'Antwerp', 'LakeBonaparte'].forEach(groupKey => {
                 const maps      = byGroup[groupKey] || [];
                 const groupMeta = catalog.groups[groupKey];
                 if (!groupMeta) return;

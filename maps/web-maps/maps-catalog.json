@@ -1,6 +1,6 @@
 {
-  "generated": "2026-05-02",
-  "totalMaps": 35,
+  "generated": "2026-05-04",
+  "totalMaps": 36,
   "center": {
     "lng": -75.625,
     "lat": 44.125
@@ -28,6 +28,12 @@
     "AntwerpVillage": {
       "label": "Antwerp Village",
       "color": "#8B5E3C"
+    },
+    "ColonialMaps": {
+      "label": "Colonial Maps",
+      "color": "#7c3aed",
+      "exclusive": true,
+      "layerable": true
     }
   },
   "layeringRules": {
@@ -1317,6 +1323,31 @@
       "_source_format": "JPG",
       "_gcp_count": 14,
       "kb": 539
+    },
+    {
+      "id": "ny_state_1788",
+      "label": "NY State 1788",
+      "group": "ColonialMaps",
+      "file": "ny_state_1788.jpg",
+      "scale": null,
+      "bounds": {
+        "west": -80.0,
+        "east": -72.0,
+        "north": 45.5,
+        "south": 40.5,
+        "pubdate": "1788",
+        "enddate": "1788",
+        "title": "Map of the State of New York with its Counties, as confirmed by Statute March 7th 1788"
+      },
+      "mapboxCoords": [
+        [-80.0, 45.5],
+        [-72.0, 45.5],
+        [-72.0, 40.5],
+        [-80.0, 40.5]
+      ],
+      "_note": "NYSA scan A044879. TPS rubber-sheet warp, 53 GCPs dense in Jefferson/St. Lawrence counties (Lake Ontario shore, St. Lawrence River, Black River, Indian River). Source 4219×3066 → output 3200×2000, numpy TPS.",
+      "_source": "NYSA_A044879_V1_p1_representation_49019_original.jpg",
+      "kb": 10076
     }
   ]
 }
